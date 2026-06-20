@@ -1,0 +1,21 @@
+# Environments
+.env
+.venv
+venv/
+ENV/
+
+# Databases
+*.db
+*.sqlite3
+
+# OS Files
+.DS_Store
+
+# IDEs
+.idea/
+.cursor/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -1,0 +1,20 @@
+from sqlalchemy.orm import Session
+from typing import Optional
+from .models import User
+from .schema import UserRegister
+from ..common.security import get_password_hash
+
+class AuthRepository:
+
+    def get_by_email(self, db: Session, email: str) -> Optional[User]:
+        return db.query(User).filter(User.email == email).first()
+
+    def get_by_id(self, db: Session, user_id: int) -> Optional[User]:
+        return db.query(User).filter(User.id == user_id).first()
+
+    def create(self, db: Session, user_in: UserRegister) -> User:
+        db_user = User(email=user_in.email, hashed_password=get_password_hash(user_in.password), full_name=user_in.full_name, is_active=True)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user

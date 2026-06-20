@@ -1,0 +1,53 @@
+from sqlalchemy.orm import Session
+from .database import SessionLocal
+from typing import Generator, Optional
+from fastapi import Depends, HTTPException, status, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from .security import decode_token
+from ..auth.models import User
+reusable_oauth2 = HTTPBearer(auto_error=False)
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def get_current_user(request: Request, db: Session=Depends(get_db), token: Optional[HTTPAuthorizationCredentials]=Depends(reusable_oauth2)) -> User:
+    token_str = None
+    if token:
+        token_str = token.credentials
+    else:
+        token_str = request.cookies.get('access_token')
+    if not token_str:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated', headers={'WWW-Authenticate': 'Bearer'})
+    try:
+        payload = decode_token(token_str)
+        user_id = payload.get('sub')
+        token_type = payload.get('type')
+        sid = payload.get('sid')
+        if user_id is None or token_type != 'access':
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid token claims')
+        if sid:
+            from ..sessions.models import Session as UserSession
+            from datetime import datetime
+            session_record = db.query(UserSession).filter(UserSession.refresh_token_hash == sid, UserSession.revoked == False, UserSession.expires_at > datetime.utcnow()).first()
+            if not session_record:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Session has been revoked or expired')
+    except HTTPException as he:
+        raise he
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
+    return user
+
+def get_current_user_optional(request: Request, db: Session=Depends(get_db), token: Optional[HTTPAuthorizationCredentials]=Depends(reusable_oauth2)) -> Optional[User]:
+    try:
+        return get_current_user(request, db, token)
+    except HTTPException:
+        return None

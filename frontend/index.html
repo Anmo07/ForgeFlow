@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ForgeFlow – Run Your Business From One Screen</title>
+  <meta name="description"
+    content="ForgeFlow brings your projects, customer relationships, and invoicing into a single workspace — so your team stops switching tools and starts shipping work." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Lenis Smooth Scroll CSS -->
+  <style>
+    html.lenis,
+    html.lenis body {
+      height: auto;
+    }
+
+    .lenis.lenis-smooth {
+      scroll-behavior: auto !important;
+    }
+
+    .lenis.lenis-smooth [data-lenis-prevent] {
+      overscroll-behavior: contain;
+    }
+
+    .lenis.lenis-stopped {
+      overflow: hidden;
+    }
+  </style>
+
+  <style>
+    /* ───── Design Tokens (Dark Theme) ───── */
+    :root {
+      --primary: #d4af37;
+      /* Sophisticated antique champagne gold */
+      --primary-hover: #c5a028;
+      --accent: linear-gradient(135deg, #fafaf9 0%, #e7e5e4 100%);
+      /* Warm stone off-white */
+      --accent-solid: #fafaf9;
+      --bg: #0c0a09;
+      /* Warm stone-black */
+      --bg-card: rgba(245, 245, 244, 0.02);
+      --bg-card-hover: rgba(245, 245, 244, 0.05);
+      --border: rgba(245, 245, 244, 0.06);
+      /* Warm off-white border */
+      --border-hover: rgba(212, 175, 55, 0.2);
+      /* Soft gold border */
+      --white: #fafaf9;
+      /* Stone white */
+      --fg: #f5f5f4;
+      /* Off-white */
+      --fg-muted: #a8a29e;
+      /* Muted stone grey */
+      --fg-light: #78716c;
+      /* Light stone grey */
+      --radius: 0.75rem;
+      --radius-lg: 1.25rem;
+      --font-heading: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --glow: 0 0 45px rgba(212, 175, 55, 0.06);
+    }
+
+    /* ───── Light Theme overrides ───── */
+    html.light {
+      --primary: #b89025;
+      --primary-hover: #9c771c;
+      --accent: linear-gradient(135deg, #1c1917 0%, #292524 100%);
+      --accent-solid: #1c1917;
+      --bg: #fbfbf9;
+      --bg-card: rgba(28, 25, 23, 0.02);
+      --bg-card-hover: rgba(28, 25, 23, 0.05);
+      --border: rgba(28, 25, 23, 0.08);
+      --border-hover: rgba(184, 144, 37, 0.25);
+      --white: #1c1917;
+      --fg: #1c1917;
+      --fg-muted: #57524e;
+      --fg-light: #78716c;
+      --glow: 0 0 45px rgba(184, 144, 37, 0.08);
+    }
+
+    html.light .site-header {
+      background: rgba(251, 251, 249, 0.7);
+    }
+
+    html.light .logo {
+      background: linear-gradient(135deg, #1c1917 0%, #44403c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    html.light .video-bg-overlay {
+      background: radial-gradient(circle at 50% 50%, rgba(251, 251, 249, 0.45) 0%, rgba(251, 251, 249, 0.98) 95%);
+    }
+
+    html.light .video-bg-container video {
+      opacity: 0.12;
+      filter: grayscale(1) invert(0.85);
+    }
+
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg);
+      cursor: pointer;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    html.light .theme-toggle-btn:hover {
+      background: rgba(184, 144, 37, 0.05);
+    }
+
+    /* ───── Reset ───── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: transparent;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(120, 113, 108, 0.15) 0%, transparent 50%);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ───── Video Background ───── */
+    .video-bg-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .video-bg-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.18;
+      will-change: transform;
+      transform: translate3d(0, 0, 0) scale(1.12);
+      transition: opacity 1s ease-in-out;
+    }
+
+    .video-bg-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(7, 8, 12, 0.3) 0%, rgba(7, 8, 12, 0.95) 90%);
+      z-index: -1;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* ───── Header ───── */
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 2rem;
+      height: 72px;
+      background: rgba(7, 8, 12, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fafaf9 0%, #d6d3d1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      color: var(--fg);
+      opacity: 0.75;
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: opacity 0.2s, background 0.2s, transform 0.2s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 0.5rem;
+    }
+
+    .nav-link--login {
+      opacity: 0.9;
+    }
+
+    .nav-link--signup {
+      background: var(--accent);
+      color: #0c0a09 !important;
+      opacity: 1;
+      font-weight: 600;
+      padding: 0.5rem 1.25rem;
+      box-shadow: 0 4px 14px rgba(250, 250, 249, 0.1);
+    }
+
+    .nav-link--signup:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(250, 250, 249, 0.25);
+    }
+
+    /* ───── Hero ───── */
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 3rem;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+    }
+
+    .hero-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 4rem 3rem;
+      max-width: 680px;
+      text-align: center;
+      box-shadow: var(--glow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      flex: 1 1 400px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .hero-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 40px rgba(212, 175, 55, 0.12);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #d4af37;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #fafaf9 0%, #d4af37 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--fg-muted);
+      max-width: 540px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0c0a09;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(250, 250, 249, 0.1);
+      transition: all 0.25s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(250, 250, 249, 0.25);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .hero-trust {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--fg-light);
+    }
+
+    /* Feature cards stack */
+    .feature-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      flex: 0 1 360px;
+      min-width: 300px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px) scale(1.02);
+      background: var(--bg-card-hover);
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 0.92rem;
+      color: var(--fg-muted);
+      line-height: 1.6;
+    }
+
+    /* ───── Interactive Product Tour ───── */
+    .tour-section {
+      padding: 6rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .tour-tabs {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      padding: 0.4rem;
+      margin-bottom: 3rem;
+      gap: 0.25rem;
+    }
+
+    .tour-tab {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.6rem 1.5rem;
+      border-radius: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .tour-tab.active {
+      background: var(--primary);
+      color: #0c0a09;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+    }
+
+    .tour-viewports {
+      background: rgba(7, 8, 12, 0.6);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tour-pane {
+      display: none;
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: tabFadeIn 0.5s forwards;
+    }
+
+    .tour-pane.active {
+      display: flex;
+    }
+
+    @keyframes tabFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .mock-browser {
+      width: 100%;
+      height: 100%;
+      background: #0f0d0c;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .mock-header {
+      height: 36px;
+      background: #1c1917;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      gap: 0.5rem;
+    }
+
+    .mock-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .mock-content {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mock-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .mock-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    /* ───── Social Proof ───── */
+    .social-proof {
+      padding: 3rem 2rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .social-proof-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--fg-light);
+      margin-bottom: 1.5rem;
+    }
+
+    .social-proof-logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 3rem;
+    }
+
+    .social-proof-logos span {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--fg-light);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .social-proof-logos span:hover {
+      opacity: 0.9;
+    }
+
+    /* ───── Pricing ───── */
+    .pricing {
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .pricing-toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-toggle {
+      position: relative;
+      width: 56px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .pricing-toggle-circle {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      background: var(--white);
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pricing-toggle.active {
+      background: var(--primary);
+    }
+
+    .pricing-toggle.active .pricing-toggle-circle {
+      transform: translateX(26px);
+    }
+
+    .pricing-toggle-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--fg-muted);
+    }
+
+    .pricing-toggle-label.active {
+      color: var(--white);
+    }
+
+    .discount-badge {
+      background: #10b981;
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 2rem;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      background: var(--bg-card-hover);
+    }
+
+    .pricing-card--featured {
+      border-color: var(--primary);
+      box-shadow: 0 0 35px rgba(212, 175, 55, 0.12);
+      position: relative;
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: #0c0a09;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 1.25rem;
+      border-radius: 2rem;
+      box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .pricing-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-price span {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+    }
+
+    .pricing-desc {
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2.5rem;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      font-size: 0.92rem;
+      color: var(--fg-muted);
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      position: relative;
+    }
+
+    .pricing-features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #d4af37;
+      font-weight: 800;
+    }
+
+    .pricing-card .btn-primary,
+    .pricing-card .btn-outline {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* ───── Testimonial ───── */
+    .testimonial {
+      padding: 6rem 2rem;
+      background: rgba(255, 255, 255, 0.01);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .testimonial-quote {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--fg);
+      max-width: 720px;
+      margin: 0 auto 2rem;
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    .testimonial-quote::before {
+      content: "\201C";
+    }
+
+    .testimonial-quote::after {
+      content: "\201D";
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .testimonial-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0c0a09;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 10px rgba(250, 250, 249, 0.15);
+    }
+
+    .testimonial-meta strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--white);
+      text-align: left;
+    }
+
+    .testimonial-meta span {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      text-align: left;
+    }
+
+    /* ───── Interactive FAQ Accordion ───── */
+    .faq-section {
+      padding: 6rem 2rem;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .faq-title {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 3rem;
+      letter-spacing: -0.02em;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .faq-item:hover {
+      border-color: var(--border-hover);
+    }
+
+    .faq-trigger {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--white);
+      padding: 1.5rem;
+      text-align: left;
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-icon {
+      font-size: 1.25rem;
+      color: var(--fg-muted);
+      transition: transform 0.3s ease;
+      line-height: 1;
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(45deg);
+      color: var(--white);
+    }
+
+    .faq-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .faq-inner {
+      padding: 0 1.5rem 1.5rem;
+      font-size: 0.95rem;
+      color: var(--fg-muted);
+      line-height: 1.6;
+    }
+
+    /* ───── Footer ───── */
+    .site-footer {
+      background: rgba(7, 8, 12, 0.8);
+      border-top: 1px solid var(--border);
+      padding: 5rem 2rem 3rem;
+      margin-top: auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 3rem;
+      max-width: 1040px;
+      margin: 0 auto 4rem;
+    }
+
+    .footer-col h4 {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      margin-bottom: 1rem;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      padding: 0.4rem 0;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--primary);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--fg-light);
+      padding-top: 2.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ───── Animations ───── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .fade-in:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .fade-in:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ───── Responsive ───── */
+    @media (max-width: 768px) {
+      .site-header {
+        padding: 0 1.25rem;
+      }
+
+      .nav {
+        gap: 0.25rem;
+      }
+
+      .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+      }
+
+      .nav-divider {
+        margin: 0 0.25rem;
+      }
+
+      .hero {
+        padding: 4rem 1.25rem 3rem;
+      }
+
+      .hero-card {
+        padding: 2.5rem 1.5rem;
+      }
+
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .feature-stack {
+        flex-basis: 100%;
+      }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ───── Auth Modals ───── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(3, 3, 5, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: rgba(12, 12, 14, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--glow);
+      position: relative;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: var(--white);
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-subtitle {
+      font-size: 0.92rem;
+      color: var(--fg-muted);
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.25s, background-color 0.25s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-block {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .modal-switch {
+      font-size: 0.88rem;
+      color: var(--fg-muted);
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .modal-switch a {
+      color: var(--primary);
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .modal-switch a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .captcha-container {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Video Background -->
+  <div class="video-bg-container">
+    <video autoplay loop muted playsinline id="bg-video">
+      <source src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4"
+        type="video/mp4">
+    </video>
+    <div class="video-bg-overlay"></div>
+  </div>
+
+  <!-- ════ Header ════ -->
+  <header class="site-header">
+    <div class="logo">ForgeFlow</div>
+    <nav class="nav">
+      <a href="http://localhost:3000" class="nav-link">Dashboard</a>
+      <a href="http://localhost:3000/projects" class="nav-link">Projects</a>
+      <a href="http://localhost:3000/crm" class="nav-link">CRM</a>
+      <a href="http://localhost:3000/invoices" class="nav-link">Invoices</a>
+      <span class="nav-divider"></span>
+      <a href="#" class="nav-link nav-link--login">Log In</a>
+      <a href="#" class="nav-link nav-link--signup">Sign Up</a>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="display: none; width: 1.25rem; height: 1.25rem;">
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ════ Hero ════ -->
+  <section class="hero">
+    <div class="hero-card">
+      <p class="hero-eyebrow">Trusted by 2,000+ growing businesses</p>
+      <h1 class="hero-title">Run your business from <span>one screen</span>, not seven tabs</h1>
+      <p class="hero-subtitle">ForgeFlow brings your projects, customer relationships, and invoicing into a single
+        workspace — so your team stops switching tools and starts shipping work.</p>
+      <div class="hero-actions">
+        <button class="btn-primary">Get Started</button>
+        <a href="#" class="btn-outline">Watch Demo</a>
+      </div>
+      <p class="hero-trust">No credit card required · Free 14-day trial</p>
+    </div>
+
+    <div class="feature-stack">
+      <div class="feature-card fade-in">
+        <h3>Projects, on track automatically</h3>
+        <p>Assign tasks, set deadlines, and watch ForgeFlow flag bottlenecks before they slow your team down.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <h3>CRM your sales team actually uses</h3>
+        <p>Track every deal from first contact to closed-won, with reminders that keep leads from going cold.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <h3>Invoicing that gets you paid faster</h3>
+        <p>Generate branded invoices, automate payment reminders, and see exactly who owes you what.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Interactive Product Tour ════ -->
+  <section class="tour-section">
+    <div class="faq-title">Experience the Platform</div>
+    <div class="tour-tabs">
+      <button class="tour-tab active" onclick="switchTourTab('projects')">Project Workspace</button>
+      <button class="tour-tab" onclick="switchTourTab('crm')">Sales CRM</button>
+      <button class="tour-tab" onclick="switchTourTab('invoices')">Billing &amp; Invoices</button>
+    </div>
+
+    <div class="tour-viewports">
+      <!-- Project Tour Panel -->
+      <div id="tour-projects" class="tour-pane active">
+        <div class="mock-browser">
+          <div class="mock-header">
+            <span class="mock-dot" style="background:#ef4444"></span>
+            <span class="mock-dot" style="background:#f59e0b"></span>
+            <span class="mock-dot" style="background:#10b981"></span>
+          </div>
+          <div class="mock-content">
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Active Projects Plan</h4>
+            <div class="mock-grid">
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Acme Brand Redesign</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">70%</p>
+                <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
+                  <div style="width:70%; background:#d4af37; height:4px; border-radius:2px;"></div>
+                </div>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Nova Core Portal</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">84%</p>
+                <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
+                  <div style="width:84%; background:#d4af37; height:4px; border-radius:2px;"></div>
+                </div>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Apex Datastore</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">32%</p>
+                <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
+                  <div style="width:32%; background:#ef4444; height:4px; border-radius:2px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-box" style="flex:1; font-size:0.85rem; color:var(--fg-muted);">
+              <strong>Upcoming Milestone:</strong> Rollout of CRM client dashboard next Wednesday. 4 team members
+              assigned.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRM Tour Panel -->
+      <div id="tour-crm" class="tour-pane">
+        <div class="mock-browser">
+          <div class="mock-header">
+            <span class="mock-dot" style="background:#ef4444"></span>
+            <span class="mock-dot" style="background:#f59e0b"></span>
+            <span class="mock-dot" style="background:#10b981"></span>
+          </div>
+          <div class="mock-content">
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Sales CRM Pipeline</h4>
+            <div class="mock-grid">
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Total Pipeline</p>
+                <p style="font-size:1.25rem; font-weight:800; color:#10b981; margin-top:0.25rem;">$50,000</p>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Active Contacts</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">24 Leads</p>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Won Deals</p>
+                <p style="font-size:1.25rem; font-weight:800; color:#d4af37; margin-top:0.25rem;">$45,000</p>
+              </div>
+            </div>
+            <div class="mock-box"
+              style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong>Recent Deal:</strong> NovaTech Solutions ($24,000)
+              </div>
+              <span
+                style="background:rgba(16,185,129,0.15); color:#10b981; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Negotiation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices Tour Panel -->
+      <div id="tour-invoices" class="tour-pane">
+        <div class="mock-browser">
+          <div class="mock-header">
+            <span class="mock-dot" style="background:#ef4444"></span>
+            <span class="mock-dot" style="background:#f59e0b"></span>
+            <span class="mock-dot" style="background:#10b981"></span>
+          </div>
+          <div class="mock-content">
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Invoicing Summary</h4>
+            <div class="mock-grid">
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Outstanding</p>
+                <p style="font-size:1.25rem; font-weight:800; color:#f59e0b; margin-top:0.25rem;">$13,900</p>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Paid (This Month)</p>
+                <p style="font-size:1.25rem; font-weight:800; color:#10b981; margin-top:0.25rem;">$11,700</p>
+              </div>
+              <div class="mock-box">
+                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Overdue</p>
+                <p style="font-size:1.25rem; font-weight:800; color:#ef4444; margin-top:0.25rem;">$4,500</p>
+              </div>
+            </div>
+            <div class="mock-box"
+              style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong>INV-2026-002:</strong> NovaTech Solutions ($12,400)
+              </div>
+              <span
+                style="background:rgba(245,158,11,0.15); color:#f59e0b; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Social Proof Strip ════ -->
+  <section class="social-proof">
+    <p class="social-proof-label">Powering teams at</p>
+    <div class="social-proof-logos">
+      <span>Northwind Co.</span>
+      <span>Beacon Labs</span>
+      <span>Helix Group</span>
+      <span>Marlowe &amp; Co.</span>
+      <span>Tide Works</span>
+    </div>
+  </section>
+
+  <!-- ════ Pricing ════ -->
+  <section class="pricing" id="pricing">
+    <div class="tour-section" style="padding: 0 0 1rem 0;">
+      <h2
+        style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">
+        Simple, transparent pricing</h2>
+      <p style="font-size: 1.05rem; color: var(--fg-muted);">Pick a plan that grows with your team.</p>
+    </div>
+
+    <!-- Interactive Pricing Switcher -->
+    <div class="pricing-toggle-container">
+      <span class="pricing-toggle-label active" id="monthly-label">Monthly</span>
+      <div class="pricing-toggle" id="price-switcher" onclick="togglePricing()">
+        <span class="pricing-toggle-circle"></span>
+      </div>
+      <span class="pricing-toggle-label" id="yearly-label">Yearly</span>
+      <span class="discount-badge">Save 20%</span>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Starter -->
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="pricing-price" id="price-starter">$19<span>/mo per user</span></div>
+        <p class="pricing-desc">For small teams getting organized</p>
+        <ul class="pricing-features">
+          <li>Up to 5 projects</li>
+          <li>Basic CRM</li>
+          <li>10 invoices / month</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#" class="btn-outline">Get Started</a>
+      </div>
+
+      <!-- Growth (featured) -->
+      <div class="pricing-card pricing-card--featured">
+        <span class="pricing-badge">Most Popular</span>
+        <h3>Growth</h3>
+        <div class="pricing-price" id="price-growth">$49<span>/mo per user</span></div>
+        <p class="pricing-desc">For teams ready to scale</p>
+        <ul class="pricing-features">
+          <li>Unlimited projects</li>
+          <li>Full CRM with automation</li>
+          <li>Unlimited invoicing</li>
+          <li>Priority support</li>
+          <li>Custom reporting</li>
+        </ul>
+        <button class="btn-primary">Start Free Trial</button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="pricing-price">Custom</div>
+        <p class="pricing-desc">For larger orgs with complex needs</p>
+        <ul class="pricing-features">
+          <li>Everything in Growth</li>
+          <li>Dedicated account manager</li>
+          <li>SSO &amp; advanced security</li>
+          <li>Custom integrations</li>
+        </ul>
+        <a href="#" class="btn-outline">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Testimonial ════ -->
+  <section class="testimonial">
+    <p class="testimonial-quote">ForgeFlow replaced three separate tools for us and our team actually adopted it in a
+      week.</p>
+    <div class="testimonial-author">
+      <div class="testimonial-avatar">PN</div>
+      <div class="testimonial-meta">
+        <strong>Priya Nair</strong>
+        <span>Operations Lead at Beacon Labs</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Interactive FAQ Section ════ -->
+  <section class="faq-section">
+    <div class="faq-title">Frequently Asked Questions</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFAQ(this)">
+          What is included in the 14-day free trial?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <div class="faq-inner">
+            You get full access to the Growth plan, including unlimited projects, customer relation logs, task
+            automation triggers, and unlimited invoicing templates. No credit card is required to sign up.
+          </div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFAQ(this)">
+          Can I change plans or cancel at any time?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <div class="faq-inner">
+            Yes! You can upgrade, downgrade, or cancel your subscription directly from your organization settings page.
+            If you choose to cancel, your access remains active until the end of the current billing cycle.
+          </div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFAQ(this)">
+          Is my business data secure on ForgeFlow?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <div class="faq-inner">
+            ForgeFlow enforces complete tenant data isolation, encrypted token sessions, hashed keys, and secure
+            HTTPS/SSL endpoints. Audit trails and activity trackers monitor logs continuously.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ Footer ════ -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="http://localhost:3000">Dashboard</a>
+        <a href="http://localhost:3000/projects">Projects</a>
+        <a href="http://localhost:3000/crm">CRM</a>
+        <a href="http://localhost:3000/invoices">Invoices</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Careers</a>
+        <a href="#">Blog</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#">Help Center</a>
+        <a href="#">API Docs</a>
+        <a href="#">Status</a>
+        <a href="#">Community</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Security</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 ForgeFlow. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ════ Auth Modals & Cloudflare Turnstile ════ -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+      <div id="modal-login-view">
+        <h2 class="modal-title">Welcome Back</h2>
+        <p class="modal-subtitle">Log in to your ForgeFlow account</p>
+        <form onsubmit="handleAuthSubmit(event, 'login')">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" required placeholder="name@company.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required placeholder="••••••••">
+          </div>
+          <div class="form-group captcha-container">
+            <!-- Cloudflare Turnstile Always-Pass Sitekey for Testing -->
+            <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="dark"></div>
+          </div>
+          <button type="submit" class="btn-primary btn-block">Log In</button>
+        </form>
+        <p class="modal-switch">Don't have an account? <a href="#" onclick="showSignUp()">Sign Up</a></p>
+      </div>
+
+      <div id="modal-signup-view" style="display: none;">
+        <h2 class="modal-title">Create Account</h2>
+        <p class="modal-subtitle">Start your 14-day free trial today</p>
+        <form onsubmit="handleAuthSubmit(event, 'signup')">
+          <div class="form-group">
+            <label for="signup-name">Full Name</label>
+            <input type="text" id="signup-name" required placeholder="Alex Johnson">
+          </div>
+          <div class="form-group">
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" required placeholder="name@company.com">
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" required placeholder="At least 8 characters">
+          </div>
+          <div class="form-group captcha-container">
+            <!-- Cloudflare Turnstile Always-Pass Sitekey for Testing -->
+            <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="dark"></div>
+          </div>
+          <button type="submit" class="btn-primary btn-block">Create Account</button>
+        </form>
+        <p class="modal-switch">Already have an account? <a href="#" onclick="showLogIn()">Log In</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+  <script>
+    // ───── Lenis Smooth Scroll Initialization ─────
+    const lenis = new Lenis({
+      lerp: 0.05,
+      wheelMultiplier: 0.85,
+      gestureOrientation: "vertical",
+      normalizeWheel: true,
+      smoothTouch: false,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // ───── Parallax Video Background Scroll Handler ─────
+    lenis.on('scroll', (e) => {
+      const video = document.getElementById('bg-video');
+      if (video) {
+        const yOffset = -e.scroll * 0.05;
+        const scaleVal = 1.12 + (e.scroll * 0.00012);
+        video.style.transform = `translate3d(0, ${yOffset}px, 0) scale(${scaleVal})`;
+      }
+    });
+
+    // ───── Elastic Ribbon Cursor Trail ─────
+    window.addEventListener('load', function () {
+      const canvas = document.createElement('canvas');
+      canvas.style.cssText = [
+        'position:fixed',
+        'top:0',
+        'left:0',
+        'width:100vw',
+        'height:100vh',
+        'pointer-events:none',
+        'z-index:999999'
+      ].join(';');
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+      const chain = Array.from({ length: 12 }, () => ({ x: mx, y: my }));
+
+      window.addEventListener('mousemove', e => {
+        mx = e.clientX;
+        my = e.clientY;
+      });
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        chain[0].x += (mx - chain[0].x) * 0.28;
+        chain[0].y += (my - chain[0].y) * 0.28;
+        for (let i = 1; i < chain.length; i++) {
+          chain[i].x += (chain[i - 1].x - chain[i].x) * 0.28;
+          chain[i].y += (chain[i - 1].y - chain[i].y) * 0.28;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(mx, my);
+        for (let i = 0; i < chain.length - 1; i++) {
+          const cx = (chain[i].x + chain[i + 1].x) / 2;
+          const cy = (chain[i].y + chain[i + 1].y) / 2;
+          ctx.quadraticCurveTo(chain[i].x, chain[i].y, cx, cy);
+        }
+        ctx.lineTo(chain[chain.length - 1].x, chain[chain.length - 1].y);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    });
+
+    // ───── Product Tour Switcher ─────
+    function switchTourTab(tabId) {
+      // Deactivate active tabs and panes
+      document.querySelectorAll('.tour-tab').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tour-pane').forEach(pane => pane.classList.remove('active'));
+
+      // Activate selected tab and pane
+      const selectedBtn = Array.from(document.querySelectorAll('.tour-tab')).find(btn => btn.textContent.toLowerCase().includes(tabId));
+      if (selectedBtn) selectedBtn.classList.add('active');
+      document.getElementById(`tour-${tabId}`).classList.add('active');
+    }
+
+    // ───── Pricing Toggle Switcher ─────
+    let billingCycle = "monthly";
+    function togglePricing() {
+      const switcher = document.getElementById('price-switcher');
+      const monthlyLabel = document.getElementById('monthly-label');
+      const yearlyLabel = document.getElementById('yearly-label');
+
+      const priceStarter = document.getElementById('price-starter');
+      const priceGrowth = document.getElementById('price-growth');
+
+      if (billingCycle === "monthly") {
+        billingCycle = "yearly";
+        switcher.classList.add('active');
+        monthlyLabel.classList.remove('active');
+        yearlyLabel.classList.add('active');
+
+        // Update price tags (with 20% discount: 19 * 0.8 = 15, 49 * 0.8 = 39)
+        priceStarter.innerHTML = "$15<span>/mo per user (billed annually)</span>";
+        priceGrowth.innerHTML = "$39<span>/mo per user (billed annually)</span>";
+      } else {
+        billingCycle = "monthly";
+        switcher.classList.remove('active');
+        monthlyLabel.classList.add('active');
+        yearlyLabel.classList.remove('active');
+
+        priceStarter.innerHTML = "$19<span>/mo per user</span>";
+        priceGrowth.innerHTML = "$49<span>/mo per user</span>";
+      }
+    }
+
+    // ───── FAQ Accordion toggler ─────
+    function toggleFAQ(triggerBtn) {
+      const item = triggerBtn.parentElement;
+      const content = item.querySelector('.faq-content');
+      const isActive = item.classList.contains('active');
+
+      // Close all items
+      document.querySelectorAll('.faq-item').forEach(el => {
+        el.classList.remove('active');
+        el.querySelector('.faq-content').style.maxHeight = '0px';
+      });
+
+      if (!isActive) {
+        item.classList.add('active');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    }
+
+    // ───── Login & Signup Auth Modals toggler ─────
+    const authModal = document.getElementById('auth-modal');
+    const loginView = document.getElementById('modal-login-view');
+    const signupView = document.getElementById('modal-signup-view');
+
+    function openAuthModal(mode = 'login') {
+      if (mode === 'signup') {
+        showSignUp();
+      } else {
+        showLogIn();
+      }
+      authModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAuthModal() {
+      authModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on click outside card
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) {
+        closeAuthModal();
+      }
+    });
+
+    function showSignUp() {
+      loginView.style.display = 'none';
+      signupView.style.display = 'block';
+    }
+
+    function showLogIn() {
+      signupView.style.display = 'none';
+      loginView.style.display = 'block';
+    }
+
+    async function handleAuthSubmit(event, type) {
+      event.preventDefault();
+
+      const turnstileResponse = event.target.querySelector('[name="cf-turnstile-response"]').value;
+      if (!turnstileResponse) {
+        alert('Please complete the security challenge.');
+        return;
+      }
+
+      const email = event.target.querySelector('input[type="email"]').value;
+      const password = event.target.querySelector('input[type="password"]').value;
+      const fullNameInput = event.target.querySelector('input[placeholder="Your Full Name"]');
+      const fullName = fullNameInput ? fullNameInput.value : '';
+
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Verifying...';
+
+      const API_BASE = "http://localhost:8000";
+
+      try {
+        if (type === 'signup') {
+          // Register user first
+          const regResp = await fetch(`${API_BASE}/api/auth/register`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              password,
+              full_name: fullName || null,
+              turnstile_token: turnstileResponse
+            })
+          });
+          if (!regResp.ok) {
+            const errData = await regResp.json();
+            throw new Error(errData.detail || 'Registration failed');
+          }
+        }
+
+        // Login to get tokens
+        const loginResp = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            turnstile_token: turnstileResponse
+          })
+        });
+
+        if (!loginResp.ok) {
+          const errData = await loginResp.json();
+          throw new Error(errData.detail || 'Login failed');
+        }
+
+        const authData = await loginResp.json();
+
+        // Save in localStorage format for Zustand store
+        const storeData = {
+          state: {
+            user: authData.user,
+            isAuthenticated: true
+          },
+          version: 0
+        };
+        localStorage.setItem('forgeflow-auth', JSON.stringify(storeData));
+
+        // Redirect to dashboard
+        window.location.href = 'http://localhost:3000';
+
+      } catch (err) {
+        alert(err.message);
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Connect navigation triggers
+      document.querySelectorAll('.nav-link--login').forEach(link => {
+        link.addEventListener('click', (e) => { e.preventDefault(); openAuthModal('login'); });
+      });
+      document.querySelectorAll('.nav-link--signup').forEach(link => {
+        link.addEventListener('click', (e) => { e.preventDefault(); openAuthModal('signup'); });
+      });
+      document.querySelectorAll('.btn-primary, .btn-outline').forEach(cta => {
+        const text = cta.textContent.trim();
+        if (text === 'Get Started' || text === 'Start Free Trial') {
+          cta.addEventListener('click', (e) => { e.preventDefault(); openAuthModal('signup'); });
+        }
+      });
+    });
+
+    // Theme Toggle Controller (synced with Zustand store)
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = themeToggle.querySelector('.sun-icon');
+    const moonIcon = themeToggle.querySelector('.moon-icon');
+
+    function getSavedTheme() {
+      try {
+        const item = localStorage.getItem('forgeflow-theme');
+        if (item) {
+          const parsed = JSON.parse(item);
+          if (parsed && parsed.state && parsed.state.theme) {
+            return parsed.state.theme;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return 'dark';
+    }
+
+    function updateTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
+      } else {
+        document.documentElement.classList.remove('light');
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+      }
+
+      try {
+        const stateObj = { state: { theme: theme }, version: 0 };
+        localStorage.setItem('forgeflow-theme', JSON.stringify(stateObj));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Initialize theme state
+    const currentTheme = getSavedTheme();
+    updateTheme(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const activeTheme = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+      updateTheme(activeTheme);
+    });
+  </script>
+</body>
+
+</html>
