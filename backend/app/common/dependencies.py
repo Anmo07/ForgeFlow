@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from .security import decode_token
 from ..auth.models import User
+from ..memberships.models import Membership
 reusable_oauth2 = HTTPBearer(auto_error=False)
 
 def get_db() -> Generator[Session, None, None]:
@@ -45,6 +46,20 @@ def get_current_user(request: Request, db: Session=Depends(get_db), token: Optio
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
     return user
+
+def verify_org_membership(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> int:
+    """Verify that the current user belongs to the organization and return the org_id if successful."""
+    membership = db.query(Membership).filter(
+        Membership.organization_id == org_id,
+        Membership.user_id == current_user.id,
+        Membership.status == 'active'
+    ).first()
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='You do not have access to this organization'
+        )
+    return org_id
 
 def get_current_user_optional(request: Request, db: Session=Depends(get_db), token: Optional[HTTPAuthorizationCredentials]=Depends(reusable_oauth2)) -> Optional[User]:
     try:
