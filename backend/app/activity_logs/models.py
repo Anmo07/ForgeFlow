@@ -6,8 +6,8 @@ from ..common.database import Base
 class ActivityLog(Base):
     __tablename__ = 'activity_logs'
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='SET NULL'), nullable=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='SET NULL'), nullable=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
     action = Column(String, nullable=False)
     entity_type = Column(String, nullable=True)
     entity_id = Column(Integer, nullable=True)

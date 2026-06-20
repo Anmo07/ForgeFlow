@@ -19,12 +19,12 @@ class Project(Base):
 class Task(Base):
     __tablename__ = 'tasks'
     id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False, index=True)
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     status = Column(String, default='todo')
     priority = Column(String, default='medium')
-    assigned_to = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    assigned_to = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
     due_date = Column(Date, nullable=True)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
