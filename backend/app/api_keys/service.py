@@ -38,8 +38,7 @@ class APIKeyService:
         self.repo.revoke(db, key)
 
     def authenticate_key(self, db: Session, plain_key: str) -> APIKey:
-        hashed = self.repo._hash_key(plain_key)
-        key = self.repo.get_by_hashed_key(db, hashed)
+        key = self.repo.get_by_hashed_key(db, self.repo._hash_key(plain_key))
         if not key:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid or revoked API key')
         if key.expires_at and key.expires_at < datetime.utcnow():

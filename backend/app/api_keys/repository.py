@@ -42,3 +42,6 @@ class APIKeyRepository:
     def update_last_used(self, db: Session, key: APIKey) -> None:
         key.last_used = datetime.utcnow()
         db.commit()
+
+    def compare_hashed_key(self, plain_key: str, hashed_key: str) -> bool:
+        return secrets.compare_digest(self._hash_key(plain_key), hashed_key)
