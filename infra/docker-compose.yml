@@ -20,6 +20,28 @@ services:
       timeout: 5s
       retries: 5
 
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: forgeflow_pgbouncer
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=forgeflow
+      - PORT=6432
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=20
+      - AUTH_TYPE=any
+    ports:
+      - "6432:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - forgeflow_net
+
   redis:
     image: redis:7-alpine
     container_name: forgeflow_redis
@@ -61,7 +83,7 @@ services:
       dockerfile: Dockerfile
     container_name: forgeflow_backend
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/forgeflow
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@pgbouncer:6432/forgeflow
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
@@ -73,6 +95,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      pgbouncer:
+        condition: service_started
       redis:
         condition: service_healthy
     networks:
@@ -85,7 +109,7 @@ services:
     container_name: forgeflow_celery
     command: celery -A app.common.celery_app.celery_app worker --loglevel=info
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/forgeflow
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@pgbouncer:6432/forgeflow
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
@@ -95,6 +119,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      pgbouncer:
+        condition: service_started
     networks:
       - forgeflow_net
 

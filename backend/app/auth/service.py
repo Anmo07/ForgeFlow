@@ -40,21 +40,15 @@ class AuthService:
         return UserResponse.model_validate(user)
 
     def authenticate_user(self, db: Session, login_in: UserLogin, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> TokenResponse:
-        if ip_address:
-            ip_key = f'rate_limit:login:ip:{ip_address}'
-            from ..common.redis import check_rate_limit
-            if not check_rate_limit(ip_key, max_attempts=10, window_seconds=60):
-                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail='Too many requests from this IP. Please try again later.')
-        if login_in.email:
-            email_key = f'rate_limit:login:email:{login_in.email}'
-            from ..common.redis import check_rate_limit
-            if not check_rate_limit(email_key, max_attempts=5, window_seconds=300):
-                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail='Too many login attempts for this email. Please try again later.')
         verify_turnstile_token(login_in.turnstile_token, ip=ip_address)
         user = self.repo.get_by_email(db, login_in.email)
         if not user or not verify_password(login_in.password, user.hashed_password):
+            from app.common.metrics import LOGIN_FAILURE
+            LOGIN_FAILURE.inc()
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect email or password', headers={'WWW-Authenticate': 'Bearer'})
         if not user.is_active:
+            from app.common.metrics import LOGIN_FAILURE
+            LOGIN_FAILURE.inc()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
         if password_needs_rehash(user.hashed_password):
             user.hashed_password = get_password_hash(login_in.password)
@@ -69,6 +63,9 @@ class AuthService:
         from ..common.config import REFRESH_TOKEN_EXPIRE_DAYS
         expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         SessionService().register_session(db, user_id=user.id, refresh_token=refresh_token, expires_at=expires_at, ua_string=user_agent, ip_address=ip_address)
+        
+        from app.common.metrics import LOGIN_SUCCESS
+        LOGIN_SUCCESS.inc()
         return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=UserResponse.model_validate(user))
 
     def refresh_tokens(self, db: Session, refresh_token: str, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> TokenResponse:
@@ -196,16 +193,6 @@ class AuthService:
         user = self.repo.get_by_email(db, user_email)
         if user:
             self.check_account_lockout(user.id)
-        if ip_address:
-            ip_key = f'rate_limit:login:ip:{ip_address}'
-            from ..common.redis import check_rate_limit
-            if not check_rate_limit(ip_key, max_attempts=10, window_seconds=60):
-                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail='Too many requests from this IP')
-        if user_email:
-            email_key = f'rate_limit:login:email:{user_email}'
-            from ..common.redis import check_rate_limit
-            if not check_rate_limit(email_key, max_attempts=5, window_seconds=300):
-                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail='Too many login attempts')
         verify_turnstile_token(login_in.turnstile_token, ip=ip_address)
         user = self.repo.get_by_email(db, user_email)
         if not user or not verify_password(login_in.password, user.hashed_password):

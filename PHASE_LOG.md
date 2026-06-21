@@ -609,6 +609,111 @@ Synchronous SQLAlchemy with synchronous route handlers is a valid and common pat
 
 **No changes required** ✓
 
+### 7. Indexing Pass (COMPLETE)
+
+**Objective:** Add explicit indexes on `organization_id` for every tenant-scoped table, plus standard foreign key indexes (`client_id`, `project_id`, `assigned_to`, `lead_id`, etc.) if not already present via the ORM relationship defaults.
+
+**Implementation:**
+- Added explicit `index=True` to all foreign key columns that were missing indexes
+- Created Alembic migration `20260620_phase4_indexing.py` to apply these indexes to existing databases
+
+**Indexes Added:**
+
+**API Keys:**
+- `organization_id` (tenant-scoped)
+- `created_by` (foreign key to users)
+
+**Memberships:**
+- `user_id` (foreign key to users)
+- `organization_id` (tenant-scoped)
+- `role_id` (foreign key to roles)
+- `invited_by` (foreign key to users)
+
+**Activity Logs:**
+- `organization_id` (tenant-scoped)
+- `user_id` (foreign key to users)
+
+**Projects/Tasks:**
+- `project_id` (foreign key to projects in tasks table)
+- `assigned_to` (foreign key to users in tasks table)
+
+**Invoices:**
+- `client_id` (foreign key to clients)
+- `created_by` (foreign key to users)
+- `invoice_id` (foreign key to invoices in invoice_line_items table)
+
+**CRM - Leads:**
+- `client_id` (foreign key to clients)
+- `assigned_to` (foreign key to users)
+
+**CRM - Deals:**
+- `lead_id` (foreign key to leads)
+- `assigned_to` (foreign key to users)
+
+**Files Changed:**
+- `backend/app/api_keys/models.py` — Added `index=True` to `organization_id` and `created_by`
+- `backend/app/memberships/models.py` — Added `index=True` to `user_id`, `organization_id`, `role_id`, `invited_by`
+- `backend/app/activity_logs/models.py` — Added `index=True` to `organization_id` and `user_id`
+- `backend/app/projects/models.py` — Added `index=True` to `project_id` and `assigned_to` in Task
+- `backend/app/invoices/models.py` — Added `index=True` to `client_id`, `created_by`, and `invoice_id`
+- `backend/app/crm/models.py` — Added `index=True` to `client_id`, `assigned_to` in Lead; `lead_id`, `assigned_to` in Deal
+- `backend/alembic/versions/20260620_phase4_indexing.py` — New migration to create indexes
+
+**Acceptance Criteria — Verified ✓**
+- [x] All tenant-scoped tables have explicit `organization_id` index
+- [x] All foreign key columns have explicit indexes
+- [x] Alembic migration created for existing databases
+- [x] Migration includes upgrade and downgrade paths
+
+**All tests pass** ✓
+
+---
+
+## Phase 4 — Data Integrity & Concurrency Hardening
+
+**Status:** COMPLETE  
+**Date:** 2026-06-20
+
+### Summary
+
+Phase 4 focused on data integrity and concurrency hardening. All tasks completed successfully:
+
+1. **Lead/Deal Status Sync** — Service-layer hook implemented with comprehensive tests
+2. **Pagination** — Max page size (1000) enforced across all list endpoints
+3. **Async ORM Consistency** — Verified consistent synchronous approach (no async routes with blocking DB calls)
+4. **Indexing Pass** — Explicit indexes added to all `organization_id` and foreign key columns
+
+**Files Changed:**
+- `backend/app/crm/service.py` — Enhanced status sync logic
+- `backend/app/crm/repository.py` — Fixed DealRepository.update() to allow explicit None values
+- `backend/app/crm/tests/test_crm.py` — Added 5 comprehensive status sync tests
+- `backend/app/projects/router.py` — Added pagination validation
+- `backend/app/invoices/router.py` — Added pagination validation
+- `backend/app/crm/router.py` — Added pagination validation
+- `backend/app/api_keys/router.py` — Added pagination parameters + validation
+- `backend/app/api_keys/service.py` — Updated to support pagination
+- `backend/app/api_keys/repository.py` — Updated to support pagination
+- `backend/app/memberships/router.py` — Added pagination parameters + validation
+- `backend/app/memberships/service.py` — Updated to support pagination
+- `backend/app/memberships/repository.py` — Updated to support pagination
+- `backend/app/organizations/router.py` — Added pagination validation
+- `backend/app/api_keys/models.py` — Added indexes
+- `backend/app/memberships/models.py` — Added indexes
+- `backend/app/activity_logs/models.py` — Added indexes
+- `backend/app/projects/models.py` — Added indexes
+- `backend/app/invoices/models.py` — Added indexes
+- `backend/app/crm/models.py` — Added indexes
+- `backend/alembic/versions/20260620_phase4_indexing.py` — New migration
+
+**Tests Added:**
+- `test_deal_closed_won_syncs_lead_to_won()`
+- `test_deal_closed_lost_syncs_lead_to_lost()`
+- `test_deal_reopen_reverts_lead_status()`
+- `test_deal_non_status_update_does_not_sync_lead()`
+- `test_deal_from_won_to_lost_syncs_lead()`
+
+**All acceptance criteria met** ✓
+
 ---
 
 ## Phase 5 — Compliance Scaffolding

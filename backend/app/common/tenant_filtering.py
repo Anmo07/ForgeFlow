@@ -1,19 +1,17 @@
-from sqlalchemy.orm import Query
-from sqlalchemy.event import listens_for
 from contextvars import ContextVar
 from typing import Optional
-current_org_id: ContextVar[Optional[int]] = ContextVar('current_org_id', default=None)
-TENANT_SCOPED_TABLES = {'projects', 'tasks', 'clients', 'leads', 'deals', 'invoices', 'invoice_line_items', 'api_keys', 'memberships'}
+import sys
 
-@listens_for(Query, 'before_all_clauses')
-def receive_before_all_clauses(query_context):
-    org_id = current_org_id.get()
-    if org_id is None:
-        return
-    for mapper in query_context.mappers:
-        table = mapper.persist_selectable
-        if hasattr(mapper.class_, 'organization_id'):
-            query_context.append_criterion(mapper.class_.organization_id == org_id)
+if not hasattr(sys, "_forgeflow_context_vars"):
+    sys._forgeflow_context_vars = {
+        'current_org_id': ContextVar('current_org_id', default=None),
+        'current_is_external': ContextVar('current_is_external', default=False),
+        'show_deleted': ContextVar('show_deleted', default=False)
+    }
+
+current_org_id = sys._forgeflow_context_vars['current_org_id']
+current_is_external = sys._forgeflow_context_vars['current_is_external']
+show_deleted = sys._forgeflow_context_vars['show_deleted']
 
 def set_tenant_context(org_id: Optional[int]) -> None:
     current_org_id.set(org_id)

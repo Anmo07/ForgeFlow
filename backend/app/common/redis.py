@@ -13,6 +13,10 @@ class RedisClient:
             self._client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
         return self._client
 
+    def __getattr__(self, name):
+        """Proxy any undefined method calls to the underlying redis.Redis client."""
+        return getattr(self.client, name)
+
     def ping(self) -> bool:
         try:
             return self.client.ping()

@@ -6,6 +6,12 @@ Creates immutable audit_logs table with encrypted before/after state fields.
 from alembic import op
 import sqlalchemy as sa
 
+# revision identifiers, used by Alembic.
+revision = '20260620_phase4_audit_logs'
+down_revision = '20260620_phase3_encryption'
+branch_labels = None
+depends_on = None
+
 
 def upgrade():
     """Create audit_logs table."""

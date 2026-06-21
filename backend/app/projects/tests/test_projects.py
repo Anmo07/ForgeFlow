@@ -52,8 +52,15 @@ def client(db_session):
 
     def override_get_current_user():
         return User(id=1, email='projectuser@example.com', hashed_password='dummy_hash', full_name='Project Manager', is_active=True)
+
+    def override_get_current_tenant():
+        from app.common.tenant import TenantContext
+        return TenantContext(organization_id=1, user_id=1, role_id=1, permissions=['project:create', 'project:update', 'project:delete'])
+
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
+    from app.common.tenant import get_current_tenant
+    app.dependency_overrides[get_current_tenant] = override_get_current_tenant
     yield TestClient(app)
     app.dependency_overrides.clear()
 

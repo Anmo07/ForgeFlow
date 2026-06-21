@@ -7,6 +7,12 @@ Adds _api_key_plain_suffix for storing one-time API key display suffix.
 from alembic import op
 import sqlalchemy as sa
 
+# revision identifiers, used by Alembic.
+revision = '20260620_phase3_encryption'
+down_revision = '20260620_phase1_auth'
+branch_labels = None
+depends_on = None
+
 
 def upgrade():
     """Add encrypted field support."""

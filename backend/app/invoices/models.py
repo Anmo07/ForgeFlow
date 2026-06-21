@@ -1,13 +1,14 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date, Text, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from ..common.database import Base
+from ..common.database import Base, SoftDeleteMixin
 
-class Invoice(Base):
+class Invoice(Base, SoftDeleteMixin):
     __tablename__ = 'invoices'
     __table_args__ = (UniqueConstraint('organization_id', 'invoice_number', name='uq_invoice_org_number'),)
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='CASCADE'), nullable=False, index=True)
+    client_organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='SET NULL'), nullable=True, index=True)
     client_id = Column(Integer, ForeignKey('clients.id', ondelete='SET NULL'), nullable=True, index=True)
     invoice_number = Column(String, index=True, nullable=False)
     issue_date = Column(Date, nullable=False)

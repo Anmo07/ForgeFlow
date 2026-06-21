@@ -10,6 +10,7 @@ class User(Base):
     full_name = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
+    is_external = Column(Boolean, default=False, nullable=False)
     mfa_enabled = Column(Boolean, default=False)
     mfa_secret = Column(String, nullable=True)
     mfa_backup_codes = Column(Text, nullable=True)

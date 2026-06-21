@@ -5,6 +5,7 @@ from ..common.dependencies import get_db
 from .schema import UserRegister, UserLogin, UserResponse, TokenResponse, ForgotPasswordRequest, ResetPasswordRequest, MFASetupResponse, MFAVerifyRequest, MFASetupCompleteResponse, MFAVerifyLoginRequest
 from .service import AuthService
 from . import csrf
+from ..common.rate_limit import rate_limit_or_429
 router = APIRouter()
 auth_service = AuthService()
 
@@ -34,8 +35,12 @@ def verify_email(token: str, db: Session=Depends(get_db)):
 
 @router.post('/login', response_model=TokenResponse)
 def login(req: UserLogin, request: Request, response: Response, db: Session=Depends(get_db)):
-    user_agent = request.headers.get('user-agent')
     ip_address = request.client.host if request.client else None
+    if ip_address:
+        rate_limit_or_429(f'rl:login:ip:{ip_address}', max_requests=10, window_seconds=60, detail='Too many login attempts from this IP. Please try again later.')
+    if req.email:
+        rate_limit_or_429(f'rl:login:email:{req.email}', max_requests=5, window_seconds=300, detail='Too many login attempts for this email. Please try again later.')
+    user_agent = request.headers.get('user-agent')
     token_resp = auth_service.authenticate_user_with_mfa(db, req, user_agent=user_agent, ip_address=ip_address)
     if isinstance(token_resp, dict) and token_resp.get('mfa_required'):
         return token_resp
@@ -44,12 +49,18 @@ def login(req: UserLogin, request: Request, response: Response, db: Session=Depe
     return token_resp
 
 @router.post('/forgot-password', status_code=status.HTTP_200_OK)
-def forgot_password(req: ForgotPasswordRequest, db: Session=Depends(get_db)):
+def forgot_password(req: ForgotPasswordRequest, request: Request, db: Session=Depends(get_db)):
+    ip_address = request.client.host if request.client else None
+    if ip_address:
+        rate_limit_or_429(f'rl:forgot:ip:{ip_address}', max_requests=3, window_seconds=300, detail='Too many password reset requests. Please try again later.')
     auth_service.request_password_reset(db, req.email)
     return {'message': 'If an account exists with this email, a reset link has been sent.'}
 
 @router.post('/reset-password', response_model=UserResponse)
-def reset_password(req: ResetPasswordRequest, db: Session=Depends(get_db)):
+def reset_password(req: ResetPasswordRequest, request: Request, db: Session=Depends(get_db)):
+    ip_address = request.client.host if request.client else None
+    if ip_address:
+        rate_limit_or_429(f'rl:reset:ip:{ip_address}', max_requests=5, window_seconds=300, detail='Too many password reset attempts. Please try again later.')
     return auth_service.reset_password(db, req.token, req.new_password)
 
 @router.post('/refresh', response_model=TokenResponse)
@@ -111,8 +122,10 @@ def mfa_verify(req: MFAVerifyRequest, request: Request, db: Session=Depends(get_
 
 @router.post('/mfa/verify-login', response_model=TokenResponse)
 def mfa_verify_login(req: MFAVerifyLoginRequest, request: Request, response: Response, db: Session=Depends(get_db)):
-    user_agent = request.headers.get('user-agent')
     ip_address = request.client.host if request.client else None
+    if ip_address:
+        rate_limit_or_429(f'rl:mfa:ip:{ip_address}', max_requests=10, window_seconds=60, detail='Too many MFA verification attempts. Please try again later.')
+    user_agent = request.headers.get('user-agent')
     token_resp = auth_service.mfa_verify_login(db, req.temp_token, req.code, user_agent=user_agent, ip_address=ip_address)
     response.set_cookie(key='access_token', value=token_resp.access_token, httponly=True, samesite='strict', max_age=30 * 60, path='/')
     response.set_cookie(key='refresh_token', value=token_resp.refresh_token, httponly=True, samesite='strict', max_age=30 * 24 * 60 * 60, path='/')

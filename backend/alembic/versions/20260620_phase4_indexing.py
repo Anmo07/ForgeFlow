@@ -7,6 +7,12 @@ and foreign key indexes for performance optimization.
 from alembic import op
 import sqlalchemy as sa
 
+# revision identifiers, used by Alembic.
+revision = '20260620_phase4_indexing'
+down_revision = '20260620_phase4_audit_logs'
+branch_labels = None
+depends_on = None
+
 
 def upgrade():
     """Add explicit indexes for performance optimization."""
