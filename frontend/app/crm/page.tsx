@@ -148,9 +148,9 @@ export default function CRMPage() {
         },
       );
       setMembers(membersData || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading CRM data:", err);
-      setErrorMsg(err.message || "Failed to load CRM database");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to load CRM database");
     } finally {
       setLoading(false);
     }
@@ -184,8 +184,8 @@ export default function CRMPage() {
       setClientPhone("");
       setClientCompany("");
       await loadCRMData();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create client");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to create client");
     } finally {
       setIsSubmitting(false);
     }
@@ -215,8 +215,8 @@ export default function CRMPage() {
       setLeadSource("website");
       setLeadAssignee("");
       await loadCRMData();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create lead");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to create lead");
     } finally {
       setIsSubmitting(false);
     }
@@ -246,8 +246,8 @@ export default function CRMPage() {
       setDealStatus("discovery");
       setDealAssignee("");
       await loadCRMData();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create deal");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to create deal");
     } finally {
       setIsSubmitting(false);
     }
@@ -262,7 +262,7 @@ export default function CRMPage() {
         body: JSON.stringify({ status: nextStatus }),
       });
       await loadCRMData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to update lead status");
     }
@@ -277,7 +277,7 @@ export default function CRMPage() {
         body: JSON.stringify({ status: nextStatus }),
       });
       await loadCRMData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to update deal status");
     }

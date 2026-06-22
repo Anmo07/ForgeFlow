@@ -58,9 +58,9 @@ export default function ProjectsPage() {
         orgId: currentOrg.id,
       });
       setProjects(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading projects:", err);
-      setErrorMsg(err.message || "Failed to load projects");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to load projects");
     } finally {
       setLoading(false);
     }
@@ -99,8 +99,8 @@ export default function ProjectsPage() {
       setNewProjectDueDate("");
 
       await fetchProjects();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create project");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to create project");
     } finally {
       setIsSubmitting(false);
     }

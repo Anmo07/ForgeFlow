@@ -94,9 +94,11 @@ export default function ProjectDetailPage() {
       } catch (e) {
         console.error("Could not load organization members", e);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading project details:", err);
-      setErrorMsg(err.message || "Failed to load project details");
+      setErrorMsg(
+        err instanceof Error ? err.message : "Failed to load project details",
+      );
     } finally {
       setLoading(false);
     }
@@ -160,8 +162,8 @@ export default function ProjectDetailPage() {
 
       setIsTaskModalOpen(false);
       await fetchProjectDetails();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to save task");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save task");
     } finally {
       setIsSubmittingTask(false);
     }
@@ -180,8 +182,8 @@ export default function ProjectDetailPage() {
         method: "DELETE",
       });
       await fetchProjectDetails();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to delete task");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to delete task");
     }
   };
 
@@ -223,7 +225,7 @@ export default function ProjectDetailPage() {
           tasks_completed: completed,
         };
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to move task", err);
       setErrorMsg("Failed to update task status");
     }

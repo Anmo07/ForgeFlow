@@ -308,7 +308,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Here is a summary of what's happening at{" "}
+            Here is a summary of what&apos;s happening at{" "}
             <span className="font-semibold text-foreground">
               {currentOrg.name}
             </span>{" "}

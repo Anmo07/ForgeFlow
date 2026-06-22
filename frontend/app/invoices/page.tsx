@@ -121,9 +121,9 @@ export default function InvoicesPage() {
         },
       );
       setClients(clientsData || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading invoice data:", err);
-      setErrorMsg(err.message || "Failed to load invoices");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to load invoices");
     } finally {
       setLoading(false);
     }
@@ -199,8 +199,8 @@ export default function InvoicesPage() {
       setLineItems([{ description: "", quantity: 1, unit_price: 0 }]);
 
       await loadInvoiceData();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create invoice");
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to create invoice");
     } finally {
       setIsSubmitting(false);
     }
@@ -215,7 +215,7 @@ export default function InvoicesPage() {
         body: JSON.stringify({ status: nextStatus }),
       });
       await loadInvoiceData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to update invoice status");
     }

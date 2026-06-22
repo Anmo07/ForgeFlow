@@ -25,7 +25,7 @@ export default function RegisterPage() {
       "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad";
     script.async = true;
 
-    (window as any).onTurnstileLoad = () => {
+    (window as unknown as Record<string, unknown>).onTurnstileLoad = () => {
       if (turnstileRef.current && window.turnstile) {
         widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
           sitekey: "1x00000000000000000000AA",
