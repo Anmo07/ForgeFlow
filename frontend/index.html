@@ -2504,26 +2504,39 @@
       const watchDemoBtn = document.getElementById('watch-demo-btn-html');
       const demoModal = document.getElementById('demo-video-modal');
       const demoModalCloseBtn = document.getElementById('demo-modal-close-btn');
+      const videoPlayer = document.getElementById('demo-video-player');
 
       if (watchDemoBtn && demoModal) {
         watchDemoBtn.addEventListener('click', (e) => {
           e.preventDefault();
           demoModal.classList.add('active');
           document.body.style.overflow = 'hidden'; // prevent scrolling behind modal
+          if (videoPlayer) {
+            videoPlayer.currentTime = 0;
+            videoPlayer.play().catch(err => console.log('Autoplay blocked:', err));
+          }
         });
       }
 
-      if (demoModalCloseBtn && demoModal) {
-        demoModalCloseBtn.addEventListener('click', () => {
+      function closeModal() {
+        if (demoModal) {
           demoModal.classList.remove('active');
           document.body.style.overflow = '';
-        });
+          if (videoPlayer) {
+            videoPlayer.pause();
+          }
+        }
+      }
 
+      if (demoModalCloseBtn) {
+        demoModalCloseBtn.addEventListener('click', closeModal);
+      }
+
+      if (demoModal) {
         // Close modal on click outside content
         demoModal.addEventListener('click', (e) => {
           if (e.target === demoModal) {
-            demoModal.classList.remove('active');
-            document.body.style.overflow = '';
+            closeModal();
           }
         });
       }
@@ -2542,8 +2555,11 @@
           </svg>
         </button>
       </div>
-      <div class="demo-modal-body">
-        <img src="public/demo_video.webp" alt="ForgeFlow Platform Demo Video">
+      <div class="demo-modal-body" style="padding: 0;">
+        <video id="demo-video-player" controls autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
+          <source src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   </div>

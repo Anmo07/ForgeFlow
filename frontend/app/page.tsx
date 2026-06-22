@@ -263,12 +263,21 @@ export default function Home() {
                   <X className="size-5" />
                 </button>
               </div>
-              <div className="aspect-video bg-black flex items-center justify-center p-2">
-                <img 
-                  src="/demo_video.webp" 
-                  alt="ForgeFlow Platform Demo Video" 
-                  className="w-full h-full object-contain rounded-lg"
-                />
+              <div className="aspect-video bg-black flex items-center justify-center p-0">
+                <video 
+                  controls 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline 
+                  className="w-full h-full object-cover"
+                >
+                  <source 
+                    src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4" 
+                    type="video/mp4" 
+                  />
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
           </div>
