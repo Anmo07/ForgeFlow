@@ -44,8 +44,8 @@ def login(req: UserLogin, request: Request, response: Response, db: Session=Depe
     token_resp = auth_service.authenticate_user_with_mfa(db, req, user_agent=user_agent, ip_address=ip_address)
     if isinstance(token_resp, dict) and token_resp.get('mfa_required'):
         return token_resp
-    response.set_cookie(key='access_token', value=token_resp.access_token, httponly=True, samesite='strict', max_age=30 * 60, path='/')
-    response.set_cookie(key='refresh_token', value=token_resp.refresh_token, httponly=True, samesite='strict', max_age=30 * 24 * 60 * 60, path='/')
+    response.set_cookie(key='access_token', value=token_resp.get("access_token"), httponly=True, samesite='strict', max_age=30 * 60, path='/')
+    response.set_cookie(key='refresh_token', value=token_resp.get("refresh_token"), httponly=True, samesite='strict', max_age=30 * 24 * 60 * 60, path='/')
     return token_resp
 
 @router.post('/forgot-password', status_code=status.HTTP_200_OK)

@@ -122,14 +122,15 @@ def reset_key_manager() -> None:
 
 _VERSION_PREFIX_RE = re.compile(r'^(v\d+):(.+)$', re.DOTALL)
 
-
 def encrypt_field(plaintext: str) -> str:
     """Encrypt a plaintext string using the active key version.
 
     Returns a string in the format ``v<N>:<ciphertext_base64>``.
     """
-    if not plaintext:
+    if plaintext is None:
         return None
+    if plaintext == '':
+        return ''
     try:
         km = _get_key_manager()
         f = Fernet(km.active_key)
@@ -144,8 +145,10 @@ def decrypt_field(ciphertext: str) -> str:
 
     Supports both versioned (``v<N>:...``) and legacy (unversioned) formats.
     """
-    if not ciphertext:
+    if ciphertext is None:
         return None
+    if ciphertext == '':
+        return ''
     try:
         km = _get_key_manager()
         match = _VERSION_PREFIX_RE.match(ciphertext)

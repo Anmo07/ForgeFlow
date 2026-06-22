@@ -14,9 +14,8 @@ def _verify_legacy_bcrypt(plain_password: str, hashed_password: str) -> bool:
     if not hashed_password.startswith('$2'):
         return False
     try:
-        from passlib.context import CryptContext
-        legacy_ctx = CryptContext(schemes=['bcrypt'], deprecated='auto')
-        return legacy_ctx.verify(plain_password, hashed_password)
+        import bcrypt
+        return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
     except Exception:
         return False
 

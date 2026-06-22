@@ -39,8 +39,8 @@ def mock_turnstile(monkeypatch):
     monkeypatch.setattr(app.auth.service, 'verify_turnstile_token', lambda token, ip=None: True)
 
 def test_legacy_bcrypt_rehashed_on_login(client, db_session):
-    legacy_ctx = CryptContext(schemes=['bcrypt'], deprecated='auto')
-    bcrypt_hash = legacy_ctx.hash('legacy-password')
+    import bcrypt
+    bcrypt_hash = bcrypt.hashpw(b'legacy-password', bcrypt.gensalt()).decode()
     user = User(email='legacy@example.com', hashed_password=bcrypt_hash, full_name='Legacy User', is_active=True)
     db_session.add(user)
     db_session.commit()

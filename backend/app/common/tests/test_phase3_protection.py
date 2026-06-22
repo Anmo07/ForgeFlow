@@ -1,7 +1,7 @@
 import pytest
 import os
 from cryptography.fernet import Fernet
-from backend.app.common.encryption import encrypt_field, decrypt_field
+from backend.app.common.encryption import encrypt_field, decrypt_field, reset_key_manager
 from backend.app.common.email_service import EmailService, ConsoleBackend, FileBackend
 from backend.app.common.tenant_filtering import set_tenant_context, get_tenant_context
 from backend.app.common.unverified_restriction import require_verified
@@ -12,9 +12,11 @@ class TestFieldEncryption:
     def setup_encryption_key(self):
         key = Fernet.generate_key().decode()
         os.environ['FIELD_ENCRYPTION_KEY'] = key
+        reset_key_manager()
         yield
         if 'FIELD_ENCRYPTION_KEY' in os.environ:
             del os.environ['FIELD_ENCRYPTION_KEY']
+        reset_key_manager()
 
     def test_encrypt_decrypt_field(self):
         plaintext = 'my-secret-value-12345'
@@ -42,13 +44,15 @@ class TestFieldEncryption:
 
     def test_invalid_encryption_key(self):
         os.environ['FIELD_ENCRYPTION_KEY'] = 'not-a-valid-fernet-key'
+        reset_key_manager()
         with pytest.raises(ValueError, match='Invalid FIELD_ENCRYPTION_KEY'):
             encrypt_field('test')
 
     def test_missing_encryption_key(self):
         if 'FIELD_ENCRYPTION_KEY' in os.environ:
             del os.environ['FIELD_ENCRYPTION_KEY']
-        with pytest.raises(ValueError, match='FIELD_ENCRYPTION_KEY'):
+        reset_key_manager()
+        with pytest.raises(ValueError, match='No encryption keys configured'):
             encrypt_field('test')
 
 class TestTenantContext:
