@@ -56,8 +56,24 @@ def client(db_session):
 
     def override_get_current_user():
         return User(id=1, email='invoiceuser@example.com', hashed_password='dummy_hash', full_name='Billing Agent', is_active=True)
+
+    from app.common.tenant import TenantContext, get_current_tenant
+    from app.common.tenant_filtering import current_org_id, current_is_external
+
+    def override_get_current_tenant():
+        current_org_id.set(1)
+        current_is_external.set(False)
+        return TenantContext(
+            organization_id=1,
+            user_id=1,
+            role_id=1,
+            permissions=['invoice:create', 'invoice:update', 'invoice:delete'],
+            is_external=False
+        )
+
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_current_tenant] = override_get_current_tenant
     yield TestClient(app)
     app.dependency_overrides.clear()
 

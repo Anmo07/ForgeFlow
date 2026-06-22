@@ -6,7 +6,7 @@ from backend.app.organizations.models import Organization
 from backend.app.memberships.models import Membership
 from backend.app.projects.models import Project
 from backend.app.roles.models import Role
-from backend.app.common.database import SessionLocal
+from backend.app.common.database import SessionLocal, Base, engine
 from backend.app.auth import csrf
 from backend.app.memberships import invite_token
 from backend.app.common.redis import redis_client
@@ -17,9 +17,11 @@ def client():
 
 @pytest.fixture
 def db():
+    Base.metadata.create_all(bind=engine)
     connection = SessionLocal()
     yield connection
     connection.close()
+    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(autouse=True)
 def clear_redis():
@@ -51,10 +53,13 @@ def user_a(db, org_a):
     db.commit()
     db.refresh(user)
     admin_role = db.query(Role).first()
-    if admin_role:
-        mem = Membership(user_id=user.id, organization_id=org_a.id, role_id=admin_role.id, status='active')
-        db.add(mem)
+    if not admin_role:
+        admin_role = Role(id=1, name='Admin', is_system=True)
+        db.add(admin_role)
         db.commit()
+    mem = Membership(user_id=user.id, organization_id=org_a.id, role_id=admin_role.id, status='active')
+    db.add(mem)
+    db.commit()
     return user
 
 @pytest.fixture
@@ -65,10 +70,13 @@ def user_b(db, org_b):
     db.commit()
     db.refresh(user)
     admin_role = db.query(Role).first()
-    if admin_role:
-        mem = Membership(user_id=user.id, organization_id=org_b.id, role_id=admin_role.id, status='active')
-        db.add(mem)
+    if not admin_role:
+        admin_role = Role(id=1, name='Admin', is_system=True)
+        db.add(admin_role)
         db.commit()
+    mem = Membership(user_id=user.id, organization_id=org_b.id, role_id=admin_role.id, status='active')
+    db.add(mem)
+    db.commit()
     return user
 
 class TestCSRFProtection:

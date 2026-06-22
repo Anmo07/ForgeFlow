@@ -19,6 +19,12 @@ def db_session():
     from app.organizations.models import Organization
     org = Organization(id=1, name='Acme', slug='acme')
     db.add(org)
+    from app.roles.models import Role
+    admin_role = Role(id=1, name='Admin', description='Admin role')
+    db.add(admin_role)
+    from app.memberships.models import Membership
+    mem = Membership(user_id=1, organization_id=1, role_id=1, status='active')
+    db.add(mem)
     db.commit()
     try:
         yield db

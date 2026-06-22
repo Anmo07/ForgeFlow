@@ -1,4 +1,3 @@
-from passlib.context import CryptContext
 from app.common.security import verify_password, get_password_hash, password_needs_rehash
 
 def test_argon2_hash_and_verify():
@@ -8,8 +7,8 @@ def test_argon2_hash_and_verify():
     assert hashed.startswith('$argon2')
 
 def test_legacy_bcrypt_verify_and_needs_rehash():
-    legacy_ctx = CryptContext(schemes=['bcrypt'], deprecated='auto')
-    bcrypt_hash = legacy_ctx.hash('legacy-password')
+    import bcrypt
+    bcrypt_hash = bcrypt.hashpw(b'legacy-password', bcrypt.gensalt()).decode()
     assert verify_password('legacy-password', bcrypt_hash)
     assert password_needs_rehash(bcrypt_hash)
 

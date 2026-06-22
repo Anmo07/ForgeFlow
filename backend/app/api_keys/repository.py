@@ -17,7 +17,7 @@ class APIKeyRepository:
         return db.query(APIKey).filter(APIKey.hashed_key == hashed_key, APIKey.revoked == False).first()
 
     def list_by_org(self, db: Session, org_id: int, limit: int=100, offset: int=0) -> List[APIKey]:
-        return db.query(APIKey).filter(APIKey.organization_id == org_id).order_by(APIKey.created_at.desc()).offset(offset).limit(limit).all()
+        return db.query(APIKey).filter(APIKey.organization_id == org_id).order_by(APIKey.id.desc()).offset(offset).limit(limit).all()
 
     def generate_raw_key(self, mode: str='live') -> Tuple[str, str, str]:
         token = secrets.token_hex(24)

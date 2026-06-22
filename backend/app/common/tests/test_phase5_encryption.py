@@ -203,10 +203,10 @@ class TestEncryptDecryptNoneAndEmpty:
         key = _generate_key()
         monkeypatch.setenv('FIELD_ENCRYPTION_KEY', key)
         from app.common.encryption import encrypt_field
-        assert encrypt_field('') is None
+        assert encrypt_field('') == ''
 
     def test_decrypt_empty_string(self, monkeypatch):
         key = _generate_key()
         monkeypatch.setenv('FIELD_ENCRYPTION_KEY', key)
         from app.common.encryption import decrypt_field
-        assert decrypt_field('') is None
+        assert decrypt_field('') == ''

@@ -27,6 +27,10 @@ def db_session():
     db.add(role)
     db.add(role_member)
     db.commit()
+    from app.memberships.models import Membership
+    mem = Membership(user_id=1, organization_id=1, role_id=1, status='active')
+    db.add(mem)
+    db.commit()
     try:
         yield db
     finally:
@@ -61,7 +65,7 @@ def test_membership_invite_and_role_change(client, db_session):
     assert resp_role.json()['role_id'] == 1
     resp_list = client.get('/api/memberships/organization/1')
     assert resp_list.status_code == 200
-    assert len(resp_list.json()) == 1
+    assert len(resp_list.json()) == 2
     assert any((m['id'] == membership_id for m in resp_list.json()))
     resp_del = client.delete(f'/api/memberships/{membership_id}')
     assert resp_del.status_code == 204

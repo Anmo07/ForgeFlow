@@ -42,8 +42,16 @@ class KeyManager:
                         f"Key version tag '{version}' is invalid. "
                         "Must match pattern 'v<N>' (e.g. v1, v2)."
                     )
+                try:
+                    Fernet(key_str.encode() if isinstance(key_str, str) else key_str)
+                except Exception as e:
+                    raise ValueError(f"Invalid FIELD_ENCRYPTION_KEYS_JSON: {e}")
                 self._keys[version] = key_str.encode() if isinstance(key_str, str) else key_str
         elif single_key:
+            try:
+                Fernet(single_key.encode() if isinstance(single_key, str) else single_key)
+            except Exception as e:
+                raise ValueError(f"Invalid FIELD_ENCRYPTION_KEY: {e}")
             self._keys['v1'] = single_key.encode() if isinstance(single_key, str) else single_key
         else:
             raise ValueError(

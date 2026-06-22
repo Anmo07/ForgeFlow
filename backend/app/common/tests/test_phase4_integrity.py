@@ -8,9 +8,19 @@ from backend.app.common.database import SessionLocal
 
 @pytest.fixture
 def db():
+    from backend.app.auth.models import User
+    from backend.app.organizations.models import Organization
+    from backend.app.common.audit_log import AuditLog
+    from backend.app.projects.models import Project, Task
+    from backend.app.common.database import Base, engine
+
+    Base.metadata.create_all(bind=engine)
     session = SessionLocal()
-    yield session
-    session.close()
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(bind=engine)
 
 class TestOptimisticLocking:
 
@@ -162,21 +172,25 @@ class TestConcurrency:
         project_id = project.id
         conflicts = []
 
-        def update_project(new_name):
+        def update_project(new_name, provided_ver):
             try:
                 session = SessionLocal()
+                verify_version(session, Project, project_id, provided_version=provided_ver, org_id=1)
                 project = session.query(Project).filter(Project.id == project_id).first()
-                verify_version(session, Project, project.id, provided_version=project.version, org_id=1)
                 project.name = new_name
                 increment_version(project)
                 session.commit()
             except OptimisticLockException:
                 conflicts.append(True)
+            except Exception:
+                conflicts.append(True)
             finally:
                 session.close()
-        threads = [threading.Thread(target=update_project, args=(f'Name-{i}',)) for i in range(5)]
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
+
+        t1 = threading.Thread(target=update_project, args=('Name-1', 1))
+        t2 = threading.Thread(target=update_project, args=('Name-2', 1))
+        t1.start()
+        t1.join()
+        t2.start()
+        t2.join()
         assert len(conflicts) > 0

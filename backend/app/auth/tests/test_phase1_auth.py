@@ -15,9 +15,15 @@ def client():
 
 @pytest.fixture
 def db():
+    from backend.app.common.database import Base, engine
+    from backend.app.auth.models import User, PasswordResetToken
+    Base.metadata.create_all(bind=engine)
     connection = SessionLocal()
-    yield connection
-    connection.close()
+    try:
+        yield connection
+    finally:
+        connection.close()
+        Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def test_user(db):
@@ -158,7 +164,7 @@ class TestMFA:
         secret = mfa.generate_totp_secret()
         uri = mfa.get_totp_provisioning_uri('user@example.com', secret)
         assert 'otpauth://totp/' in uri
-        assert 'user@example.com' in uri
+        assert 'user@example.com' in uri or 'user%40example.com' in uri
         assert 'ForgeFlow' in uri
 
     def test_verify_totp_code(self):

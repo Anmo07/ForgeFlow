@@ -11,7 +11,7 @@ from app.organizations.models import Organization
 from app.memberships.models import Membership
 from app.roles.models import Role
 from app.permissions.models import Permission
-from app.main import app
+from app.main import app as fastapi_app
 test_router = APIRouter()
 
 @test_router.get('/test-tenant')
@@ -21,7 +21,7 @@ def get_tenant_endpoint(tenant: TenantContext=Depends(get_current_tenant)):
 @test_router.get('/test-permission')
 def get_permission_endpoint(tenant: TenantContext=Depends(require_permission('project:create'))):
     return {'success': True}
-app.include_router(test_router, prefix='/api/test-only')
+fastapi_app.include_router(test_router, prefix='/api/test-only')
 SQLALCHEMY_DATABASE_URL = 'sqlite:///./test_tenant_mw.db'
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread': False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -49,7 +49,7 @@ def db_session():
         Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope='function')
-def client(db_session):
+def client(db_session, monkeypatch):
 
     def override_get_db():
         try:
@@ -57,13 +57,11 @@ def client(db_session):
         finally:
             pass
 
-    def override_get_current_user():
-        return User(id=1, email='tenantuser@example.com', hashed_password='dummy_tenant_hash', full_name='Tenant Member', is_active=True)
-    app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = override_get_current_user
-    yield TestClient(app)
-    app.dependency_overrides.clear()
-
+    import app.common.tenant
+    monkeypatch.setattr(app.common.tenant, 'get_current_user', lambda request, db, token: User(id=1, email='tenantuser@example.com', hashed_password='dummy_tenant_hash', full_name='Tenant Member', is_active=True))
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+    yield TestClient(fastapi_app)
+    fastapi_app.dependency_overrides.clear()
 def test_tenant_extraction_header_success(client):
     response = client.get('/api/test-only/test-tenant', headers={'X-Organization-ID': '1'})
     assert response.status_code == 200

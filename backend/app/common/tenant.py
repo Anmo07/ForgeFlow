@@ -101,3 +101,7 @@ def before_compile_tenant_isolation(query):
             elif hasattr(entity, 'organization_id'):
                 query = query.enable_assertions(False).filter(entity.organization_id == org_id)
     return query
+
+def get_tenant_context(db, user, org_id: int) -> int:
+    from .dependencies import verify_org_membership
+    return verify_org_membership(org_id, user, db)
