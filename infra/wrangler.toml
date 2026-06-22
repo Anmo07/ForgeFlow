@@ -1,0 +1,15 @@
+# Cloudflare Pages deployment configuration for Next.js 15
+name = "forgeflow-frontend"
+compatibility_date = "2024-11-01"
+compatibility_flags = [ "nextjs_page_router_html_custom_elements" ]
+
+[site]
+bucket = ".next"
+entry-point = "workers-site"
+
+[env.production.vars]
+NEXT_PUBLIC_API_URL = "https://api.forgeflow.io"
+
+[build]
+command = "npm run build"
+directory = ".next"

@@ -1,0 +1,21 @@
+# Cloudflare Tunnel Configuration for ForgeFlow
+# Exposes internal services securely to Cloudflare Edge without opening ingress ports.
+
+tunnel: forgeflow-production-tunnel
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  # 1. Main Next.js Frontend Portal (routed via internal Nginx)
+  - hostname: portal.forgeflow.io
+    service: http://nginx:80
+  
+  # 2. FastAPI Backend API
+  - hostname: api.forgeflow.io
+    service: http://backend:8000
+    
+  # 3. MinIO Console (S3 storage admin console)
+  - hostname: storage.forgeflow.io
+    service: http://minio:9001
+
+  # Catch-all rule: respond with HTTP 404 for unmatched hostnames
+  - service: http_status:404
