@@ -236,7 +236,7 @@ export default function Home() {
               {}
               <div className="p-5 rounded-xl border border-border bg-card/20 backdrop-blur-md shadow-sm hover:border-primary/20 transition-all">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-amber-500/10 text-amber-500">
+                  <span className="p-1 rounded-lg bg-primary/10 text-primary">
                     <FileText className="size-4" />
                   </span>
                   Invoicing that gets you paid faster
@@ -400,7 +400,7 @@ export default function Home() {
             {}
             <div className="relative group overflow-hidden rounded-2xl border border-border bg-card/30 backdrop-blur-md p-6 shadow hover:border-primary/30 transition-all duration-300">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400">
+                <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                   <DollarSign className="size-6" />
                 </div>
                 <Link
@@ -413,7 +413,7 @@ export default function Home() {
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Outstanding Invoices
               </span>
-              <div className="text-4xl font-extrabold mt-1 text-amber-500">
+              <div className="text-4xl font-extrabold mt-1 text-primary">
                 $
                 {invoiceMetrics.total_outstanding.toLocaleString(undefined, {
                   maximumFractionDigits: 0,
@@ -494,7 +494,7 @@ export default function Home() {
                   className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/45 hover:border-primary/30 transition-all group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-lg bg-amber-500/5 text-amber-500">
+                    <div className="p-2.5 rounded-lg bg-primary/5 text-primary">
                       <FileText className="size-5" />
                     </div>
                     <div>

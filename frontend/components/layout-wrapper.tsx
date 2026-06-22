@@ -28,7 +28,11 @@ export default function LayoutWrapper({
   ];
 
   if (!showAppLayout) {
-    return <div className="min-h-screen flex flex-col w-full">{children}</div>;
+    return (
+      <div className="min-h-screen flex flex-col w-full">
+        <div className="flex-1">{children}</div>
+      </div>
+    );
   }
 
   return (
@@ -36,8 +40,8 @@ export default function LayoutWrapper({
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar items={sidebarItems} />
-        <main className="flex-1 p-4 overflow-auto bg-background text-foreground">
-          {children}
+        <main className="flex-1 overflow-auto">
+          <div className="app-container py-6">{children}</div>
         </main>
       </div>
     </div>

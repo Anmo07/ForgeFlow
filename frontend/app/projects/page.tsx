@@ -153,7 +153,7 @@ export default function ProjectsPage() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black px-4 py-2.5 text-sm font-semibold shadow transition-colors duration-200"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow transition-colors duration-200"
         >
           <Plus className="size-4 stroke-[2.5]" />
           New Project
@@ -162,7 +162,7 @@ export default function ProjectsPage() {
 
       {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Total Projects
@@ -176,21 +176,21 @@ export default function ProjectsPage() {
             Across this workspace
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               In Progress
             </span>
-            <Clock className="size-4 text-amber-400" />
+            <Clock className="size-4 text-primary" />
           </div>
-          <div className="text-3xl font-bold text-amber-400">
+          <div className="text-3xl font-bold text-primary">
             {inProgressCount}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Active execution phase
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Completed
@@ -204,7 +204,7 @@ export default function ProjectsPage() {
             Delivered successfully
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Delayed
@@ -225,7 +225,7 @@ export default function ProjectsPage() {
             placeholder="Search projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50"
+            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50"
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
@@ -233,7 +233,7 @@ export default function ProjectsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
           >
             <option value="All">All Statuses</option>
             <option value="planning">Planning</option>
@@ -255,7 +255,7 @@ export default function ProjectsPage() {
       {}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="size-8 text-amber-500 animate-spin" />
+          <Loader2 className="size-8 text-primary animate-spin" />
           <span className="text-sm text-muted-foreground mt-2">
             Loading projects...
           </span>
@@ -290,7 +290,7 @@ export default function ProjectsPage() {
                 "bg-zinc-500/10 text-zinc-400 border border-zinc-500/20";
 
             let priorityBadgeClass =
-              "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+              "bg-primary/10 text-primary border border-primary/20";
             if (
               project.priority === "high" ||
               project.priority === "critical"
@@ -305,7 +305,7 @@ export default function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="flex flex-col bg-card/20 border border-border rounded-xl shadow-sm hover:border-amber-500/20 transition-all duration-300 hover:shadow-md group"
+                className="flex flex-col bg-card/20 border border-border rounded-xl shadow-sm hover:border-primary/30 transition-all duration-300 hover:shadow-md group"
               >
                 {}
                 <div className="p-5 border-b border-border flex justify-between items-start">
@@ -323,7 +323,7 @@ export default function ProjectsPage() {
                       </span>
                     </div>
                     <Link href={`/projects/${project.id}`} className="block">
-                      <h3 className="font-bold text-lg text-card-foreground leading-tight group-hover:text-amber-400 transition-colors cursor-pointer">
+                      <h3 className="font-bold text-lg text-card-foreground leading-tight group-hover:text-primary transition-colors cursor-pointer">
                         {project.name}
                       </h3>
                     </Link>
@@ -349,7 +349,7 @@ export default function ProjectsPage() {
                     </div>
                     <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-amber-500 h-1.5 rounded-full transition-all duration-500"
+                        className="bg-primary h-1.5 rounded-full transition-all duration-500"
                         style={{ width: `${progressPercent}%` }}
                       ></div>
                     </div>
@@ -359,7 +359,7 @@ export default function ProjectsPage() {
                 {}
                 <div className="p-4 bg-muted/10 border-t border-border flex justify-between items-center text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="size-3.5 text-amber-500/70" />
+                    <Calendar className="size-3.5 text-primary/80" />
                     <span>Due:</span>
                     <span className="font-semibold text-foreground">
                       {project.due_date || "No date set"}
@@ -367,7 +367,7 @@ export default function ProjectsPage() {
                   </div>
                   <Link
                     href={`/projects/${project.id}`}
-                    className="text-amber-500 hover:text-amber-400 font-semibold"
+                    className="text-primary hover:opacity-80 font-semibold"
                   >
                     View Tasks &rarr;
                   </Link>
@@ -404,7 +404,7 @@ export default function ProjectsPage() {
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   placeholder="e.g. Acme App Launch"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
@@ -417,7 +417,7 @@ export default function ProjectsPage() {
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   placeholder="Describe the project goal..."
                   rows={3}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50 resize-none"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
                 />
               </div>
 
@@ -429,7 +429,7 @@ export default function ProjectsPage() {
                   <select
                     value={newProjectStatus}
                     onChange={(e) => setNewProjectStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="planning">Planning</option>
                     <option value="in_progress">In Progress</option>
@@ -444,7 +444,7 @@ export default function ProjectsPage() {
                   <select
                     value={newProjectPriority}
                     onChange={(e) => setNewProjectPriority(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -462,7 +462,7 @@ export default function ProjectsPage() {
                   type="date"
                   value={newProjectDueDate}
                   onChange={(e) => setNewProjectDueDate(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
@@ -477,7 +477,7 @@ export default function ProjectsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}
                   Create Project

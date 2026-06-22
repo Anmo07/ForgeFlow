@@ -299,7 +299,7 @@ export default function InvoicesPage() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-black px-4 py-2.5 text-sm font-semibold shadow transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow transition-colors"
         >
           <Plus className="size-4 stroke-[2.5]" />
           Create Invoice
@@ -308,7 +308,7 @@ export default function InvoicesPage() {
 
       {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Total Billed
@@ -325,7 +325,7 @@ export default function InvoicesPage() {
             Total billing value issued
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Collected
@@ -342,14 +342,14 @@ export default function InvoicesPage() {
             Paid and settled invoices
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Outstanding
             </span>
-            <Clock className="size-4 text-amber-400" />
+            <Clock className="size-4 text-primary" />
           </div>
-          <div className="text-3xl font-bold text-amber-400">
+          <div className="text-3xl font-bold text-primary">
             $
             {metrics.total_outstanding.toLocaleString(undefined, {
               minimumFractionDigits: 2,
@@ -359,7 +359,7 @@ export default function InvoicesPage() {
             Unpaid sent invoices
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Overdue
@@ -385,14 +385,14 @@ export default function InvoicesPage() {
             placeholder="Search invoice number, client..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+            className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
           >
             <option value="All">All Statuses</option>
             <option value="draft">Draft</option>
@@ -414,7 +414,7 @@ export default function InvoicesPage() {
       {}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="size-8 text-amber-500 animate-spin" />
+          <Loader2 className="size-8 text-primary animate-spin" />
           <span className="text-sm text-muted-foreground mt-2">
             Loading invoicing system...
           </span>
@@ -446,14 +446,14 @@ export default function InvoicesPage() {
                       "bg-rose-500/10 text-rose-400 border border-rose-500/20";
                   if (invoice.status === "sent")
                     badgeColor =
-                      "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                      "bg-primary/10 text-primary border border-primary/20";
 
                   return (
                     <tr
                       key={invoice.id}
                       className="hover:bg-muted/10 transition-colors"
                     >
-                      <td className="px-6 py-4 font-mono font-bold text-amber-500 select-all">
+                      <td className="px-6 py-4 font-mono font-bold text-primary select-all">
                         {invoice.invoice_number}
                       </td>
                       <td className="px-6 py-4 font-semibold">
@@ -561,7 +561,7 @@ export default function InvoicesPage() {
                   <select
                     value={newClientId}
                     onChange={(e) => setNewClientId(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="">
                       Direct Client (No organization link)
@@ -584,7 +584,7 @@ export default function InvoicesPage() {
                     step="0.1"
                     value={newTaxRate}
                     onChange={(e) => setNewTaxRate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
               </div>
@@ -599,7 +599,7 @@ export default function InvoicesPage() {
                     required
                     value={newIssueDate}
                     onChange={(e) => setNewIssueDate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -611,7 +611,7 @@ export default function InvoicesPage() {
                     required
                     value={newDueDate}
                     onChange={(e) => setNewDueDate(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
               </div>
@@ -625,7 +625,7 @@ export default function InvoicesPage() {
                   <button
                     type="button"
                     onClick={handleAddLineItem}
-                    className="inline-flex items-center gap-1 text-xs text-amber-500 hover:text-amber-400 font-semibold"
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:opacity-80 font-semibold"
                   >
                     <Plus className="size-3" /> Add Item
                   </button>
@@ -725,7 +725,7 @@ export default function InvoicesPage() {
                     })}
                   </span>
                 </div>
-                <div className="flex justify-between text-base text-amber-500 font-bold">
+                <div className="flex justify-between text-base text-primary font-bold">
                   <span>Grand Total:</span>
                   <span>
                     $
@@ -760,7 +760,7 @@ export default function InvoicesPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg flex items-center gap-2"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
                   Create & Render
@@ -800,7 +800,7 @@ export default function InvoicesPage() {
                   <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                     Status
                   </span>
-                  <p className="font-bold capitalize text-amber-500 mt-0.5">
+                  <p className="font-bold capitalize text-primary mt-0.5">
                     {selectedInvoice.status}
                   </p>
                 </div>
@@ -872,7 +872,7 @@ export default function InvoicesPage() {
                   </span>
                   <span>${selectedInvoice.tax_amount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm text-amber-500 font-bold border-t border-border/40 pt-2">
+                <div className="flex justify-between text-sm text-primary font-bold border-t border-border/40 pt-2">
                   <span>Grand Total:</span>
                   <span>${selectedInvoice.total.toFixed(2)}</span>
                 </div>
@@ -903,7 +903,7 @@ export default function InvoicesPage() {
                       selectedInvoice.invoice_number,
                     )
                   }
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black text-xs font-semibold rounded-lg flex items-center gap-1.5"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-semibold rounded-lg flex items-center gap-1.5"
                 >
                   <Download className="size-3.5" /> Download PDF
                 </button>

@@ -347,7 +347,7 @@ export default function CRMPage() {
           </button>
           <button
             onClick={() => setActiveModal("lead")}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-black px-4 py-2.5 text-sm font-semibold shadow transition-colors duration-200"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow transition-colors duration-200"
           >
             <Plus className="size-4 stroke-[2.5]" />
             New Lead
@@ -357,7 +357,7 @@ export default function CRMPage() {
 
       {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Active Leads
@@ -371,7 +371,7 @@ export default function CRMPage() {
             Currently being qualified
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Pipeline Value
@@ -385,21 +385,21 @@ export default function CRMPage() {
             Open deals expectation
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Closed Won
             </span>
-            <TrendingUp className="size-4 text-amber-400" />
+            <TrendingUp className="size-4 text-primary" />
           </div>
-          <div className="text-3xl font-bold text-amber-400">
+          <div className="text-3xl font-bold text-primary">
             ${metrics.deals_won_value.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Converted contract value
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card/40 backdrop-blur-sm p-5 shadow-sm hover:border-amber-500/30 transition-all duration-300">
+        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
           <div className="flex justify-between items-center text-muted-foreground mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Conversion Rate
@@ -423,7 +423,7 @@ export default function CRMPage() {
             setSearchTerm("");
             setStatusFilter("All");
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "leads" ? "border-amber-500 text-amber-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "leads" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
         >
           Leads Pipeline ({leads.length})
         </button>
@@ -433,7 +433,7 @@ export default function CRMPage() {
             setSearchTerm("");
             setStatusFilter("All");
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "deals" ? "border-amber-500 text-amber-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "deals" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
         >
           Deals Hub ({deals.length})
         </button>
@@ -443,7 +443,7 @@ export default function CRMPage() {
             setSearchTerm("");
             setStatusFilter("All");
           }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "clients" ? "border-amber-500 text-amber-500" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === "clients" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
         >
           Clients ({clients.length})
         </button>
@@ -464,7 +464,7 @@ export default function CRMPage() {
             }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+            className="w-full bg-background/50 border border-border rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
           />
         </div>
         {activeTab !== "clients" && (
@@ -472,7 +472,7 @@ export default function CRMPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+              className="bg-background/50 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
             >
               <option value="All">All Stages</option>
               {activeTab === "leads" ? (
@@ -508,7 +508,7 @@ export default function CRMPage() {
       {}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="size-8 text-amber-500 animate-spin" />
+          <Loader2 className="size-8 text-primary animate-spin" />
           <span className="text-sm text-muted-foreground mt-2">
             Loading CRM...
           </span>
@@ -534,7 +534,7 @@ export default function CRMPage() {
                       className="hover:bg-muted/10 transition-colors"
                     >
                       <td className="px-6 py-4 font-semibold flex items-center gap-2">
-                        <Contact className="size-4 text-amber-500/70" />
+                        <Contact className="size-4 text-primary/80" />
                         {client.name}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
@@ -596,7 +596,7 @@ export default function CRMPage() {
                       lead.status === "proposal"
                     )
                       badgeColor =
-                        "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                        "bg-primary/10 text-primary border border-primary/20";
 
                     return (
                       <tr
@@ -604,7 +604,7 @@ export default function CRMPage() {
                         className="hover:bg-muted/10 transition-colors"
                       >
                         <td className="px-6 py-4 font-semibold flex items-center gap-2">
-                          <Contact className="size-4 text-amber-500/70" />
+                          <Contact className="size-4 text-primary/80" />
                           {lead.client_name || "Unknown"}
                         </td>
                         <td className="px-6 py-4 text-muted-foreground">
@@ -614,7 +614,7 @@ export default function CRMPage() {
                           {lead.client_email && (
                             <a
                               href={`mailto:${lead.client_email}`}
-                              className="text-amber-500 hover:underline block"
+                              className="text-primary hover:underline block"
                             >
                               {lead.client_email}
                             </a>
@@ -662,7 +662,7 @@ export default function CRMPage() {
                                   setDealValueVal(String(lead.value));
                                   setActiveModal("deal");
                                 }}
-                                className="bg-amber-500 hover:bg-amber-600 text-black px-2 py-1 rounded text-xs font-semibold"
+                                className="bg-primary hover:opacity-90 text-primary-foreground px-2 py-1 rounded text-xs font-semibold"
                                 title="Convert to Deal"
                               >
                                 Convert
@@ -715,7 +715,7 @@ export default function CRMPage() {
                       deal.status === "negotiation"
                     )
                       badgeColor =
-                        "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                        "bg-primary/10 text-primary border border-primary/20";
 
                     return (
                       <tr
@@ -723,7 +723,7 @@ export default function CRMPage() {
                         className="hover:bg-muted/10 transition-colors"
                       >
                         <td className="px-6 py-4 font-semibold flex items-center gap-2">
-                          <Briefcase className="size-4 text-amber-500/70" />
+                          <Briefcase className="size-4 text-primary/80" />
                           {deal.name || "Unnamed Deal"}
                         </td>
                         <td className="px-6 py-4">
@@ -804,7 +804,7 @@ export default function CRMPage() {
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
               <div className="space-y-1.5">
@@ -816,7 +816,7 @@ export default function CRMPage() {
                   value={clientEmail}
                   onChange={(e) => setClientEmail(e.target.value)}
                   placeholder="john@example.com"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
               <div className="space-y-1.5">
@@ -828,7 +828,7 @@ export default function CRMPage() {
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="555-123-4567"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
               <div className="space-y-1.5">
@@ -840,7 +840,7 @@ export default function CRMPage() {
                   value={clientCompany}
                   onChange={(e) => setClientCompany(e.target.value)}
                   placeholder="e.g. Acme Corp"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
               <div className="pt-4 border-t border-border flex justify-end gap-3">
@@ -854,7 +854,7 @@ export default function CRMPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg flex items-center gap-2"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
                   Add Client
@@ -889,7 +889,7 @@ export default function CRMPage() {
                   required
                   value={leadClientId}
                   onChange={(e) => setLeadClientId(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 >
                   <option value="">Choose a client...</option>
                   {clients.map((c) => (
@@ -907,7 +907,7 @@ export default function CRMPage() {
                   <select
                     value={leadStatus}
                     onChange={(e) => setLeadStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="new">New</option>
                     <option value="contacted">Contacted</option>
@@ -924,7 +924,7 @@ export default function CRMPage() {
                     value={leadValue}
                     onChange={(e) => setLeadValue(e.target.value)}
                     placeholder="e.g. 5000"
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
               </div>
@@ -936,7 +936,7 @@ export default function CRMPage() {
                   <select
                     value={leadSource}
                     onChange={(e) => setLeadSource(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="website">Website</option>
                     <option value="outreach">Outreach</option>
@@ -952,7 +952,7 @@ export default function CRMPage() {
                   <select
                     value={leadAssignee}
                     onChange={(e) => setLeadAssignee(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="">Unassigned</option>
                     {members.map((m) => (
@@ -974,7 +974,7 @@ export default function CRMPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg flex items-center gap-2"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
                   Add Lead
@@ -1011,7 +1011,7 @@ export default function CRMPage() {
                   value={dealName}
                   onChange={(e) => setDealName(e.target.value)}
                   placeholder="e.g. Acme Web Redesign Deal"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1022,7 +1022,7 @@ export default function CRMPage() {
                   <select
                     value={dealStatus}
                     onChange={(e) => setDealStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="discovery">Discovery</option>
                     <option value="proposal">Proposal</option>
@@ -1040,7 +1040,7 @@ export default function CRMPage() {
                     value={dealValueVal}
                     onChange={(e) => setDealValueVal(e.target.value)}
                     placeholder="e.g. 10000"
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
               </div>
@@ -1051,7 +1051,7 @@ export default function CRMPage() {
                 <select
                   value={dealAssignee}
                   onChange={(e) => setDealAssignee(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-amber-500/50"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                 >
                   <option value="">Unassigned</option>
                   {members.map((m) => (
@@ -1072,7 +1072,7 @@ export default function CRMPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg flex items-center gap-2"
+                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
                   Convert & Launch

@@ -97,9 +97,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-background p-6">
+    <div className="flex flex-1 items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-border bg-card shadow-xl p-8">
+        <div className="rounded-2xl p-8 glass-strong">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
               <LogIn className="size-5 text-primary" />

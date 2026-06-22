@@ -47,12 +47,12 @@ export default function OrgSwitcher() {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="inline-flex w-full items-center justify-between gap-x-2.5 rounded-lg bg-card border border-border px-3.5 py-1.5 text-sm font-semibold text-foreground shadow-sm hover:bg-muted transition-all duration-200"
+          className="inline-flex w-full items-center justify-between gap-x-2.5 rounded-lg px-3.5 py-1.5 text-sm font-semibold text-foreground glass glass-hover transition-all duration-200"
           id="menu-button"
           aria-expanded="true"
           aria-haspopup="true"
         >
-          <Building2 className="size-4 text-blue-500" />
+          <Building2 className="size-4 text-primary" />
           <span className="truncate max-w-[140px]">
             {loading
               ? "Loading..."
@@ -69,7 +69,7 @@ export default function OrgSwitcher() {
           {}
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
-            className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-lg bg-card border border-border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-200"
+            className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-lg glass-strong focus:outline-none transition-all duration-200"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
@@ -84,9 +84,9 @@ export default function OrgSwitcher() {
                     key={org.id}
                     onClick={() => handleSelect(org)}
                     className={cn(
-                      "flex w-full items-center px-4 py-2 text-sm text-left hover:bg-muted transition-colors duration-150",
+                      "flex w-full items-center px-4 py-2 text-sm text-left hover:bg-muted/50 transition-colors duration-150",
                       currentOrg?.id === org.id
-                        ? "text-blue-500 font-bold bg-muted/40"
+                        ? "text-primary font-bold bg-primary/10"
                         : "text-foreground",
                     )}
                     role="menuitem"

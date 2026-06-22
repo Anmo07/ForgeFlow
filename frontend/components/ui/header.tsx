@@ -26,21 +26,23 @@ export default function Header() {
   };
 
   return (
-    <header className="flex items-center justify-between bg-background px-6 py-3 border-b border-border shadow-sm">
-      <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-50">
+      <div className="glass-strong border-b border-border">
+        <div className="app-container flex items-center justify-between py-3">
+          <div className="flex items-center gap-6">
         <Link
           href="/"
-          className="text-xl font-bold tracking-tight text-foreground hover:text-amber-500 transition-colors"
+          className="text-lg sm:text-xl font-bold tracking-tight text-foreground hover:text-primary transition-colors"
         >
           ForgeFlow
         </Link>
         {isAuthenticated && <OrgSwitcher />}
       </div>
 
-      <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
         <button
           onClick={toggleTheme}
-          className="flex items-center rounded-full p-2 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center rounded-full p-2 hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Toggle theme"
         >
           {theme === "light" ? (
@@ -53,7 +55,7 @@ export default function Header() {
         {isAuthenticated && user ? (
           <div className="flex items-center gap-3 pl-4 border-l border-border">
             <div className="flex items-center gap-2">
-              <div className="size-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold">
+              <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold">
                 {user.full_name
                   ? user.full_name.charAt(0).toUpperCase()
                   : user.email.charAt(0).toUpperCase()}
@@ -85,12 +87,14 @@ export default function Header() {
             </Link>
             <Link
               href="/register"
-              className="px-3.5 py-1.5 text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-black shadow transition-colors"
+              className="px-3.5 py-1.5 text-sm font-semibold rounded-lg bg-primary hover:opacity-90 text-primary-foreground shadow transition-colors"
             >
               Sign Up
             </Link>
           </div>
         )}
+      </div>
+        </div>
       </div>
     </header>
   );
