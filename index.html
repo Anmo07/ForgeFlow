@@ -12,96 +12,67 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Bagel+Fat+One&display=swap"
     rel="stylesheet" />
-
-  <!-- Lenis Smooth Scroll CSS -->
-  <style>
-    html.lenis,
-    html.lenis body {
-      height: auto;
-    }
-
-    .lenis.lenis-smooth {
-      scroll-behavior: auto !important;
-    }
-
-    .lenis.lenis-smooth [data-lenis-prevent] {
-      overscroll-behavior: contain;
-    }
-
-    .lenis.lenis-stopped {
-      overflow: hidden;
-    }
-  </style>
 
   <style>
     /* ───── Design Tokens (Dark Theme) ───── */
     :root {
-      --primary: #d4af37;
-      /* Sophisticated antique champagne gold */
-      --primary-hover: #c5a028;
+      --primary: #f97316;
+      /* Vibrant Orange Accent */
+      --primary-hover: #ea580c;
       --accent: linear-gradient(135deg, #fafaf9 0%, #e7e5e4 100%);
       /* Warm stone off-white */
       --accent-solid: #fafaf9;
-      --bg: #0c0a09;
-      /* Warm stone-black */
-      --bg-card: rgba(245, 245, 244, 0.02);
-      --bg-card-hover: rgba(245, 245, 244, 0.05);
-      --border: rgba(245, 245, 244, 0.06);
-      /* Warm off-white border */
-      --border-hover: rgba(212, 175, 55, 0.2);
-      /* Soft gold border */
+      --bg: #070709;
+      /* Cinematic Black */
+      --bg-card: rgba(255, 255, 255, 0.02);
+      --bg-card-hover: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(249, 115, 22, 0.25);
       --white: #fafaf9;
-      /* Stone white */
-      --fg: #f5f5f4;
-      /* Off-white */
-      --fg-muted: #a8a29e;
-      /* Muted stone grey */
-      --fg-light: #78716c;
-      /* Light stone grey */
+      --fg: #fafaf9;
+      --fg-muted: #a1a1aa;
+      --fg-light: #71717a;
       --radius: 0.75rem;
       --radius-lg: 1.25rem;
       --font-heading: 'Plus Jakarta Sans', sans-serif;
       --font-body: 'Inter', sans-serif;
-      --glow: 0 0 45px rgba(212, 175, 55, 0.06);
+      --glow: 0 0 45px rgba(249, 115, 22, 0.06);
     }
 
     /* ───── Light Theme overrides ───── */
     html.light {
-      --primary: #b89025;
-      --primary-hover: #9c771c;
+      --primary: #ea580c;
+      --primary-hover: #c2410c;
       --accent: linear-gradient(135deg, #1c1917 0%, #292524 100%);
       --accent-solid: #1c1917;
-      --bg: #fbfbf9;
-      --bg-card: rgba(28, 25, 23, 0.02);
-      --bg-card-hover: rgba(28, 25, 23, 0.05);
-      --border: rgba(28, 25, 23, 0.08);
-      --border-hover: rgba(184, 144, 37, 0.25);
-      --white: #1c1917;
-      --fg: #1c1917;
-      --fg-muted: #57524e;
-      --fg-light: #78716c;
-      --glow: 0 0 45px rgba(184, 144, 37, 0.08);
+      --bg: #fcfcfc;
+      --bg-card: rgba(0, 0, 0, 0.02);
+      --bg-card-hover: rgba(0, 0, 0, 0.05);
+      --border: rgba(0, 0, 0, 0.08);
+      --border-hover: rgba(234, 88, 12, 0.25);
+      --white: #0a0a0a;
+      --fg: #0a0a0a;
+      --fg-muted: #71717a;
+      --fg-light: #a1a1aa;
+      --glow: 0 0 45px rgba(234, 88, 12, 0.08);
     }
 
     html.light .site-header {
-      background: rgba(251, 251, 249, 0.7);
+      background: rgba(252, 252, 252, 0.75);
     }
 
     html.light .logo {
-      background: linear-gradient(135deg, #1c1917 0%, #44403c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #ea580c;
     }
 
     html.light .video-bg-overlay {
-      background: radial-gradient(circle at 50% 50%, rgba(251, 251, 249, 0.45) 0%, rgba(251, 251, 249, 0.98) 95%);
+      background: radial-gradient(circle at 50% 50%, rgba(252, 252, 252, 0.5) 0%, rgba(252, 252, 252, 0.98) 95%);
     }
 
-    html.light .video-bg-container video {
-      opacity: 0.12;
-      filter: grayscale(1) invert(0.85);
+    html.light .video-bg-container canvas {
+      opacity: 0.15;
     }
 
     .theme-toggle-btn {
@@ -170,17 +141,15 @@
       pointer-events: none;
     }
 
-    .video-bg-container video {
+    .video-bg-container canvas {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      opacity: 0.18;
+      opacity: 0.35;
       will-change: transform;
-      transform: translate3d(0, 0, 0) scale(1.12);
-      transition: opacity 1s ease-in-out;
+      transition: opacity 1.2s ease-in-out;
     }
 
     .video-bg-overlay {
@@ -752,7 +721,7 @@
       content: "✓";
       position: absolute;
       left: 0;
-      color: #d4af37;
+      color: var(--primary);
       font-weight: 800;
     }
 
@@ -1142,23 +1111,303 @@
       justify-content: center;
       margin: 1.5rem 0;
     }
+
+    /* ───── Custom Premium Styles ───── */
+    .font-bagel {
+      font-family: 'Bagel Fat One', cursive;
+    }
+
+    /* Enhanced Glass Effects */
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(25px) saturate(1.5);
+      -webkit-backdrop-filter: blur(25px) saturate(1.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass-effect:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(249, 115, 22, 0.35);
+      transform: translateY(-4px);
+      box-shadow: 
+        0 12px 40px rgba(249, 115, 22, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-navbar {
+      background: rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(30px) saturate(1.8);
+      -webkit-backdrop-filter: blur(30px) saturate(1.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    /* Sound controls styling */
+    .sound-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg);
+      cursor: pointer;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .sound-toggle-btn:hover, .sound-toggle-btn.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(249, 115, 22, 0.05);
+    }
+
+    /* Text Shadows for overlays */
+    .text-shadow-strong {
+      text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 1px 2px rgba(0, 0, 0, 0.9),
+        1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
+    
+    .text-shadow-medium {
+      text-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.7),
+        1px 1px 1px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Cinematic Film Grain & Projector Overlays */
+    .film-grain {
+      position: fixed;
+      top: -50px;
+      left: -50px;
+      right: -50px;
+      bottom: -50px;
+      width: calc(100% + 100px);
+      height: calc(100% + 100px);
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.045;
+      pointer-events: none;
+      z-index: 9999;
+      animation: filmGrain 0.4s steps(4) infinite;
+    }
+
+    .projector-light {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      width: 150vw;
+      height: 150vh;
+      background: radial-gradient(circle at 0% 0%, rgba(249, 115, 22, 0.06) 0%, transparent 65%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: -1;
+      mix-blend-mode: screen;
+      animation: projectorLight 4s ease-in-out infinite;
+    }
+
+    /* Swaying features animations mapping */
+    .photo-sway-1 {
+      animation: photoSway1 7s ease-in-out infinite;
+      animation-duration: 7s !important;
+    }
+    
+    .photo-sway-2 {
+      animation: photoSway2 8s ease-in-out infinite;
+      animation-duration: 8s !important;
+    }
+    
+    .photo-sway-3 {
+      animation: photoSway3 6.5s ease-in-out infinite;
+      animation-duration: 6.5s !important;
+    }
+
+    .film-scroll-animation {
+      animation: 25s linear infinite filmScroll;
+      animation-duration: 25s !important;
+    }
+    
+    .perforations-scroll-animation {
+      animation: perforationsScroll 25s linear infinite;
+      animation-duration: 25s !important;
+    }
+
+    /* Advanced keyframes */
+    @keyframes filmGrain {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      25% { transform: translate3d(1px, 1px, 0); }
+      50% { transform: translate3d(-1px, 1px, 0); }
+      75% { transform: translate3d(1px, -1px, 0); }
+    }
+    
+    @keyframes projectorLight {
+      0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1.0; transform: translate(-50%, -50%) scale(1.08); }
+    }
+
+    @keyframes photoSway1 {
+      0%, 100% { transform: rotate(1.5deg) translateY(0px); }
+      50% { transform: rotate(-1deg) translateY(-3px); }
+    }
+    
+    @keyframes photoSway2 {
+      0%, 100% { transform: rotate(-1deg) translateY(0px); }
+      50% { transform: rotate(2deg) translateY(-2px); }
+    }
+    
+    @keyframes photoSway3 {
+      0%, 100% { transform: rotate(1deg) translateY(0px); }
+      50% { transform: rotate(-1.5deg) translateY(-4px); }
+    }
+
+    @keyframes perforationsScroll {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-370px, 0, 0); }
+    }
+
+    @keyframes filmScroll {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(-1408px, 0, 0); }
+    }
+
+    /* Film Strip layout */
+    .film-strip-section {
+      width: 100vw;
+      background: #000;
+      padding: 1.5rem 0;
+      overflow: hidden;
+      position: relative;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 3.5rem 0;
+    }
+
+    .film-strip-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      position: relative;
+    }
+
+    .film-perforations {
+      height: 14px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+    }
+    
+    .film-perforations.top {
+      margin-bottom: 1rem;
+    }
+    
+    .film-perforations.bottom {
+      margin-top: 1rem;
+    }
+
+    .perforations-track {
+      display: flex;
+      gap: 25px;
+      width: max-content;
+      padding-left: 10px;
+    }
+
+    .perforations-track span {
+      display: block;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .film-content-track {
+      display: flex;
+      gap: 2rem;
+      width: max-content;
+    }
+
+    .film-frame {
+      width: 320px;
+      height: 150px;
+      background: #0d0d0f;
+      border-left: 3px solid #000;
+      border-right: 3px solid #000;
+      position: relative;
+      padding: 0.25rem;
+    }
+
+    .film-frame-inner {
+      width: 100%;
+      height: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .film-frame-number {
+      font-size: 0.7rem;
+      font-family: monospace;
+      color: rgba(255, 255, 255, 0.25);
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+
+    .film-frame-content h4 {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .film-frame-content p {
+      font-size: 0.8rem;
+      color: var(--fg-muted);
+    }
+
+    /* Red Book a Call Button to match template screenshots */
+    .nav-link--signup, .btn-primary {
+      background: #dc2626 !important; /* Tomato red */
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+    }
+    .nav-link--signup:hover, .btn-primary:hover {
+      background: #b91c1c !important;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45) !important;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- Video Background -->
+  <!-- Cinematic Overlays -->
+  <div class="film-grain"></div>
+  <div class="projector-light"></div>
+
+  <!-- Interactive Particle Grid Background -->
   <div class="video-bg-container">
-    <video autoplay loop muted playsinline id="bg-video">
-      <source src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4"
-        type="video/mp4">
-    </video>
+    <canvas id="bg-canvas"></canvas>
     <div class="video-bg-overlay"></div>
   </div>
 
   <!-- ════ Header ════ -->
-  <header class="site-header">
-    <div class="logo">ForgeFlow</div>
+  <header class="site-header glass-navbar">
+    <div class="logo font-bagel" style="letter-spacing: 0.05em; font-size: 1.7rem; text-shadow: 0 0 15px rgba(249, 115, 22, 0.25);">FORGEFLOW</div>
     <nav class="nav">
       <a href="http://localhost:3000" class="nav-link">Dashboard</a>
       <a href="http://localhost:3000/projects" class="nav-link">Projects</a>
@@ -1166,90 +1415,100 @@
       <a href="http://localhost:3000/invoices" class="nav-link">Invoices</a>
       <span class="nav-divider"></span>
       <a href="#" class="nav-link nav-link--login">Log In</a>
-      <a href="#" class="nav-link nav-link--signup">Sign Up</a>
+      <a href="#" class="nav-link nav-link--signup">Book a Call</a>
       <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
         <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none; width: 1.25rem; height: 1.25rem;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button id="sound-toggle" class="sound-toggle-btn" aria-label="Toggle sound">
+        <svg class="sound-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 1.25rem; height: 1.25rem;">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        <svg class="sound-on-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none; width: 1.25rem; height: 1.25rem;">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
       </button>
     </nav>
   </header>
 
   <!-- ════ Hero ════ -->
   <section class="hero">
-    <div class="hero-card">
-      <p class="hero-eyebrow">Trusted by 2,000+ growing businesses</p>
-      <h1 class="hero-title">Run your business from <span>one screen</span>, not seven tabs</h1>
-      <p class="hero-subtitle">ForgeFlow brings your projects, customer relationships, and invoicing into a single
-        workspace — so your team stops switching tools and starts shipping work.</p>
-      <div class="hero-actions">
+    <div class="hero-card glass-effect" style="border-radius: var(--radius-lg); text-align: left;">
+      <p class="hero-eyebrow" style="color: var(--primary); font-weight: 700; letter-spacing: 0.12em;">Trusted by 2,000+ growing businesses</p>
+      <h1 class="hero-title font-bagel text-shadow-strong" style="font-size: 3.2rem; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: 0.02em;">Run your business from <span style="background: linear-gradient(135deg, #fafaf9 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">one screen</span>, not seven tabs</h1>
+      <p class="hero-subtitle" style="font-size: 1.15rem; line-height: 1.7; color: var(--fg-muted); margin-bottom: 2.5rem;">ForgeFlow brings your projects, customer relationships, and invoicing into a single workspace — so your team stops switching tools and starts shipping work.</p>
+      <div class="hero-actions" style="justify-content: flex-start;">
         <button class="btn-primary">Get Started</button>
-        <a href="#" class="btn-outline">Watch Demo</a>
+        <a href="#" class="btn-outline glass-effect">Watch Demo</a>
       </div>
-      <p class="hero-trust">No credit card required · Free 14-day trial</p>
+      <p class="hero-trust" style="margin-top: 2rem;">No credit card required · Free 14-day trial</p>
     </div>
 
     <div class="feature-stack">
-      <div class="feature-card fade-in">
-        <h3>Projects, on track automatically</h3>
-        <p>Assign tasks, set deadlines, and watch ForgeFlow flag bottlenecks before they slow your team down.</p>
+      <div class="feature-card glass-effect photo-sway-1">
+        <h3 style="color: var(--white); font-weight: 700; font-size: 1.15rem; margin-bottom: 0.5rem;">Projects, on track automatically</h3>
+        <p style="font-size: 0.9rem; color: var(--fg-muted); line-height: 1.6;">Assign tasks, set deadlines, and watch ForgeFlow flag bottlenecks before they slow your team down.</p>
       </div>
-      <div class="feature-card fade-in">
-        <h3>CRM your sales team actually uses</h3>
-        <p>Track every deal from first contact to closed-won, with reminders that keep leads from going cold.</p>
+      <div class="feature-card glass-effect photo-sway-2">
+        <h3 style="color: var(--white); font-weight: 700; font-size: 1.15rem; margin-bottom: 0.5rem;">CRM your sales team actually uses</h3>
+        <p style="font-size: 0.9rem; color: var(--fg-muted); line-height: 1.6;">Track every deal from first contact to closed-won, with reminders that keep leads from going cold.</p>
       </div>
-      <div class="feature-card fade-in">
-        <h3>Invoicing that gets you paid faster</h3>
-        <p>Generate branded invoices, automate payment reminders, and see exactly who owes you what.</p>
+      <div class="feature-card glass-effect photo-sway-3">
+        <h3 style="color: var(--white); font-weight: 700; font-size: 1.15rem; margin-bottom: 0.5rem;">Invoicing that gets you paid faster</h3>
+        <p style="font-size: 0.9rem; color: var(--fg-muted); line-height: 1.6;">Generate branded invoices, automate payment reminders, and see exactly who owes you what.</p>
       </div>
     </div>
   </section>
 
   <!-- ════ Interactive Product Tour ════ -->
   <section class="tour-section">
-    <div class="faq-title">Experience the Platform</div>
-    <div class="tour-tabs">
+    <div class="faq-title font-bagel text-shadow-medium" style="font-size: 2.5rem; letter-spacing: 0.02em;">Experience the Platform</div>
+    <div class="tour-tabs glass-effect" style="border-radius: 2rem;">
       <button class="tour-tab active" onclick="switchTourTab('projects')">Project Workspace</button>
       <button class="tour-tab" onclick="switchTourTab('crm')">Sales CRM</button>
       <button class="tour-tab" onclick="switchTourTab('invoices')">Billing &amp; Invoices</button>
     </div>
 
-    <div class="tour-viewports">
+    <div class="tour-viewports glass-effect" style="border-radius: var(--radius-lg);">
       <!-- Project Tour Panel -->
       <div id="tour-projects" class="tour-pane active">
-        <div class="mock-browser">
+        <div class="mock-browser glass-effect" style="background: rgba(15, 13, 12, 0.4);">
           <div class="mock-header">
             <span class="mock-dot" style="background:#ef4444"></span>
             <span class="mock-dot" style="background:#f59e0b"></span>
             <span class="mock-dot" style="background:#10b981"></span>
           </div>
           <div class="mock-content">
-            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Active Projects Plan</h4>
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700; color:var(--white);">Active Projects Plan</h4>
             <div class="mock-grid">
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Acme Brand Redesign</p>
-                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">70%</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem; color:var(--white);">70%</p>
                 <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
-                  <div style="width:70%; background:#d4af37; height:4px; border-radius:2px;"></div>
+                  <div style="width:70%; background:var(--primary); height:4px; border-radius:2px;"></div>
                 </div>
               </div>
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Nova Core Portal</p>
-                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">84%</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem; color:var(--white);">84%</p>
                 <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
-                  <div style="width:84%; background:#d4af37; height:4px; border-radius:2px;"></div>
+                  <div style="width:84%; background:var(--primary); height:4px; border-radius:2px;"></div>
                 </div>
               </div>
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Apex Datastore</p>
-                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">32%</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem; color:var(--white);">32%</p>
                 <div style="background:rgba(255,255,255,0.1); height:4px; border-radius:2px; margin-top:0.5rem;">
                   <div style="width:32%; background:#ef4444; height:4px; border-radius:2px;"></div>
                 </div>
               </div>
             </div>
-            <div class="mock-box" style="flex:1; font-size:0.85rem; color:var(--fg-muted);">
-              <strong>Upcoming Milestone:</strong> Rollout of CRM client dashboard next Wednesday. 4 team members
-              assigned.
+            <div class="mock-box glass-effect" style="flex:1; font-size:0.85rem; color:var(--fg-muted); border-radius: var(--radius);">
+              <strong style="color:var(--white);">Upcoming Milestone:</strong> Rollout of CRM client dashboard next Wednesday. 4 team members assigned.
             </div>
           </div>
         </div>
@@ -1257,35 +1516,33 @@
 
       <!-- CRM Tour Panel -->
       <div id="tour-crm" class="tour-pane">
-        <div class="mock-browser">
+        <div class="mock-browser glass-effect" style="background: rgba(15, 13, 12, 0.4);">
           <div class="mock-header">
             <span class="mock-dot" style="background:#ef4444"></span>
             <span class="mock-dot" style="background:#f59e0b"></span>
             <span class="mock-dot" style="background:#10b981"></span>
           </div>
           <div class="mock-content">
-            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Sales CRM Pipeline</h4>
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700; color:var(--white);">Sales CRM Pipeline</h4>
             <div class="mock-grid">
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Total Pipeline</p>
                 <p style="font-size:1.25rem; font-weight:800; color:#10b981; margin-top:0.25rem;">$50,000</p>
               </div>
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Active Contacts</p>
-                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem;">24 Leads</p>
+                <p style="font-size:1.25rem; font-weight:800; margin-top:0.25rem; color:var(--white);">24 Leads</p>
               </div>
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Won Deals</p>
-                <p style="font-size:1.25rem; font-weight:800; color:#d4af37; margin-top:0.25rem;">$45,000</p>
+                <p style="font-size:1.25rem; font-weight:800; color:var(--primary); margin-top:0.25rem;">$45,000</p>
               </div>
             </div>
-            <div class="mock-box"
-              style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center;">
+            <div class="mock-box glass-effect" style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center; border-radius: var(--radius);">
               <div>
-                <strong>Recent Deal:</strong> NovaTech Solutions ($24,000)
+                <strong style="color:var(--white);">Recent Deal:</strong> NovaTech Solutions ($24,000)
               </div>
-              <span
-                style="background:rgba(16,185,129,0.15); color:#10b981; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Negotiation</span>
+              <span style="background:rgba(16,185,129,0.15); color:#10b981; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Negotiation</span>
             </div>
           </div>
         </div>
@@ -1293,35 +1550,32 @@
 
       <!-- Invoices Tour Panel -->
       <div id="tour-invoices" class="tour-pane">
-        <div class="mock-browser">
+        <div class="mock-browser glass-effect" style="background: rgba(15, 13, 12, 0.4);">
           <div class="mock-header">
             <span class="mock-dot" style="background:#ef4444"></span>
             <span class="mock-dot" style="background:#f59e0b"></span>
             <span class="mock-dot" style="background:#10b981"></span>
           </div>
           <div class="mock-content">
-            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700;">Invoicing Summary</h4>
+            <h4 style="font-family:var(--font-heading); font-size:1.1rem; font-weight:700; color:var(--white);">Invoicing Summary</h4>
             <div class="mock-grid">
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Outstanding</p>
                 <p style="font-size:1.25rem; font-weight:800; color:#f59e0b; margin-top:0.25rem;">$13,900</p>
               </div>
-              <div class="mock-box">
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Paid (This Month)</p>
                 <p style="font-size:1.25rem; font-weight:800; color:#10b981; margin-top:0.25rem;">$11,700</p>
               </div>
-              <div class="mock-box">
-                <p style="font-size:0.75rem; color:var(--fg-muted); text-transform:uppercase;">Overdue</p>
+              <div class="mock-box glass-effect" style="border-radius: var(--radius);">
                 <p style="font-size:1.25rem; font-weight:800; color:#ef4444; margin-top:0.25rem;">$4,500</p>
               </div>
             </div>
-            <div class="mock-box"
-              style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center;">
+            <div class="mock-box glass-effect" style="flex:1; font-size:0.85rem; color:var(--fg-muted); display:flex; justify-content:space-between; align-items:center; border-radius: var(--radius);">
               <div>
-                <strong>INV-2026-002:</strong> NovaTech Solutions ($12,400)
+                <strong style="color:var(--white);">INV-2026-002:</strong> NovaTech Solutions ($12,400)
               </div>
-              <span
-                style="background:rgba(245,158,11,0.15); color:#f59e0b; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Pending</span>
+              <span style="background:rgba(245,158,11,0.15); color:#f59e0b; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:1rem;">Pending</span>
             </div>
           </div>
         </div>
@@ -1341,12 +1595,120 @@
     </div>
   </section>
 
+  <!-- Film Strip Section -->
+  <section class="film-strip-section">
+    <div class="film-strip-container">
+      <!-- Top Perforations -->
+      <div class="film-perforations top">
+        <div class="perforations-track perforations-scroll-animation">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      
+      <!-- Film Content Horizontal Scroll -->
+      <div class="film-content-track film-scroll-animation">
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">01</span>
+            <div class="film-frame-content">
+              <h4>TASK PIPELINE</h4>
+              <p>Real-time updates</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">02</span>
+            <div class="film-frame-content">
+              <h4>SSO SECURE</h4>
+              <p>Argon2 Isolation</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">03</span>
+            <div class="film-frame-content">
+              <h4>FAST INVOICES</h4>
+              <p>Automated Billing</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">04</span>
+            <div class="film-frame-content">
+              <h4>CRM CONTACTS</h4>
+              <p>Lead tracking</p>
+            </div>
+          </div>
+        </div>
+        <!-- Repeat for seamless scroll loop -->
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">01</span>
+            <div class="film-frame-content">
+              <h4>TASK PIPELINE</h4>
+              <p>Real-time updates</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">02</span>
+            <div class="film-frame-content">
+              <h4>SSO SECURE</h4>
+              <p>Argon2 Isolation</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">03</span>
+            <div class="film-frame-content">
+              <h4>FAST INVOICES</h4>
+              <p>Automated Billing</p>
+            </div>
+          </div>
+        </div>
+        <div class="film-frame">
+          <div class="film-frame-inner">
+            <span class="film-frame-number">04</span>
+            <div class="film-frame-content">
+              <h4>CRM CONTACTS</h4>
+              <p>Lead tracking</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bottom Perforations -->
+      <div class="film-perforations bottom">
+        <div class="perforations-track perforations-scroll-animation">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ════ Pricing ════ -->
   <section class="pricing" id="pricing">
     <div class="tour-section" style="padding: 0 0 1rem 0;">
-      <h2
-        style="font-family: var(--font-heading); font-size: 2rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">
-        Simple, transparent pricing</h2>
+      <h2 class="font-bagel text-shadow-medium" style="font-size: 2.5rem; color: var(--white); margin-bottom: 0.5rem; letter-spacing: 0.02em;">Simple, transparent pricing</h2>
       <p style="font-size: 1.05rem; color: var(--fg-muted);">Pick a plan that grows with your team.</p>
     </div>
 
@@ -1357,12 +1719,12 @@
         <span class="pricing-toggle-circle"></span>
       </div>
       <span class="pricing-toggle-label" id="yearly-label">Yearly</span>
-      <span class="discount-badge">Save 20%</span>
+      <span class="discount-badge" style="background: var(--primary);">Save 20%</span>
     </div>
 
     <div class="pricing-grid">
       <!-- Starter -->
-      <div class="pricing-card">
+      <div class="pricing-card glass-effect">
         <h3>Starter</h3>
         <div class="pricing-price" id="price-starter">$19<span>/mo per user</span></div>
         <p class="pricing-desc">For small teams getting organized</p>
@@ -1372,12 +1734,12 @@
           <li>10 invoices / month</li>
           <li>Email support</li>
         </ul>
-        <a href="#" class="btn-outline">Get Started</a>
+        <a href="#" class="btn-outline glass-effect">Get Started</a>
       </div>
 
       <!-- Growth (featured) -->
-      <div class="pricing-card pricing-card--featured">
-        <span class="pricing-badge">Most Popular</span>
+      <div class="pricing-card glass-effect pricing-card--featured" style="border-color: var(--primary);">
+        <span class="pricing-badge" style="background: var(--primary); box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);">Most Popular</span>
         <h3>Growth</h3>
         <div class="pricing-price" id="price-growth">$49<span>/mo per user</span></div>
         <p class="pricing-desc">For teams ready to scale</p>
@@ -1392,7 +1754,7 @@
       </div>
 
       <!-- Enterprise -->
-      <div class="pricing-card">
+      <div class="pricing-card glass-effect">
         <h3>Enterprise</h3>
         <div class="pricing-price">Custom</div>
         <p class="pricing-desc">For larger orgs with complex needs</p>
@@ -1402,19 +1764,18 @@
           <li>SSO &amp; advanced security</li>
           <li>Custom integrations</li>
         </ul>
-        <a href="#" class="btn-outline">Contact Sales</a>
+        <a href="#" class="btn-outline glass-effect">Contact Sales</a>
       </div>
     </div>
   </section>
 
   <!-- ════ Testimonial ════ -->
-  <section class="testimonial">
-    <p class="testimonial-quote">ForgeFlow replaced three separate tools for us and our team actually adopted it in a
-      week.</p>
-    <div class="testimonial-author">
-      <div class="testimonial-avatar">PN</div>
+  <section class="testimonial glass-effect" style="border-radius: var(--radius-lg); max-width: 900px; margin: 4rem auto; padding: 4rem 2rem;">
+    <p class="testimonial-quote" style="font-size: 1.5rem; line-height: 1.6; color: var(--white); font-weight: 500;">ForgeFlow replaced three separate tools for us and our team actually adopted it in a week.</p>
+    <div class="testimonial-author" style="margin-top: 2rem;">
+      <div class="testimonial-avatar" style="background: var(--primary); color: #fff; font-weight: 700; width: 3.5rem; height: 3.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25);">PN</div>
       <div class="testimonial-meta">
-        <strong>Priya Nair</strong>
+        <strong style="color: var(--white); font-size: 1.1rem;">Priya Nair</strong>
         <span>Operations Lead at Beacon Labs</span>
       </div>
     </div>
@@ -1422,9 +1783,9 @@
 
   <!-- ════ Interactive FAQ Section ════ -->
   <section class="faq-section">
-    <div class="faq-title">Frequently Asked Questions</div>
+    <div class="faq-title font-bagel text-shadow-medium" style="font-size: 2.5rem; letter-spacing: 0.02em;">Frequently Asked Questions</div>
     <div class="faq-list">
-      <div class="faq-item">
+      <div class="faq-item glass-effect">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
           What is included in the 14-day free trial?
           <span class="faq-icon">+</span>
@@ -1436,7 +1797,7 @@
           </div>
         </div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item glass-effect">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
           Can I change plans or cancel at any time?
           <span class="faq-icon">+</span>
@@ -1448,7 +1809,7 @@
           </div>
         </div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item glass-effect">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
           Is my business data secure on ForgeFlow?
           <span class="faq-icon">+</span>
@@ -1502,10 +1863,10 @@
 
   <!-- ════ Auth Modals & Cloudflare Turnstile ════ -->
   <div id="auth-modal" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card glass-effect" style="border-radius: var(--radius-lg);">
       <button class="modal-close" onclick="closeAuthModal()">&times;</button>
       <div id="modal-login-view">
-        <h2 class="modal-title">Welcome Back</h2>
+        <h2 class="modal-title font-bagel" style="font-size: 2rem;">Welcome Back</h2>
         <p class="modal-subtitle">Log in to your ForgeFlow account</p>
         <form onsubmit="handleAuthSubmit(event, 'login')">
           <div class="form-group">
@@ -1526,7 +1887,7 @@
       </div>
 
       <div id="modal-signup-view" style="display: none;">
-        <h2 class="modal-title">Create Account</h2>
+        <h2 class="modal-title font-bagel" style="font-size: 2rem;">Create Account</h2>
         <p class="modal-subtitle">Start your 14-day free trial today</p>
         <form onsubmit="handleAuthSubmit(event, 'signup')">
           <div class="form-group">
@@ -1571,13 +1932,12 @@
     }
     requestAnimationFrame(raf);
 
-    // ───── Parallax Video Background Scroll Handler ─────
+    // ───── Parallax Canvas Background Scroll Handler ─────
     lenis.on('scroll', (e) => {
-      const video = document.getElementById('bg-video');
-      if (video) {
-        const yOffset = -e.scroll * 0.05;
-        const scaleVal = 1.12 + (e.scroll * 0.00012);
-        video.style.transform = `translate3d(0, ${yOffset}px, 0) scale(${scaleVal})`;
+      const canvasBg = document.getElementById('bg-canvas');
+      if (canvasBg) {
+        const yOffset = -e.scroll * 0.04;
+        canvasBg.style.transform = `translate3d(0, ${yOffset}px, 0)`;
       }
     });
 
@@ -1749,7 +2109,7 @@
 
       const email = event.target.querySelector('input[type="email"]').value;
       const password = event.target.querySelector('input[type="password"]').value;
-      const fullNameInput = event.target.querySelector('input[placeholder="Your Full Name"]');
+      const fullNameInput = event.target.querySelector('#signup-name');
       const fullName = fullNameInput ? fullNameInput.value : '';
 
       const submitButton = event.target.querySelector('button[type="submit"]');
@@ -1881,6 +2241,250 @@
       const activeTheme = document.documentElement.classList.contains('light') ? 'dark' : 'light';
       updateTheme(activeTheme);
     });
+
+    // ───── Web Audio API Soundscape Synth ─────
+    let audioCtx = null;
+    let synthRunning = false;
+    let oscillators = [];
+    let filterNode = null;
+    let mainGain = null;
+
+    function initAmbientSynth() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+
+      mainGain = audioCtx.createGain();
+      mainGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(300, audioCtx.currentTime);
+      filterNode.Q.setValueAtTime(1, audioCtx.currentTime);
+
+      filterNode.connect(mainGain);
+      mainGain.connect(audioCtx.destination);
+
+      // Ethereal soundscape: C2, G2, C3, E3, G3, B3 chord nodes (harmonic minor/major mix)
+      const freqs = [65.41, 98.00, 130.81, 164.81, 196.00, 246.94];
+      
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        
+        osc.type = idx % 2 === 0 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        //Detune for slow chorus chorus
+        osc.detune.setValueAtTime((Math.random() - 0.5) * 12, audioCtx.currentTime);
+        oscGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        
+        // Gentle Volume LFO
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(0.05 + Math.random() * 0.05, audioCtx.currentTime);
+        lfoGain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        
+        lfo.connect(lfoGain);
+        lfoGain.connect(oscGain.gain);
+        
+        osc.connect(oscGain);
+        oscGain.connect(filterNode);
+        
+        osc.start();
+        lfo.start();
+        
+        oscillators.push({ osc, lfo });
+      });
+
+      // Filter modulation sweep LFO
+      const filterLfo = audioCtx.createOscillator();
+      const filterLfoGain = audioCtx.createGain();
+      filterLfo.type = 'sine';
+      filterLfo.frequency.setValueAtTime(0.04, audioCtx.currentTime);
+      filterLfoGain.gain.setValueAtTime(80, audioCtx.currentTime);
+      
+      filterLfo.connect(filterLfoGain);
+      filterLfoGain.connect(filterNode.frequency);
+      filterLfo.start();
+      
+      oscillators.push({ osc: filterLfo, lfo: null });
+    }
+
+    function toggleAmbientSound() {
+      const soundToggle = document.getElementById('sound-toggle');
+      const offIcon = soundToggle.querySelector('.sound-off-icon');
+      const onIcon = soundToggle.querySelector('.sound-on-icon');
+
+      if (!audioCtx) {
+        initAmbientSynth();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (!synthRunning) {
+        mainGain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 1.5);
+        synthRunning = true;
+        offIcon.style.display = 'none';
+        onIcon.style.display = 'block';
+        soundToggle.classList.add('active');
+      } else {
+        mainGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.8);
+        synthRunning = false;
+        offIcon.style.display = 'block';
+        onIcon.style.display = 'none';
+        soundToggle.classList.remove('active');
+      }
+    }
+
+    // ───── Interactive Particle Network Background ─────
+    (function() {
+      const canvas = document.getElementById('bg-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      let particles = [];
+      let width = 0;
+      let height = 0;
+      let mouse = { x: null, y: null, radius: 150 };
+      
+      function getColors() {
+        const isLight = document.documentElement.classList.contains('light');
+        return {
+          particle: isLight ? 'rgba(234, 88, 12, 0.45)' : 'rgba(249, 115, 22, 0.5)',
+          connection: isLight ? 'rgba(234, 88, 12, 0.08)' : 'rgba(249, 115, 22, 0.08)',
+          mouseConnection: isLight ? 'rgba(234, 88, 12, 0.15)' : 'rgba(249, 115, 22, 0.18)'
+        };
+      }
+      
+      let colors = getColors();
+      
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'class') {
+            colors = getColors();
+          }
+        });
+      });
+      observer.observe(document.documentElement, { attributes: true });
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      }
+      
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.4;
+          this.radius = Math.random() * 2 + 1;
+        }
+        
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+          
+          if (mouse.x !== null && mouse.y !== null) {
+            const dx = this.x - mouse.x;
+            const dy = this.y - mouse.y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < mouse.radius * mouse.radius) {
+              const dist = Math.sqrt(distSq);
+              const force = (mouse.radius - dist) / mouse.radius;
+              this.x += (dx / dist) * force * 0.6;
+              this.y += (dy / dist) * force * 0.6;
+            }
+          }
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = colors.particle;
+          ctx.fill();
+        }
+      }
+      
+      function initParticles() {
+        particles = [];
+        const count = Math.min(Math.floor((width * height) / 11000), 120);
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle());
+        }
+      }
+      
+      window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouse.x = null;
+        mouse.y = null;
+      });
+      
+      resize();
+      
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+        
+        const maxDistSq = 120 * 120;
+        for (let i = 0; i < particles.length; i++) {
+          const p1 = particles[i];
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < maxDistSq) {
+              const dist = Math.sqrt(distSq);
+              const alpha = (1 - dist / 120) * 0.55;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = colors.connection.replace('0.08', (alpha * 0.28).toFixed(3));
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+          
+          if (mouse.x !== null && mouse.y !== null) {
+            const dx = p1.x - mouse.x;
+            const dy = p1.y - mouse.y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < mouse.radius * mouse.radius) {
+              const dist = Math.sqrt(distSq);
+              const alpha = (1 - dist / mouse.radius) * 0.7;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = colors.mouseConnection.replace('0.18', (alpha * 0.35).toFixed(3)).replace('0.15', (alpha * 0.3).toFixed(3));
+              ctx.lineWidth = 1.0;
+              ctx.stroke();
+            }
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    })();
+
+    document.getElementById('sound-toggle').addEventListener('click', toggleAmbientSound);
   </script>
 </body>
 

@@ -105,6 +105,151 @@ export default function Home() {
     }
   }, [currentOrg, hasMounted, isAuthenticated]);
 
+  useEffect(() => {
+    const canvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = 0;
+    let height = 0;
+    let particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+    }> = [];
+    const mouse = { x: null as number | null, y: null as number | null, radius: 150 };
+
+    const getColors = () => {
+      const isLight = theme === "light";
+      return {
+        particle: isLight ? "rgba(234, 88, 12, 0.45)" : "rgba(249, 115, 22, 0.5)",
+        connection: isLight ? "rgba(234, 88, 12, 0.08)" : "rgba(249, 115, 22, 0.08)",
+        mouseConnection: isLight ? "rgba(234, 88, 12, 0.15)" : "rgba(249, 115, 22, 0.18)"
+      };
+    };
+
+    let colors = getColors();
+
+    const resize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initParticles();
+    };
+
+    const initParticles = () => {
+      particles = [];
+      const count = Math.min(Math.floor((width * height) / 11000), 120);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 2 + 1
+        });
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    resize();
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < mouse.radius * mouse.radius) {
+            const dist = Math.sqrt(distSq);
+            const force = (mouse.radius - dist) / mouse.radius;
+            p.x += (dx / dist) * force * 0.6;
+            p.y += (dy / dist) * force * 0.6;
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = colors.particle;
+        ctx.fill();
+      });
+
+      const maxDistSq = 120 * 120;
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < maxDistSq) {
+            const dist = Math.sqrt(distSq);
+            const alpha = (1 - dist / 120) * 0.55;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = colors.connection.replace("0.08", (alpha * 0.28).toFixed(3));
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = p1.x - mouse.x;
+          const dy = p1.y - mouse.y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < mouse.radius * mouse.radius) {
+            const dist = Math.sqrt(distSq);
+            const alpha = (1 - dist / mouse.radius) * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = colors.mouseConnection
+              .replace("0.18", (alpha * 0.35).toFixed(3))
+              .replace("0.15", (alpha * 0.3).toFixed(3));
+            ctx.lineWidth = 1.0;
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [theme, isAuthenticated]);
+
   if (!hasMounted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0a09]">
@@ -117,19 +262,11 @@ export default function Home() {
     return (
       <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground transition-colors duration-500">
         {}
-        <div className="fixed inset-0 -z-20 w-full h-full overflow-hidden">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute top-0 left-0 w-full h-full object-cover opacity-15 dark:opacity-18 transition-all duration-1000 grayscale dark:invert-0 invert-85"
-          >
-            <source
-              src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4"
-              type="video/mp4"
-            />
-          </video>
+        <div className="fixed inset-0 -z-20 w-full h-full overflow-hidden bg-background">
+          <canvas
+            id="bg-canvas"
+            className="absolute inset-0 w-full h-full opacity-35 pointer-events-none transition-all duration-1000"
+          />
           <div className="absolute inset-0 bg-radial from-transparent via-background/40 to-background -z-10" />
         </div>
 
