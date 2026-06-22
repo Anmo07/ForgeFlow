@@ -1589,6 +1589,85 @@
       justify-content: center;
       margin: 1.5rem 0;
     }
+
+    /* ───── Demo Modal Styles ───── */
+    .demo-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(12, 10, 15, 0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .demo-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+    .demo-modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      width: 90%;
+      max-width: 960px;
+      position: relative;
+      box-shadow: var(--glow);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .demo-modal.active .demo-modal-content {
+      transform: scale(1);
+    }
+    .demo-modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(29, 23, 38, 0.4);
+    }
+    .demo-modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .demo-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--fg-light);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .demo-modal-close:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--primary);
+    }
+    .demo-modal-body {
+      padding: 1rem;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 16/9;
+    }
+    .demo-modal-body img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0.5rem;
+    }
   </style>
 </head>
 
@@ -1634,7 +1713,7 @@
         workspace — so your team stops switching tools and starts shipping work.</p>
       <div class="hero-actions">
         <button class="btn-primary">Get Started</button>
-        <a href="#" class="btn-outline">Watch Demo</a>
+        <a href="javascript:void(0)" id="watch-demo-btn-html" class="btn-outline">Watch Demo</a>
       </div>
       <p class="hero-trust">No credit card required · Free 14-day trial</p>
     </div>
@@ -2419,7 +2498,52 @@
       const activeTheme = document.documentElement.classList.contains('light') ? 'dark' : 'light';
       updateTheme(activeTheme);
     });
-  </script>
-</body>
 
+    // Demo Modal Logic
+    const watchDemoBtn = document.getElementById('watch-demo-btn-html');
+    const demoModal = document.getElementById('demo-video-modal');
+    const demoModalCloseBtn = document.getElementById('demo-modal-close-btn');
+
+    if (watchDemoBtn && demoModal) {
+      watchDemoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        demoModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // prevent scrolling behind modal
+      });
+    }
+
+    if (demoModalCloseBtn && demoModal) {
+      demoModalCloseBtn.addEventListener('click', () => {
+        demoModal.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      // Close modal on click outside content
+      demoModal.addEventListener('click', (e) => {
+        if (e.target === demoModal) {
+          demoModal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  </script>
+
+  <!-- Demo Video Modal -->
+  <div id="demo-video-modal" class="demo-modal">
+    <div class="demo-modal-content">
+      <div class="demo-modal-header">
+        <div class="demo-modal-title">ForgeFlow Platform Walkthrough</div>
+        <button id="demo-modal-close-btn" class="demo-modal-close" aria-label="Close modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="demo-modal-body">
+        <img src="demo_video.webp" alt="ForgeFlow Platform Demo Video">
+      </div>
+    </div>
+  </div>
+</body>
 </html>

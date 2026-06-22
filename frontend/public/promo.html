@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForgeFlow Promo Video</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #130f1a;
+      --card-bg: rgba(29, 23, 38, 0.6);
+      --primary: #44ebd3;
+      --accent: #f9cbe5;
+      --text: #fafaf9;
+      --text-muted: #dcd7e0;
+      --text-dark: #a69cb0;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .video-container {
+      width: 960px;
+      height: 540px;
+      position: relative;
+      background: radial-gradient(circle at center, #261738 0%, #0d0a12 100%);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Grid overlay for tech look */
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 30px 30px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .glow-blob {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(68, 235, 211, 0.15) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: 2;
+      animation: float-blob 12s infinite alternate ease-in-out;
+    }
+
+    .glow-blob-pink {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249, 203, 229, 0.12) 0%, transparent 70%);
+      filter: blur(40px);
+      z-index: 2;
+      animation: float-blob-pink 10s infinite alternate-reverse ease-in-out;
+    }
+
+    @keyframes float-blob {
+      0% { top: -10%; left: -10%; }
+      100% { top: 50%; left: 60%; }
+    }
+
+    @keyframes float-blob-pink {
+      0% { bottom: -10%; right: -10%; }
+      100% { bottom: 60%; right: 50%; }
+    }
+    
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 40px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 10;
+      text-align: center;
+    }
+    
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .logo-container {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: logo-glow 3s infinite alternate ease-in-out;
+    }
+
+    @keyframes logo-glow {
+      0% { filter: drop-shadow(0 0 5px rgba(68, 235, 211, 0.2)); }
+      100% { filter: drop-shadow(0 0 20px rgba(68, 235, 211, 0.6)); }
+    }
+    
+    h1.title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      letter-spacing: -0.03em;
+    }
+    
+    h1.title span {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 680px;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+    
+    .feature-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(68, 235, 211, 0.08);
+      border: 1px solid rgba(68, 235, 211, 0.25);
+      color: var(--primary);
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+    
+    .card-grid {
+      display: grid;
+      grid-template-cols: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 840px;
+      margin-top: 10px;
+    }
+    
+    .feat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: left;
+      transition: border-color 0.3s;
+      backdrop-filter: blur(10px);
+    }
+    
+    .feat-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feat-card h3 svg {
+      color: var(--primary);
+    }
+    
+    .feat-card p {
+      font-size: 12px;
+      color: var(--text-dark);
+      line-height: 1.5;
+    }
+    
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 600px;
+      text-align: left;
+    }
+    
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      align-items: center;
+    }
+
+    .timeline-badge {
+      background: rgba(249, 203, 229, 0.1);
+      border: 1px solid rgba(249, 203, 229, 0.3);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      min-width: 90px;
+      text-align: center;
+    }
+    
+    .timeline-details h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .timeline-details p {
+      font-size: 11px;
+      color: var(--text-dark);
+      margin-top: 2px;
+    }
+    
+    .progress-bar-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 100;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      transition: width 0.05s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-container">
+    <div class="grid-overlay"></div>
+    <div class="glow-blob"></div>
+    <div class="glow-blob-pink"></div>
+    
+    <!-- SLIDE 1: INTRO -->
+    <div class="slide active" id="slide-1">
+      <div class="logo-container">
+        <img src="logo.png" width="100" height="100" style="border-radius: 20px;" alt="Logo">
+      </div>
+      <h1 class="title">Welcome to <span>ForgeFlow</span></h1>
+      <p class="subtitle">The Unified Command Center & Billing Automation Engine built specifically to scale Small and Medium MSPs.</p>
+    </div>
+    
+    <!-- SLIDE 2: MULTI-TENANT ISOLATION -->
+    <div class="slide" id="slide-2">
+      <span class="feature-badge">🛡️ Hardened Security</span>
+      <h1 class="title">Bulletproof <span>Tenant Isolation</span></h1>
+      <p class="subtitle">Secure client operations with strict database-layer filtering, cryptographic invitations, session revoking, and encrypted MFA protection.</p>
+      
+      <div class="card-grid">
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            ORM Event Filtering
+          </h3>
+          <p>Tenant constraints are automatically injected at the query layer. Cross-tenant leakages are structurally impossible.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            MFA & Session Revoking
+          </h3>
+          <p>Force MFA/TOTP setup with custom backup codes. Active logins are validated in real-time for immediate revocation.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Signed Invite Flows
+          </h3>
+          <p>No premature accounts. Time-limited, cryptographically signed invite tokens validate user setup.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- SLIDE 3: AUTOMATED BILLING -->
+    <div class="slide" id="slide-3">
+      <span class="feature-badge">💼 Billing Automation</span>
+      <h1 class="title">Stop <span>Revenue Leakage</span></h1>
+      <p class="subtitle">Consolidate operations. ForgeFlow's billing engine automatically generates invoices by aggregating retainers, seat licensing, and logged hours.</p>
+      
+      <div class="card-grid">
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Fixed Retainers
+          </h3>
+          <p>Establish monthly support contracts that automatically bill flat rates on recurring cycles.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Per-Seat Subscriptions
+          </h3>
+          <p>Billing contracts dynamically count active external client seats in the workspace and invoice proportionally.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            Time & Materials
+          </h3>
+          <p>Consolidated time logs from technical task updates feed directly into billing runs, eliminating unbilled work.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: TICKET INGRESS -->
+    <div class="slide" id="slide-4">
+      <span class="feature-badge">📬 Support Ingress</span>
+      <h1 class="title">Secure <span>Email Ticket Ingress</span></h1>
+      <p class="subtitle">Enable frictionless client ticketing via automatic email routing, while maintaining strict defense-in-depth protection.</p>
+      
+      <div class="card-grid">
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            HMAC Webhook Signatures
+          </h3>
+          <p>Every inbound ticket webhook signature is validated using secure HMAC/SHA-256 headers before routing.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l-7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            Attachment Quarantine
+          </h3>
+          <p>Files received via email are quarantined in isolated storage buckets until marked clean by security scanners.</p>
+        </div>
+        <div class="feat-card">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Auto-Provisioning
+          </h3>
+          <p>Inbound mail automatically provisions corresponding client support projects and ticket checklists.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- SLIDE 5: ROADMAP -->
+    <div class="slide" id="slide-5">
+      <span class="feature-badge">🚀 Upcoming Services</span>
+      <h1 class="title">The <span>ForgeFlow Roadmap</span></h1>
+      <p class="subtitle">Here is what we are building next to supercharge your Managed IT enterprise:</p>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-badge">Q3 2026</div>
+          <div class="timeline-details">
+            <h4>AI Smart-Routing Ticket Triage</h4>
+            <p>Classifies and assigns support requests using local LLM models based on content and priority.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-badge">Q4 2026</div>
+          <div class="timeline-details">
+            <h4>Live SLA Violations Alerting</h4>
+            <p>Active alerts with Webhook triggers notifying team channels when tickets approach response boundaries.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-badge">Q1 2027</div>
+          <div class="timeline-details">
+            <h4>QuickBooks & Xero Accounting Sync</h4>
+            <p>Syncs finalized invoices directly with major accounting ledgers in one click.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- SLIDE 6: OUTRO -->
+    <div class="slide" id="slide-6">
+      <div class="logo-container">
+        <img src="logo.png" width="80" height="80" style="border-radius: 16px;" alt="Logo">
+      </div>
+      <h1 class="title">Run From <span>One Screen</span></h1>
+      <p class="subtitle">Plugs revenue leaks. Solidifies client trust. Drives operational scale.</p>
+      <div style="margin-top: 20px; font-weight: 700; color: var(--primary); text-transform: uppercase; font-size: 14px; letter-spacing: 0.1em;">
+        Visit forgeflow.io / Start Your 14-Day Trial
+      </div>
+    </div>
+    
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="pb"></div>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('pb');
+    const slideDuration = 4000; // 4 seconds per slide
+    let currentSlide = 0;
+    let startTime = Date.now();
+    
+    function updateProgress() {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / slideDuration) * 100, 100);
+      progressBar.style.width = progress + '%';
+      
+      if (elapsed >= slideDuration) {
+        nextSlide();
+      } else {
+        requestAnimationFrame(updateProgress);
+      }
+    }
+    
+    function nextSlide() {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+      
+      startTime = Date.now();
+      requestAnimationFrame(updateProgress);
+    }
+    
+    // Start playback
+    requestAnimationFrame(updateProgress);
+  </script>
+</body>
+</html>

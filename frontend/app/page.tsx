@@ -18,6 +18,7 @@ import {
   Building,
   Moon,
   Sun,
+  X,
 } from "lucide-react";
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
@@ -61,6 +62,7 @@ export default function Home() {
     total_outstanding: 0,
     total_overdue: 0,
   });
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
@@ -189,12 +191,12 @@ export default function Home() {
                   Get Started
                   <ArrowRight className="size-4" />
                 </Link>
-                <Link
-                  href="/login"
+                <button
+                  onClick={() => setShowDemoModal(true)}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background/40 hover:bg-muted px-6 py-3.5 text-sm font-semibold transition-all"
                 >
                   Watch Demo
-                </Link>
+                </button>
               </div>
               <p className="text-xs text-muted-foreground">
                 No credit card required · Free 14-day trial
@@ -247,6 +249,30 @@ export default function Home() {
             </div>
           </div>
         </main>
+
+        {showDemoModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="relative w-full max-w-4xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col">
+              <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-muted/40">
+                <h3 className="text-lg font-bold text-foreground">ForgeFlow Platform Walkthrough</h3>
+                <button 
+                  onClick={() => setShowDemoModal(false)}
+                  className="p-1 rounded-full border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                  aria-label="Close modal"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+              <div className="aspect-video bg-black flex items-center justify-center p-2">
+                <img 
+                  src="/demo_video.webp" 
+                  alt="ForgeFlow Platform Demo Video" 
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
