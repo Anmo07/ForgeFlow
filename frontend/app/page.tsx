@@ -263,21 +263,12 @@ export default function Home() {
                   <X className="size-5" />
                 </button>
               </div>
-              <div className="aspect-video bg-black flex items-center justify-center p-0">
-                <video 
-                  controls 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline 
-                  className="w-full h-full object-cover"
-                >
-                  <source 
-                    src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4" 
-                    type="video/mp4" 
-                  />
-                  Your browser does not support the video tag.
-                </video>
+              <div className="aspect-video bg-[#130f1a] flex items-center justify-center p-0">
+                <iframe 
+                  src="/promo.html" 
+                  style={{ width: "100%", height: "100%", border: "none", overflow: "hidden" }} 
+                  scrolling="no"
+                ></iframe>
               </div>
             </div>
           </div>

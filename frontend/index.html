@@ -2504,16 +2504,15 @@
       const watchDemoBtn = document.getElementById('watch-demo-btn-html');
       const demoModal = document.getElementById('demo-video-modal');
       const demoModalCloseBtn = document.getElementById('demo-modal-close-btn');
-      const videoPlayer = document.getElementById('demo-video-player');
+      const videoIframe = document.getElementById('demo-video-iframe');
 
       if (watchDemoBtn && demoModal) {
         watchDemoBtn.addEventListener('click', (e) => {
           e.preventDefault();
           demoModal.classList.add('active');
           document.body.style.overflow = 'hidden'; // prevent scrolling behind modal
-          if (videoPlayer) {
-            videoPlayer.currentTime = 0;
-            videoPlayer.play().catch(err => console.log('Autoplay blocked:', err));
+          if (videoIframe) {
+            videoIframe.src = 'public/promo.html'; // load/restart presentation
           }
         });
       }
@@ -2522,8 +2521,8 @@
         if (demoModal) {
           demoModal.classList.remove('active');
           document.body.style.overflow = '';
-          if (videoPlayer) {
-            videoPlayer.pause();
+          if (videoIframe) {
+            videoIframe.src = 'about:blank'; // stop background execution
           }
         }
       }
@@ -2555,11 +2554,8 @@
           </svg>
         </button>
       </div>
-      <div class="demo-modal-body" style="padding: 0;">
-        <video id="demo-video-player" controls autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
-          <source src="https://video.wixstatic.com/video/d45ab0_eb14aac353594a8d8d6b087720904993/720p/mp4/file.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
+      <div class="demo-modal-body" style="padding: 0; background: #130f1a;">
+        <iframe id="demo-video-iframe" src="public/promo.html" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>
       </div>
     </div>
   </div>
