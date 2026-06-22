@@ -100,7 +100,8 @@
     }
 
     html.light .logo {
-      background: linear-gradient(135deg, #a0004a 0%, #005d58 100%); /* High contrast deep pink to deep teal */
+      background: linear-gradient(135deg, #a0004a 0%, #005d58 100%);
+      /* High contrast deep pink to deep teal */
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -1603,10 +1604,12 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
+
     .demo-modal.active {
       display: flex;
       opacity: 1;
     }
+
     .demo-modal-content {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -1621,9 +1624,11 @@
       display: flex;
       flex-direction: column;
     }
+
     .demo-modal.active .demo-modal-content {
       transform: scale(1);
     }
+
     .demo-modal-header {
       padding: 1.25rem 1.5rem;
       border-bottom: 1px solid var(--border);
@@ -1632,12 +1637,14 @@
       align-items: center;
       background: rgba(29, 23, 38, 0.4);
     }
+
     .demo-modal-title {
       font-family: var(--font-heading);
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--fg);
     }
+
     .demo-modal-close {
       background: transparent;
       border: none;
@@ -1650,10 +1657,12 @@
       align-items: center;
       justify-content: center;
     }
+
     .demo-modal-close:hover {
       background: rgba(255, 255, 255, 0.05);
       color: var(--primary);
     }
+
     .demo-modal-body {
       padding: 1rem;
       background: #000;
@@ -1662,6 +1671,7 @@
       align-items: center;
       aspect-ratio: 16/9;
     }
+
     .demo-modal-body img {
       width: 100%;
       height: 100%;
@@ -2548,16 +2558,19 @@
       <div class="demo-modal-header">
         <div class="demo-modal-title">ForgeFlow Platform Walkthrough</div>
         <button id="demo-modal-close-btn" class="demo-modal-close" aria-label="Close modal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
       <div class="demo-modal-body" style="padding: 0; background: #130f1a;">
-        <iframe id="demo-video-iframe" src="public/promo.html" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>
+        <iframe id="demo-video-iframe" src="public/promo.html"
+          style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>
       </div>
     </div>
   </div>
 </body>
+
 </html>
