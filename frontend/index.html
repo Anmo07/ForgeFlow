@@ -2500,32 +2500,34 @@
     });
 
     // Demo Modal Logic
-    const watchDemoBtn = document.getElementById('watch-demo-btn-html');
-    const demoModal = document.getElementById('demo-video-modal');
-    const demoModalCloseBtn = document.getElementById('demo-modal-close-btn');
+    document.addEventListener('DOMContentLoaded', () => {
+      const watchDemoBtn = document.getElementById('watch-demo-btn-html');
+      const demoModal = document.getElementById('demo-video-modal');
+      const demoModalCloseBtn = document.getElementById('demo-modal-close-btn');
 
-    if (watchDemoBtn && demoModal) {
-      watchDemoBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        demoModal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // prevent scrolling behind modal
-      });
-    }
+      if (watchDemoBtn && demoModal) {
+        watchDemoBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          demoModal.classList.add('active');
+          document.body.style.overflow = 'hidden'; // prevent scrolling behind modal
+        });
+      }
 
-    if (demoModalCloseBtn && demoModal) {
-      demoModalCloseBtn.addEventListener('click', () => {
-        demoModal.classList.remove('active');
-        document.body.style.overflow = '';
-      });
-
-      // Close modal on click outside content
-      demoModal.addEventListener('click', (e) => {
-        if (e.target === demoModal) {
+      if (demoModalCloseBtn && demoModal) {
+        demoModalCloseBtn.addEventListener('click', () => {
           demoModal.classList.remove('active');
           document.body.style.overflow = '';
-        }
-      });
-    }
+        });
+
+        // Close modal on click outside content
+        demoModal.addEventListener('click', (e) => {
+          if (e.target === demoModal) {
+            demoModal.classList.remove('active');
+            document.body.style.overflow = '';
+          }
+        });
+      }
+    });
   </script>
 
   <!-- Demo Video Modal -->
@@ -2541,7 +2543,7 @@
         </button>
       </div>
       <div class="demo-modal-body">
-        <img src="demo_video.webp" alt="ForgeFlow Platform Demo Video">
+        <img src="public/demo_video.webp" alt="ForgeFlow Platform Demo Video">
       </div>
     </div>
   </div>
