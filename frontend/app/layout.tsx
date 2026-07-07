@@ -1,18 +1,16 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "react-modal-video/css/modal-video.css";
 import ThemeInitializer from "@/components/theme-provider";
 import LayoutWrapper from "@/components/layout-wrapper";
+import { ThemeProvider } from "next-themes";
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 });
-
-export const metadata: Metadata = {
-  title: "ForgeFlow",
-  description: "ForgeFlow — all-in-one business operations platform",
-};
 
 export default function RootLayout({
   children,
@@ -20,10 +18,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html suppressHydrationWarning lang="en" className={`${inter.variable} h-full antialiased`}>
+      <head />
       <body className="min-h-full flex flex-col text-foreground">
-        <ThemeInitializer />
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <ThemeProvider attribute="class" enableSystem={false} defaultTheme="dark">
+          <ThemeInitializer />
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

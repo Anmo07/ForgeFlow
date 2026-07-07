@@ -16,14 +16,24 @@ import {
   ArrowUpRight,
   Loader2,
   Building,
-  Moon,
-  Sun,
-  X,
 } from "lucide-react";
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { useThemeStore } from "@/store/theme";
 import { apiFetch } from "@/lib/api";
+
+// Template landing page components
+import ScrollUp from "@/components/landing/Common/ScrollUp";
+import Hero from "@/components/landing/Hero";
+import Features from "@/components/landing/Features";
+import Video from "@/components/landing/Video";
+import Brands from "@/components/landing/Brands";
+import AboutSectionOne from "@/components/landing/About/AboutSectionOne";
+import AboutSectionTwo from "@/components/landing/About/AboutSectionTwo";
+import Testimonials from "@/components/landing/Testimonials";
+import Pricing from "@/components/landing/Pricing";
+import Blog from "@/components/landing/Blog";
+import Contact from "@/components/landing/Contact";
 
 interface CRMMetrics {
   pipeline_value: number;
@@ -46,7 +56,7 @@ interface Project {
 export default function Home() {
   const { currentOrg } = useOrgStore();
   const { user, isAuthenticated } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme } = useThemeStore();
 
   const [hasMounted, setHasMounted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,7 +72,6 @@ export default function Home() {
     total_outstanding: 0,
     total_overdue: 0,
   });
-  const [showDemoModal, setShowDemoModal] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
@@ -105,151 +114,6 @@ export default function Home() {
     }
   }, [currentOrg, hasMounted, isAuthenticated]);
 
-  useEffect(() => {
-    const canvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    let width = 0;
-    let height = 0;
-    let particles: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-    }> = [];
-    const mouse = { x: null as number | null, y: null as number | null, radius: 150 };
-
-    const getColors = () => {
-      const isLight = theme === "light";
-      return {
-        particle: isLight ? "rgba(234, 88, 12, 0.45)" : "rgba(249, 115, 22, 0.5)",
-        connection: isLight ? "rgba(234, 88, 12, 0.08)" : "rgba(249, 115, 22, 0.08)",
-        mouseConnection: isLight ? "rgba(234, 88, 12, 0.15)" : "rgba(249, 115, 22, 0.18)"
-      };
-    };
-
-    let colors = getColors();
-
-    const resize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      initParticles();
-    };
-
-    const initParticles = () => {
-      particles = [];
-      const count = Math.min(Math.floor((width * height) / 11000), 120);
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          radius: Math.random() * 2 + 1
-        });
-      }
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-
-    const handleMouseLeave = () => {
-      mouse.x = null;
-      mouse.y = null;
-    };
-
-    window.addEventListener("resize", resize);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
-
-    resize();
-
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
-
-        if (mouse.x !== null && mouse.y !== null) {
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
-          const distSq = dx * dx + dy * dy;
-          if (distSq < mouse.radius * mouse.radius) {
-            const dist = Math.sqrt(distSq);
-            const force = (mouse.radius - dist) / mouse.radius;
-            p.x += (dx / dist) * force * 0.6;
-            p.y += (dy / dist) * force * 0.6;
-          }
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = colors.particle;
-        ctx.fill();
-      });
-
-      const maxDistSq = 120 * 120;
-      for (let i = 0; i < particles.length; i++) {
-        const p1 = particles[i];
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const distSq = dx * dx + dy * dy;
-          if (distSq < maxDistSq) {
-            const dist = Math.sqrt(distSq);
-            const alpha = (1 - dist / 120) * 0.55;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = colors.connection.replace("0.08", (alpha * 0.28).toFixed(3));
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-
-        if (mouse.x !== null && mouse.y !== null) {
-          const dx = p1.x - mouse.x;
-          const dy = p1.y - mouse.y;
-          const distSq = dx * dx + dy * dy;
-          if (distSq < mouse.radius * mouse.radius) {
-            const dist = Math.sqrt(distSq);
-            const alpha = (1 - dist / mouse.radius) * 0.7;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.strokeStyle = colors.mouseConnection
-              .replace("0.18", (alpha * 0.35).toFixed(3))
-              .replace("0.15", (alpha * 0.3).toFixed(3));
-            ctx.lineWidth = 1.0;
-            ctx.stroke();
-          }
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [theme, isAuthenticated]);
-
   if (!hasMounted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0a09]">
@@ -258,162 +122,26 @@ export default function Home() {
     );
   }
 
+  // ─── Landing Page (unauthenticated) ───────────────────────────────
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground transition-colors duration-500">
-        {}
-        <div className="fixed inset-0 -z-20 w-full h-full overflow-hidden bg-background">
-          <canvas
-            id="bg-canvas"
-            className="absolute inset-0 w-full h-full opacity-35 pointer-events-none transition-all duration-1000"
-          />
-          <div className="absolute inset-0 bg-radial from-transparent via-background/40 to-background -z-10" />
-        </div>
-
-        {}
-        <header className="flex items-center justify-between px-8 h-18 border-b border-border bg-background/45 backdrop-blur-md z-10 sticky top-0 transition-colors duration-500">
-          <div className="text-xl font-extrabold tracking-tight text-foreground">
-            ForgeFlow
-          </div>
-          <nav className="flex items-center gap-1.5 sm:gap-4">
-            <Link
-              href="/login"
-              className="px-3.5 py-1.5 text-sm font-semibold rounded-lg hover:bg-muted text-foreground transition-colors"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/register"
-              className="px-3.5 py-1.5 text-sm font-semibold rounded-lg bg-primary hover:opacity-90 text-primary-foreground shadow transition-colors"
-            >
-              Sign Up
-            </Link>
-            <button
-              onClick={toggleTheme}
-              className="flex items-center rounded-full p-2 border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors ml-1"
-              aria-label="Toggle theme"
-            >
-              {theme === "light" ? (
-                <Moon className="size-4.5" />
-              ) : (
-                <Sun className="size-4.5" />
-              )}
-            </button>
-          </nav>
-        </header>
-
-        {}
-        <main className="flex-1 max-w-6xl mx-auto w-full px-6 flex flex-col justify-center py-12 md:py-20 z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {}
-            <div className="lg:col-span-7 bg-card/30 border border-border rounded-2xl p-8 md:p-10 backdrop-blur-md shadow-lg space-y-6">
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-semibold text-primary uppercase tracking-wide">
-                <Sparkles className="size-3 text-primary animate-pulse" />
-                ForgeFlow SaaS
-              </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
-                Run your business from{" "}
-                <span className="text-primary">one screen</span>, not seven tabs
-              </h1>
-              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
-                ForgeFlow brings your projects, customer relationships, and
-                invoicing into a single workspace — so your team stops switching
-                tools and starts shipping work.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3.5 text-sm font-semibold shadow hover:opacity-90 transition-all"
-                >
-                  Get Started
-                  <ArrowRight className="size-4" />
-                </Link>
-                <button
-                  onClick={() => setShowDemoModal(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background/40 hover:bg-muted px-6 py-3.5 text-sm font-semibold transition-all"
-                >
-                  Watch Demo
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                No credit card required · Free 14-day trial
-              </p>
-            </div>
-
-            {}
-            <div className="lg:col-span-5 flex flex-col gap-4">
-              {}
-              <div className="p-5 rounded-xl border border-border bg-card/20 backdrop-blur-md shadow-sm hover:border-primary/20 transition-all">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-blue-500/10 text-blue-500">
-                    <Briefcase className="size-4" />
-                  </span>
-                  Projects, on track automatically
-                </h3>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Assign tasks, set deadlines, and watch ForgeFlow flag
-                  bottlenecks before they slow your team down.
-                </p>
-              </div>
-
-              {}
-              <div className="p-5 rounded-xl border border-border bg-card/20 backdrop-blur-md shadow-sm hover:border-primary/20 transition-all">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500">
-                    <Users className="size-4" />
-                  </span>
-                  CRM your sales team actually uses
-                </h3>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Track every deal from first contact to closed-won, with
-                  reminders that keep leads from going cold.
-                </p>
-              </div>
-
-              {}
-              <div className="p-5 rounded-xl border border-border bg-card/20 backdrop-blur-md shadow-sm hover:border-primary/20 transition-all">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <span className="p-1 rounded-lg bg-primary/10 text-primary">
-                    <FileText className="size-4" />
-                  </span>
-                  Invoicing that gets you paid faster
-                </h3>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Generate branded invoices, automate payment reminders, and see
-                  exactly who owes you what.
-                </p>
-              </div>
-            </div>
-          </div>
-        </main>
-
-        {showDemoModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-4xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col">
-              <div className="flex justify-between items-center px-6 py-4 border-b border-border bg-muted/40">
-                <h3 className="text-lg font-bold text-foreground">ForgeFlow Platform Walkthrough</h3>
-                <button 
-                  onClick={() => setShowDemoModal(false)}
-                  className="p-1 rounded-full border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
-                  aria-label="Close modal"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-              <div className="aspect-video bg-[#130f1a] flex items-center justify-center p-0">
-                <iframe 
-                  src="/promo.html" 
-                  style={{ width: "100%", height: "100%", border: "none", overflow: "hidden" }} 
-                  scrolling="no"
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <>
+        <ScrollUp />
+        <Hero />
+        <Features />
+        <Video />
+        <Brands />
+        <AboutSectionOne />
+        <AboutSectionTwo />
+        <Testimonials />
+        <Pricing />
+        <Blog />
+        <Contact />
+      </>
     );
   }
 
+  // ─── Authenticated: No org selected ───────────────────────────────
   if (!currentOrg) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -429,6 +157,7 @@ export default function Home() {
     );
   }
 
+  // ─── Authenticated Dashboard ──────────────────────────────────────
   return (
     <div className="space-y-8 p-1 animate-in fade-in-50 duration-500">
       {}

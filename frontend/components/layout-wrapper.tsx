@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import Header from "@/components/ui/header";
 import Sidebar from "@/components/ui/sidebar";
+import LandingHeader from "@/components/landing/Header";
+import LandingFooter from "@/components/landing/Footer";
+import ScrollToTop from "@/components/landing/ScrollToTop";
 
 export default function LayoutWrapper({
   children,
@@ -26,6 +29,18 @@ export default function LayoutWrapper({
     { href: "/invoices", label: "Invoices" },
     { href: "/settings/members", label: "Org Settings" },
   ];
+
+  // Landing page (unauthenticated, not on auth pages)
+  if (!isAuthenticated && !isAuthPage) {
+    return (
+      <div className="min-h-screen flex flex-col w-full bg-[#FCFCFC] dark:bg-black">
+        <LandingHeader />
+        <div className="flex-1">{children}</div>
+        <LandingFooter />
+        <ScrollToTop />
+      </div>
+    );
+  }
 
   if (!showAppLayout) {
     return (
