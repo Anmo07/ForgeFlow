@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 const AboutSectionTwo = () => {
   return (
     <section className="py-16 md:py-20 lg:py-28">
@@ -10,47 +8,47 @@ const AboutSectionTwo = () => {
               className="wow fadeInUp relative mx-auto mb-12 aspect-[25/24] max-w-[500px] text-center lg:m-0"
               data-wow-delay=".15s"
             >
-              <Image
-                src="/images/about/about-image-2.svg"
-                alt="about image"
-                fill
-                className="drop-shadow-three dark:hidden dark:drop-shadow-none"
-              />
-              <Image
-                src="/images/about/about-image-2-dark.svg"
-                alt="about image"
-                fill
-                className="drop-shadow-three hidden dark:block dark:drop-shadow-none"
-              />
+              <div className="flex items-center justify-center h-full rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20">
+                <div className="text-center p-8">
+                  <div className="text-6xl mb-4">🔒</div>
+                  <h3 className="text-xl font-bold text-dark dark:text-white mb-2">Enterprise-Grade Security</h3>
+                  <p className="text-body-color dark:text-body-color-dark text-sm">
+                    Every layer of ForgeFlow is hardened — from Cloudflare edge protection to field-level encryption at rest.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           <div className="w-full px-4 lg:w-1/2">
             <div className="wow fadeInUp max-w-[470px]" data-wow-delay=".2s">
               <div className="mb-9">
                 <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Bug free code
+                  Zero-Trust Architecture
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Every API request is authenticated via JWT cookies with CSRF
+                  protection, rate limiting, and automatic session revocation.
+                  Cloudflare Tunnel eliminates exposed ingress ports entirely.
                 </p>
               </div>
               <div className="mb-9">
                 <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Premier support
+                  Tenant Data Isolation
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt.
+                  SQLAlchemy event listeners automatically inject tenant
+                  constraints at the ORM level — making cross-tenant data
+                  leakage structurally impossible.
                 </p>
               </div>
               <div className="mb-1">
                 <h3 className="mb-4 text-xl font-bold text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                  Next.js
+                  Production-Ready Stack
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                  Lorem ipsum dolor sit amet, sed do eiusmod tempor incididunt
-                  consectetur adipiscing elit setim.
+                  Built on Next.js 15, FastAPI, PostgreSQL with PgBouncer,
+                  Redis, and Celery — containerized with Docker Compose for
+                  one-command deployment.
                 </p>
               </div>
             </div>

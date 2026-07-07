@@ -11,8 +11,8 @@ const Pricing = () => {
     <section id="pricing" className="relative z-10 py-16 md:py-20 lg:py-28">
       <div className="container">
         <SectionTitle
-          title="Simple and Affordable Pricing"
-          paragraph="There are many variations of passages of Lorem Ipsum available but the majority have suffered alteration in some form."
+          title="Simple and Transparent Pricing"
+          paragraph="Choose the plan that fits your MSP. All plans include multi-tenant isolation, Cloudflare security, and unlimited team members."
           center
           width="665px"
         />
@@ -62,43 +62,43 @@ const Pricing = () => {
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
           <PricingBox
-            packageName="Lite"
-            price={isMonthly ? "40" : "120"}
+            packageName="Starter"
+            price={isMonthly ? "49" : "470"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="Perfect for solo IT consultants and small MSPs getting started."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="inactive" />
-            <OfferList text="Free Lifetime Updates" status="inactive" />
+            <OfferList text="Up to 3 Team Members" status="active" />
+            <OfferList text="CRM & Lead Pipeline" status="active" />
+            <OfferList text="Project Kanban Board" status="active" />
+            <OfferList text="Basic Invoicing" status="active" />
+            <OfferList text="Cloudflare Turnstile" status="active" />
+            <OfferList text="MFA / TOTP Security" status="inactive" />
           </PricingBox>
           <PricingBox
-            packageName="Basic"
-            price={isMonthly ? "399" : "789"}
+            packageName="Professional"
+            price={isMonthly ? "149" : "1430"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="For growing MSPs that need full billing automation and security."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="active" />
-            <OfferList text="Free Lifetime Updates" status="inactive" />
+            <OfferList text="Up to 15 Team Members" status="active" />
+            <OfferList text="Advanced CRM with Analytics" status="active" />
+            <OfferList text="Automated Billing Engine" status="active" />
+            <OfferList text="PDF Invoice Generation" status="active" />
+            <OfferList text="MFA / TOTP + Session Mgmt" status="active" />
+            <OfferList text="Field-Level Encryption" status="inactive" />
           </PricingBox>
           <PricingBox
-            packageName="Plus"
-            price={isMonthly ? "589" : "999"}
+            packageName="Enterprise"
+            price={isMonthly ? "399" : "3830"}
             duration={isMonthly ? "mo" : "yr"}
-            subtitle="Lorem ipsum dolor sit amet adiscing elit Mauris egestas enim."
+            subtitle="Unlimited scale for established MSPs with enterprise compliance needs."
           >
-            <OfferList text="All UI Components" status="active" />
-            <OfferList text="Use with Unlimited Projects" status="active" />
-            <OfferList text="Commercial Use" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Lifetime Access" status="active" />
-            <OfferList text="Free Lifetime Updates" status="active" />
+            <OfferList text="Unlimited Team Members" status="active" />
+            <OfferList text="Full CRM + Billing Suite" status="active" />
+            <OfferList text="Cloudflare Tunnel Ingress" status="active" />
+            <OfferList text="Field-Level Encryption" status="active" />
+            <OfferList text="SSO / SAML Integration" status="active" />
+            <OfferList text="Priority Support & SLA" status="active" />
           </PricingBox>
         </div>
       </div>

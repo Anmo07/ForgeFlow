@@ -5,29 +5,29 @@ import SingleTestimonial from "./SingleTestimonial";
 const testimonialData: Testimonial[] = [
   {
     id: 1,
-    name: "Musharof Chy",
-    designation: "Founder @TailGrids",
+    name: "Sarah Mitchell",
+    designation: "Operations Director, NovaTech MSP",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
-    image: "/images/testimonials/auth-01.png",
+      "ForgeFlow replaced four separate tools for us. CRM, invoicing, project tracking, and client portals — all in one place. Our billing accuracy improved by 40% in the first month.",
+    image: "",
     star: 5,
   },
   {
     id: 2,
-    name: "Devid Weilium",
-    designation: "Founder @UIdeck",
+    name: "James Chen",
+    designation: "Founder, CloudBridge IT",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
-    image: "/images/testimonials/auth-02.png",
+      "The automated billing engine is a game-changer. We went from spending 8 hours a week on invoicing to fully automated runs. The multi-tenant isolation gives our clients peace of mind.",
+    image: "",
     star: 5,
   },
   {
     id: 3,
-    name: "Lethium Frenci",
-    designation: "Founder @Lineicons",
+    name: "Priya Sharma",
+    designation: "CTO, ManagedOps Group",
     content:
-      "Our members are so impressed. It's intuitive. It's clean. It's distraction free. If you're building a community.",
-    image: "/images/testimonials/auth-03.png",
+      "The security architecture is enterprise-grade — MFA, field encryption, Cloudflare tunnel integration. We passed our SOC 2 audit with flying colors thanks to ForgeFlow's built-in controls.",
+    image: "",
     star: 5,
   },
 ];
@@ -37,8 +37,8 @@ const Testimonials = () => {
     <section className="dark:bg-bg-color-dark bg-gray-light relative z-10 py-16 md:py-20 lg:py-28">
       <div className="container">
         <SectionTitle
-          title="What Our Users Says"
-          paragraph="There are many variations of passages of Lorem Ipsum available but the majority have suffered alteration in some form."
+          title="Trusted by IT Service Providers"
+          paragraph="See how MSPs and IT consultants are transforming their operations with ForgeFlow's unified platform."
           center
         />
 

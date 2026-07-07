@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserPlus, Mail, Lock, User, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, User, Loader2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { apiFetch } from "@/lib/api";
 
@@ -13,11 +13,32 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [acceptTOS, setAcceptTOS] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string>("");
+  const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+
+  // Password strength logic
+  const getPasswordStrength = (pass: string) => {
+    let score = 0;
+    if (!pass) return { score: 0, label: "", color: "bg-gray-200 dark:bg-gray-800" };
+    if (pass.length > 8) score += 1;
+    if (pass.length > 12) score += 1;
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+    
+    if (score < 2) return { score, label: "Weak", color: "bg-red-500" };
+    if (score < 4) return { score, label: "Medium", color: "bg-yellow-500" };
+    return { score, label: "Strong", color: "bg-emerald-500" };
+  };
+
+  const strength = getPasswordStrength(password);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -28,7 +49,7 @@ export default function RegisterPage() {
     (window as unknown as Record<string, unknown>).onTurnstileLoad = () => {
       if (turnstileRef.current && window.turnstile) {
         widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
-          sitekey: "1x00000000000000000000AA",
+          sitekey: turnstileKey,
           theme: "dark",
           callback: (token: string) => setTurnstileToken(token),
         });
@@ -52,6 +73,16 @@ export default function RegisterPage() {
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!acceptTOS) {
+      setError("You must accept the Terms of Service to register.");
       return;
     }
 
@@ -179,14 +210,77 @@ export default function RegisterPage() {
                 <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="reg-password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+              {password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-muted-foreground">Password strength</span>
+                    <span className={strength.label === "Weak" ? "text-red-500" : strength.label === "Medium" ? "text-yellow-500" : "text-emerald-500 font-medium"}>
+                      {strength.label}
+                    </span>
+                  </div>
+                  <div className="flex gap-1 h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div className={`h-full ${strength.color} transition-all duration-300`} style={{ width: `${(strength.score / 5) * 100}%` }}></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="reg-confirm-password"
+                className="block text-sm font-medium mb-1.5"
+              >
+                Confirm Password
+              </label>
+              <div className="relative">
+                <ShieldCheck className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <input
+                  id="reg-confirm-password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
                   className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
+            </div>
+
+            <div className="flex items-start gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="tos-checkbox"
+                required
+                checked={acceptTOS}
+                onChange={(e) => setAcceptTOS(e.target.checked)}
+                className="mt-1 border-border rounded text-primary focus:ring-primary h-4 w-4"
+              />
+              <label htmlFor="tos-checkbox" className="text-sm text-muted-foreground">
+                I agree to the{" "}
+                <Link href="#" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="#" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </label>
             </div>
 
             <div ref={turnstileRef} className="flex justify-center" />

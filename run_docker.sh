@@ -15,7 +15,7 @@ cd "$(dirname "$0")"
 
 # 1. Build and bring up core databases (postgres, redis, minio)
 echo -e "${YELLOW}1. Starting databases (Postgres, Redis, MinIO)...${NC}"
-docker compose -f infra/docker-compose.yml up -d postgres redis minio
+docker compose --env-file .env -f infra/docker-compose.yml up -d postgres redis minio
 
 # 2. Wait for Postgres to become healthy
 echo -e "${YELLOW}2. Waiting for Postgres database to be healthy...${NC}"
@@ -27,20 +27,24 @@ echo -e "\n${GREEN}Postgres is healthy!${NC}"
 
 # Build the backend image to ensure any config changes (like alembic.ini) are compiled
 echo -e "${YELLOW}Building backend image...${NC}"
-docker compose -f infra/docker-compose.yml build backend
+docker compose --env-file .env -f infra/docker-compose.yml build backend
 
 # 3. Run migrations on backend
 echo -e "${YELLOW}3. Running database migrations (Alembic)...${NC}"
 
-docker compose -f infra/docker-compose.yml run --rm backend alembic upgrade head
+docker compose --env-file .env -f infra/docker-compose.yml run --rm \
+  -e DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/forgeflow \
+  backend alembic upgrade head
 
 # 4. Seed database
 echo -e "${YELLOW}4. Seeding development database...${NC}"
-docker compose -f infra/docker-compose.yml run --rm backend python scripts/seed_data.py
+docker compose --env-file .env -f infra/docker-compose.yml run --rm \
+  -e DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/forgeflow \
+  backend python scripts/seed_data.py
 
 # 5. Build and bring up the rest of the stack
 echo -e "${YELLOW}5. Launching the complete application stack (Backend, Frontend, Celery, Nginx, Prometheus)...${NC}"
-docker compose -f infra/docker-compose.yml up -d --build
+docker compose --env-file .env -f infra/docker-compose.yml up -d --build
 
 echo -e "${GREEN}=== ForgeFlow is fully containerized and running! ===${NC}"
 echo -e "${BLUE}Services are mapped as follows:${NC}"

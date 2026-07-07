@@ -33,7 +33,7 @@ services:
       - POOL_MODE=transaction
       - MAX_CLIENT_CONN=1000
       - DEFAULT_POOL_SIZE=20
-      - AUTH_TYPE=any
+      - AUTH_TYPE=md5
     ports:
       - "6432:6432"
     depends_on:
@@ -159,6 +159,18 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "127.0.0.1:9090:9090"
+    networks:
+      - forgeflow_net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: forgeflow_tunnel
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - nginx
     networks:
       - forgeflow_net
 
