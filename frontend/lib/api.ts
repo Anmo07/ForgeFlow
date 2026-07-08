@@ -153,22 +153,41 @@ function getMockDataForPath(path: string): any {
   }
   
   if (url.includes("/api/organizations")) {
-    const baseOrgs = [
-      { id: 1, uuid: "org-1", name: "Demo MSP Org", slug: "demo-msp-org" },
-      { id: 2, uuid: "org-2", name: "NovaTech Operations", slug: "novatech-ops" },
-      { id: 3, uuid: "org-3", name: "Apex Cloud Consulting", slug: "apex-cloud" }
-    ];
     if (typeof window !== "undefined") {
       try {
-        const customOrgs = localStorage.getItem("forgeflow_custom_organizations");
-        if (customOrgs) {
-          return [...baseOrgs, ...JSON.parse(customOrgs)];
+        const authData = localStorage.getItem("forgeflow-auth");
+        let currentUserEmail = "";
+        if (authData) {
+          const parsed = JSON.parse(authData);
+          currentUserEmail = parsed.state?.user?.email || "";
         }
+
+        const customOrgs = localStorage.getItem("forgeflow_custom_organizations");
+        const allOrgs = customOrgs ? JSON.parse(customOrgs) : [];
+        
+        // Seed default organization only for the default admin mock user
+        if (currentUserEmail === "admin@company.com") {
+          const hasAdminOrg = allOrgs.some((o: any) => o.slug === "admin-corp");
+          if (!hasAdminOrg) {
+            allOrgs.push({ id: 999, uuid: "org-999", name: "Admin Corp", slug: "admin-corp", ownerEmail: "admin@company.com" });
+            localStorage.setItem("forgeflow_custom_organizations", JSON.stringify(allOrgs));
+          }
+        } else if (currentUserEmail === "ops@company.com") {
+          const hasOpsOrg = allOrgs.some((o: any) => o.slug === "ops-corp");
+          if (!hasOpsOrg) {
+            allOrgs.push({ id: 998, uuid: "org-998", name: "Ops Corp", slug: "ops-corp", ownerEmail: "ops@company.com" });
+            localStorage.setItem("forgeflow_custom_organizations", JSON.stringify(allOrgs));
+          }
+        }
+
+        // Filter organizations belonging to the current user
+        const userOrgs = allOrgs.filter((org: any) => org.ownerEmail === currentUserEmail);
+        return userOrgs;
       } catch (e) {
         console.error("Failed to parse custom organizations", e);
       }
     }
-    return baseOrgs;
+    return [];
   }
   
   // Default fallback

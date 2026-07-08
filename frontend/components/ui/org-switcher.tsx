@@ -17,8 +17,12 @@ export default function OrgSwitcher() {
       const data = await apiFetch<Organization[]>("/api/organizations/");
       setOrgs(data);
 
-      if (data.length > 0 && !currentOrg) {
+      // Enforce data isolation: currentOrg must belong to the active user's org list
+      const isValidOrg = data.some(o => o.id === currentOrg?.id);
+      if (data.length > 0 && (!currentOrg || !isValidOrg)) {
         setCurrentOrg(data[0]);
+      } else if (data.length === 0) {
+        setCurrentOrg(null);
       }
     } catch (error) {
       console.error("Error fetching organizations:", error);
@@ -44,12 +48,22 @@ export default function OrgSwitcher() {
     const name = prompt("Enter new organization name:");
     if (!name || !name.trim()) return;
 
+    let currentUserEmail = "";
+    try {
+      const authData = localStorage.getItem("forgeflow-auth");
+      if (authData) {
+        const parsed = JSON.parse(authData);
+        currentUserEmail = parsed.state?.user?.email || "";
+      }
+    } catch (e) {}
+
     const newOrg: Organization = {
       id: Date.now(),
       uuid: `org-${Date.now()}`,
       name: name.trim(),
       slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     };
+    (newOrg as any).ownerEmail = currentUserEmail;
 
     try {
       const customOrgs = JSON.parse(localStorage.getItem("forgeflow_custom_organizations") || "[]");
