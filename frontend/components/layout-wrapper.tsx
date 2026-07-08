@@ -19,19 +19,25 @@ export default function LayoutWrapper({
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
+  const isPublicPage =
+    pathname === "/" ||
+    pathname.startsWith("/features") ||
+    pathname === "/terms" ||
+    pathname === "/privacy";
+
   const showAppLayout =
-    isAuthenticated && !isAuthPage && pathname !== "/_not-found";
+    isAuthenticated && !isAuthPage && !isPublicPage && pathname !== "/_not-found";
 
   const sidebarItems = [
-    { href: "/", label: "Dashboard" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/projects", label: "Projects" },
     { href: "/crm", label: "CRM" },
     { href: "/invoices", label: "Invoices" },
     { href: "/settings/members", label: "Org Settings" },
   ];
 
-  // Landing page (unauthenticated, not on auth pages)
-  if (!isAuthenticated && !isAuthPage) {
+  // Landing page / public routes (for unauthenticated users or landing layouts)
+  if (!showAppLayout && !isAuthPage) {
     return (
       <div className="min-h-screen flex flex-col w-full">
         <LandingHeader />

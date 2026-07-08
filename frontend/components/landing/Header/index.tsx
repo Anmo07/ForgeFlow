@@ -4,8 +4,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
+import { useAuthStore } from "@/store/auth";
 
 const Header = () => {
+  const { isAuthenticated } = useAuthStore();
   // Navbar toggle
   const [navbarOpen, setNavbarOpen] = useState(false);
   const navbarToggleHandler = () => {
@@ -150,18 +152,29 @@ const Header = () => {
                 </nav>
               </div>
               <div className="flex items-center justify-end gap-3 pr-16 lg:pr-0">
-                <Link
-                  href="/login"
-                  className="hidden px-5 py-2.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors duration-300 md:block"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="hidden rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 md:block"
-                >
-                  Sign Up
-                </Link>
+                {isAuthenticated ? (
+                  <Link
+                    href="/dashboard"
+                    className="hidden rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 md:block"
+                  >
+                    Go to Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="hidden px-5 py-2.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors duration-300 md:block"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="hidden rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 md:block"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
                 <div>
                   <ThemeToggler />
                 </div>

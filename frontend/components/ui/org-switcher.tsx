@@ -5,8 +5,10 @@ import { useOrgStore, Organization } from "@/store/organization";
 import { Building2, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function OrgSwitcher() {
+  const router = useRouter();
   const { currentOrg, setCurrentOrg } = useOrgStore();
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [open, setOpen] = useState(false);
@@ -45,42 +47,8 @@ export default function OrgSwitcher() {
   };
 
   const handleCreateOrg = () => {
-    const name = prompt("Enter new organization name:");
-    if (!name || !name.trim()) return;
-
-    let currentUserEmail = "";
-    try {
-      const authData = localStorage.getItem("forgeflow-auth");
-      if (authData) {
-        const parsed = JSON.parse(authData);
-        currentUserEmail = parsed.state?.user?.email || "";
-      }
-    } catch (e) {}
-
-    const newOrg: Organization = {
-      id: Date.now(),
-      uuid: `org-${Date.now()}`,
-      name: name.trim(),
-      slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-    };
-    (newOrg as any).ownerEmail = currentUserEmail;
-
-    try {
-      const customOrgs = JSON.parse(localStorage.getItem("forgeflow_custom_organizations") || "[]");
-      customOrgs.push(newOrg);
-      localStorage.setItem("forgeflow_custom_organizations", JSON.stringify(customOrgs));
-      
-      // Update local state and set active
-      setOrgs((prev) => [...prev, newOrg]);
-      setCurrentOrg(newOrg);
-      setOpen(false);
-
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("orgChanged"));
-      }
-    } catch (e) {
-      console.error("Failed to create organization", e);
-    }
+    setOpen(false);
+    router.push("/organizations/create");
   };
 
   return (
