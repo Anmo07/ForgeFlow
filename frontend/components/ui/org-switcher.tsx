@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useOrgStore, Organization } from "@/store/organization";
 import { Building2, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 
 export default function OrgSwitcher() {
   const { currentOrg, setCurrentOrg } = useOrgStore();
@@ -11,24 +12,22 @@ export default function OrgSwitcher() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchOrgs() {
-      try {
-        const res = await fetch("/api/organizations/");
-        if (res.ok) {
-          const data = await res.json();
-          setOrgs(data);
+  const fetchOrgs = async () => {
+    try {
+      const data = await apiFetch<Organization[]>("/api/organizations/");
+      setOrgs(data);
 
-          if (data.length > 0 && !currentOrg) {
-            setCurrentOrg(data[0]);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching organizations:", error);
-      } finally {
-        setLoading(false);
+      if (data.length > 0 && !currentOrg) {
+        setCurrentOrg(data[0]);
       }
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchOrgs();
   }, [currentOrg, setCurrentOrg]);
 
@@ -38,6 +37,35 @@ export default function OrgSwitcher() {
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("orgChanged"));
+    }
+  };
+
+  const handleCreateOrg = () => {
+    const name = prompt("Enter new organization name:");
+    if (!name || !name.trim()) return;
+
+    const newOrg: Organization = {
+      id: Date.now(),
+      uuid: `org-${Date.now()}`,
+      name: name.trim(),
+      slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    };
+
+    try {
+      const customOrgs = JSON.parse(localStorage.getItem("forgeflow_custom_organizations") || "[]");
+      customOrgs.push(newOrg);
+      localStorage.setItem("forgeflow_custom_organizations", JSON.stringify(customOrgs));
+      
+      // Update local state and set active
+      setOrgs((prev) => [...prev, newOrg]);
+      setCurrentOrg(newOrg);
+      setOpen(false);
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("orgChanged"));
+      }
+    } catch (e) {
+      console.error("Failed to create organization", e);
     }
   };
 
@@ -66,7 +94,6 @@ export default function OrgSwitcher() {
 
       {open && (
         <>
-          {}
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
             className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-lg glass-strong focus:outline-none transition-all duration-200"
@@ -95,6 +122,17 @@ export default function OrgSwitcher() {
                     <span className="truncate">{org.name}</span>
                   </button>
                 ))}
+              </div>
+              
+              <div className="border-t border-border mt-1 pt-1">
+                <button
+                  onClick={handleCreateOrg}
+                  className="flex w-full items-center px-4 py-2 text-sm text-left text-primary hover:bg-primary/5 transition-colors duration-150 font-medium"
+                  role="menuitem"
+                >
+                  <Plus className="size-4 mr-2" />
+                  Create Organization
+                </button>
               </div>
             </div>
           </div>

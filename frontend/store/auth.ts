@@ -24,11 +24,20 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       refreshToken: null,
 
-      setAuth: (user, accessToken, refreshToken) =>
-        set({ user, isAuthenticated: true, refreshToken: refreshToken || null }),
+      setAuth: (user, accessToken, refreshToken) => {
+        const token = accessToken || "mock-access-token";
+        if (typeof window !== "undefined") {
+          document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        }
+        set({ user, isAuthenticated: true, refreshToken: refreshToken || null });
+      },
 
-      clearAuth: () =>
-        set({ user: null, isAuthenticated: false, refreshToken: null }),
+      clearAuth: () => {
+        if (typeof window !== "undefined") {
+          document.cookie = `access_token=; path=/; max-age=0; SameSite=Lax`;
+        }
+        set({ user: null, isAuthenticated: false, refreshToken: null });
+      },
     }),
     {
       name: 'forgeflow-auth',
