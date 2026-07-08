@@ -43,11 +43,10 @@ const Header = () => {
   return (
     <>
       <header
-        className={`header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 ${
-          sticky
+        className={`header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 ${sticky
             ? "fixed z-[9999] bg-white/70 dark:bg-[#0b1220]/70 shadow-lg shadow-black/[0.04] dark:shadow-black/[0.2] backdrop-blur-xl border-b border-white/10 dark:border-white/[0.06] py-2"
             : "absolute bg-transparent py-4"
-        }`}
+          }`}
       >
         <div className="container">
           <div className="relative -mx-4 flex items-center justify-between">
@@ -71,28 +70,24 @@ const Header = () => {
                   className="absolute right-4 top-1/2 block translate-y-[-50%] rounded-lg px-3 py-[6px] ring-primary focus:ring-2 lg:hidden"
                 >
                   <span
-                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${
-                      navbarOpen ? " top-[7px] rotate-45" : " "
-                    }`}
+                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${navbarOpen ? " top-[7px] rotate-45" : " "
+                      }`}
                   />
                   <span
-                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${
-                      navbarOpen ? "opacity-0 " : " "
-                    }`}
+                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${navbarOpen ? "opacity-0 " : " "
+                      }`}
                   />
                   <span
-                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${
-                      navbarOpen ? " top-[-8px] -rotate-45" : " "
-                    }`}
+                    className={`relative my-1.5 block h-0.5 w-[30px] bg-foreground transition-all duration-300 ${navbarOpen ? " top-[-8px] -rotate-45" : " "
+                      }`}
                   />
                 </button>
                 <nav
                   id="navbarCollapse"
-                  className={`navbar absolute right-0 z-30 w-[250px] rounded-xl border border-border/50 bg-white/90 dark:bg-[#0b1220]/90 backdrop-blur-xl px-6 py-4 duration-300 lg:visible lg:static lg:w-auto lg:border-none lg:!bg-transparent lg:!backdrop-blur-none lg:p-0 lg:opacity-100 ${
-                    navbarOpen
+                  className={`navbar absolute right-0 z-30 w-[250px] rounded-xl border border-border/50 bg-white/90 dark:bg-[#0b1220]/90 backdrop-blur-xl px-6 py-4 duration-300 lg:visible lg:static lg:w-auto lg:border-none lg:!bg-transparent lg:!backdrop-blur-none lg:p-0 lg:opacity-100 ${navbarOpen
                       ? "visibility top-full opacity-100"
                       : "invisible top-[120%] opacity-0"
-                  }`}
+                    }`}
                 >
                   <ul className="block lg:flex lg:space-x-10">
                     {menuData.map((menuItem, index) => (
@@ -100,11 +95,10 @@ const Header = () => {
                         {menuItem.path ? (
                           <Link
                             href={menuItem.path}
-                            className={`relative flex py-2 text-base font-medium lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 transition-colors duration-300 ${
-                              usePathName === menuItem.path
+                            className={`relative flex py-2 text-base font-medium lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 transition-colors duration-300 ${usePathName === menuItem.path
                                 ? "text-primary"
                                 : "text-foreground/70 hover:text-primary"
-                            }`}
+                              }`}
                           >
                             {menuItem.title}
                             {usePathName === menuItem.path && (
@@ -130,9 +124,8 @@ const Header = () => {
                               </span>
                             </p>
                             <div
-                              className={`submenu relative left-0 top-full rounded-xl bg-white/90 dark:bg-[#0b1220]/90 backdrop-blur-xl transition-[top] duration-300 group-hover:opacity-100 lg:invisible lg:absolute lg:top-[110%] lg:block lg:w-[250px] lg:p-4 lg:opacity-0 lg:shadow-xl lg:shadow-black/[0.08] lg:border lg:border-border/40 lg:group-hover:visible lg:group-hover:top-full ${
-                                openIndex === index ? "block" : "hidden"
-                              }`}
+                              className={`submenu relative left-0 top-full rounded-xl bg-white/90 dark:bg-[#0b1220]/90 backdrop-blur-xl transition-[top] duration-300 group-hover:opacity-100 lg:invisible lg:absolute lg:top-[110%] lg:block lg:w-[250px] lg:p-4 lg:opacity-0 lg:shadow-xl lg:shadow-black/[0.08] lg:border lg:border-border/40 lg:group-hover:visible lg:group-hover:top-full ${openIndex === index ? "block" : "hidden"
+                                }`}
                             >
                               {menuItem.submenu?.map((submenuItem, index) => (
                                 <Link

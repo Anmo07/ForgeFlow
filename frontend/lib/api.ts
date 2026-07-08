@@ -254,7 +254,7 @@ if (typeof window !== "undefined" && !(window as any).__fetchPatched) {
         });
       }
     }
-    return originalFetch.apply(this, arguments as any);
+    return originalFetch(input, init);
   };
 }
 
