@@ -117,7 +117,7 @@ export default function LoginPage() {
         }
       }
       
-      router.push("/");
+      window.location.href = "/dashboard";
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);

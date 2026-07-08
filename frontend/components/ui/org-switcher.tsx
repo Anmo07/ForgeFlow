@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useOrgStore, Organization } from "@/store/organization";
-import { Building2, ChevronDown, Plus } from "lucide-react";
+import { Building2, ChevronDown, Plus, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -106,7 +106,7 @@ export default function OrgSwitcher() {
                 ))}
               </div>
               
-              <div className="border-t border-border mt-1 pt-1">
+              <div className="border-t border-border mt-1 pt-1 flex flex-col gap-0.5">
                 <button
                   onClick={handleCreateOrg}
                   className="flex w-full items-center px-4 py-2 text-sm text-left text-primary hover:bg-primary/5 transition-colors duration-150 font-medium"
@@ -114,6 +114,17 @@ export default function OrgSwitcher() {
                 >
                   <Plus className="size-4 mr-2" />
                   Create Organization
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/login");
+                  }}
+                  className="flex w-full items-center px-4 py-2 text-sm text-left text-primary hover:bg-primary/5 transition-colors duration-150 font-medium"
+                  role="menuitem"
+                >
+                  <LogIn className="size-4 mr-2" />
+                  Login to Organization
                 </button>
               </div>
             </div>

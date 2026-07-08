@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import Session

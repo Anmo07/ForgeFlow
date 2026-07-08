@@ -26,9 +26,10 @@ No more switching between bloated PSAs, disconnected CRM spreadsheets, and manua
 ## ✨ Key Enterprise Capabilities
 
 ### 🛡️ Hardened Multi-Tenancy & Security
-*   **Logical Tenant Isolation:** Dynamic tenant context extraction via `get_current_tenant` dependency.
+*   **Logical Tenant Isolation:** Dynamic tenant context extraction via `get_current_tenant` dependency. On client-side mock environments, custom interceptors isolate state database logs strictly by the owner email of the logged-in user.
 *   **Automatic ORM Filtering:** Database-level SQLAlchemy event listeners automatically inject tenant constraints—making cross-tenant data leakage structurally impossible.
 *   **Advanced Authentication:** Includes Argon2id password hashing, secure session revocation, email verification, and encrypted MFA/TOTP setup with single-use backup codes.
+*   **Persona Switcher:** Quick-access profile impersonation dropdown in the dashboard header allowing administrators to instantly swap between mock roles (Admin, Ops, Engineer) for quick permissions auditing.
 
 ### 💼 Automated MSP Billing Engine
 *   **Dynamic Retainers:** Automated fixed-monthly billing contracts.
@@ -39,6 +40,11 @@ No more switching between bloated PSAs, disconnected CRM spreadsheets, and manua
 *   **Inbound Support Tickets:** Automatically processes inbound support mail hooks.
 *   **Signature Verification:** Validates webhook authenticity using HMAC/SHA-256 (`X-Signature`).
 *   **Attachment Quarantine:** Automatically quarantines raw file uploads for async antivirus and safety scans before promotion.
+
+### 🌐 Public Gateways & Compliance
+*   **Landing Page split routing:** Seamless division between the public marketing landing page (`/`) and the private operations dashboard (`/dashboard`). If authenticated, marketing headers dynamically offer a primary "Go to Dashboard" button.
+*   **Terms & Privacy Compliance:** Public routing pathways for Terms of Service and Privacy Policy, outlining AI-powered data processors disclaimer, liability shield against unexpected operational losses, and data telemetry improvement collection flags.
+*   **Dynamic Organization Provisioning Wizard:** Multi-step guided setup page at `/organizations/create` allowing users to configure custom domains, sector details, team invites, and automatically seed isolated mock settings databases (roles, memberships, sessions, activity logs).
 
 ---
 

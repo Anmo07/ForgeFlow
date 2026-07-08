@@ -146,12 +146,12 @@ const Header = () => {
               </div>
               <div className="flex items-center justify-end gap-3 pr-16 lg:pr-0">
                 {isAuthenticated ? (
-                  <Link
+                  <a
                     href="/dashboard"
                     className="hidden rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 md:block"
                   >
                     Go to Dashboard
-                  </Link>
+                  </a>
                 ) : (
                   <>
                     <Link

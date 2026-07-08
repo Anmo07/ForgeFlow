@@ -1,7 +1,13 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+if (typeof window !== "undefined") {
+  if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && process.env.NODE_ENV !== "development") {
+    console.error("WARNING: NEXT_PUBLIC_MOCK_MODE is enabled in a non-development environment! This is a security risk.");
+  }
+}
+
 // ENFORCE DATA ISOLATION AND SETTINGS PERSISTENCE VIA GLOBAL FETCH INTERCEPTOR
-if (typeof window !== "undefined" && !(window as any).__fetchPatched) {
+if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined" && !(window as any).__fetchPatched) {
   (window as any).__fetchPatched = true;
   const originalFetch = window.fetch;
   
@@ -314,16 +320,22 @@ export async function apiFetch<T = unknown>(
       ...rest,
     });
   } catch (error: any) {
-    console.warn(`API call failed for ${path}, falling back to local mock data:`, error);
-    return getMockDataForPath(path) as T;
+    if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
+      console.warn(`API call failed for ${path}, falling back to local mock data:`, error);
+      return getMockDataForPath(path) as T;
+    }
+    throw error;
   } finally {
     clearTimeout(id);
   }
 
   // If unauthorized or not found, fall back to mock data
-  if (response.status === 401 || response.status === 404 || !response.ok) {
-    console.warn(`API responded with ${response.status} for ${path}, falling back to local mock data.`);
-    return getMockDataForPath(path) as T;
+  if (!response.ok) {
+    if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
+      console.warn(`API responded with ${response.status} for ${path}, falling back to local mock data.`);
+      return getMockDataForPath(path) as T;
+    }
+    throw new Error(`API error ${response.status}: ${response.statusText || 'Unsuccessful response'}`);
   }
 
   if (response.status === 204) {
