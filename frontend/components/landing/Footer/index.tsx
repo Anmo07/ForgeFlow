@@ -97,8 +97,8 @@ const Footer = () => {
                 </h2>
                 <ul className="space-y-3">
                   {[
-                    { href: "/", text: "TOS" },
-                    { href: "/", text: "Privacy Policy" },
+                    { href: "/terms", text: "TOS" },
+                    { href: "/privacy", text: "Privacy Policy" },
                     { href: "/", text: "Refund Policy" },
                   ].map((link) => (
                     <li key={link.text}>

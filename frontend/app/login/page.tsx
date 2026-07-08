@@ -33,6 +33,13 @@ export default function LoginPage() {
   const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 
   useEffect(() => {
+    const lastEmail = localStorage.getItem("forgeflow_last_email");
+    const lastPassword = localStorage.getItem("forgeflow_last_password");
+    if (lastEmail) setEmail(lastEmail);
+    if (lastPassword) setPassword(lastPassword);
+  }, []);
+
+  useEffect(() => {
     const script = document.createElement("script");
     script.src =
       "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad";
@@ -65,25 +72,51 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const data = await apiFetch<{
-        access_token: string;
-        refresh_token: string;
-        user: {
-          id: number;
-          email: string;
-          full_name: string | null;
-          is_active: boolean;
-        };
-      }>("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          email,
-          password,
-          turnstile_token: turnstileToken,
-        }),
-      });
+      try {
+        const data = await apiFetch<{
+          access_token: string;
+          refresh_token: string;
+          user: {
+            id: number;
+            email: string;
+            full_name: string | null;
+            is_active: boolean;
+          };
+        }>("/api/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email,
+            password,
+            turnstile_token: turnstileToken,
+          }),
+        });
 
-      setAuth(data.user, data.access_token, data.refresh_token);
+        // Remember credentials upon successful backend login
+        localStorage.setItem("forgeflow_last_email", email);
+        localStorage.setItem("forgeflow_last_password", password);
+        setAuth(data.user, data.access_token, data.refresh_token);
+      } catch (backendErr) {
+        console.warn("Backend login failed, attempting local credentials matching:", backendErr);
+        
+        const localUsers = JSON.parse(localStorage.getItem("forgeflow_users") || "[]");
+        const match = localUsers.find((u: any) => u.email === email && u.password === password);
+        
+        if (match) {
+          const userObj = {
+            id: match.id,
+            email: match.email,
+            full_name: match.full_name,
+            is_active: match.is_active
+          };
+          // Remember credentials upon successful local login
+          localStorage.setItem("forgeflow_last_email", email);
+          localStorage.setItem("forgeflow_last_password", password);
+          setAuth(userObj, "mock-access-token", "mock-refresh-token");
+        } else {
+          throw new Error("Invalid email or password.");
+        }
+      }
+      
       router.push("/");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";

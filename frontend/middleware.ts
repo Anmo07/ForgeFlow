@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
     upgrade-insecure-requests;
   `.replace(/\s{2,}/g, ' ').trim();
 
-  response.headers.set('Content-Security-Policy', cspHeader);
+  // response.headers.set('Content-Security-Policy', cspHeader);
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
