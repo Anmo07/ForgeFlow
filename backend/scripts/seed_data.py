@@ -28,16 +28,27 @@ from app.api_keys.models import APIKey
 from app.projects.models import Project, Task
 from app.crm.models import Client, Lead, Deal
 from app.invoices.models import Invoice, InvoiceLineItem
+from app.attachments.models import Attachment
+from app.billing.models import BillingContract, TaskTimeLog
 from app.common.security import get_password_hash
 
 fake = Faker()
 
 def seed():
     print("Initializing Database...")
-    # Drop all and recreate to ensure a fresh clean seed state
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    
+    # Clean all tables instead of dropping them to preserve Alembic state
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        if engine.dialect.name == "postgresql":
+            result = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'alembic_version'"))
+            tables = [row[0] for row in result]
+            if tables:
+                conn.execute(text(f"TRUNCATE TABLE {', '.join(tables)} CASCADE"))
+        elif engine.dialect.name == "sqlite":
+            result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name != 'alembic_version' AND name != 'sqlite_sequence'"))
+            tables = [row[0] for row in result]
+            for table in tables:
+                conn.execute(text(f"DELETE FROM {table}"))
     db = SessionLocal()
     try:
         # 1. Create Permissions

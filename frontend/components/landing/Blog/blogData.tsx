@@ -6,10 +6,10 @@ const blogData: Blog[] = [
     title: "How MSPs Can Automate 80% of Their Billing Workflow",
     paragraph:
       "Discover how ForgeFlow's billing engine handles retainers, per-seat licensing, and T&M contracts automatically — eliminating manual invoice creation.",
-    image: "",
+    image: "/images/blog/blog-placeholder-1.jpg",
     author: {
       name: "ForgeFlow Team",
-      image: "",
+      image: "/images/blog/author-placeholder.jpg",
       designation: "Product Engineering",
     },
     tags: ["billing"],
@@ -20,10 +20,10 @@ const blogData: Blog[] = [
     title: "Building a Zero-Trust MSP Platform with Cloudflare Tunnel",
     paragraph:
       "Learn how ForgeFlow leverages Cloudflare Tunnel, Turnstile, and MFA to create an enterprise-grade security posture without exposing any ingress ports.",
-    image: "",
+    image: "/images/blog/blog-placeholder-2.jpg",
     author: {
       name: "ForgeFlow Team",
-      image: "",
+      image: "/images/blog/author-placeholder.jpg",
       designation: "Security Engineering",
     },
     tags: ["security"],
@@ -34,10 +34,10 @@ const blogData: Blog[] = [
     title: "Multi-Tenant Architecture: Keeping Client Data Truly Isolated",
     paragraph:
       "A deep dive into ForgeFlow's ORM-level tenant isolation, field encryption, and how automatic SQLAlchemy event listeners prevent cross-tenant data leakage.",
-    image: "",
+    image: "/images/blog/blog-placeholder-3.jpg",
     author: {
       name: "ForgeFlow Team",
-      image: "",
+      image: "/images/blog/author-placeholder.jpg",
       designation: "Platform Engineering",
     },
     tags: ["architecture"],

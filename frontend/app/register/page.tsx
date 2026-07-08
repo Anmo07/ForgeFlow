@@ -133,20 +133,35 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl p-8 glass-strong">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-              <UserPlus className="size-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                Create an account
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Start using ForgeFlow today
-              </p>
+    <div className="relative flex flex-1 items-center justify-center p-6 overflow-hidden min-h-screen">
+      {/* Background mesh */}
+      <div className="absolute inset-0 z-[-1] pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[80px] animate-float" />
+        <div className="absolute bottom-0 left-1/4 w-[350px] h-[350px] rounded-full bg-[#a855f7]/10 blur-[70px] animate-float-delayed" />
+      </div>
+
+      <div className="w-full max-w-md z-10">
+        <div className="rounded-2xl p-8 card-glow border border-border/40 bg-white/40 dark:bg-white/[0.02] backdrop-blur-sm shadow-xl">
+          {/* Logo Branding */}
+          <div className="flex flex-col items-center mb-8">
+            <Link href="/" className="mb-4 inline-block">
+              <span className="text-3xl font-extrabold tracking-tight">
+                <span className="gradient-text">Forge</span>
+                <span className="text-foreground">Flow</span>
+              </span>
+            </Link>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+                <UserPlus className="size-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-xl font-bold tracking-tight">
+                  Create an account
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Start using ForgeFlow today
+                </p>
+              </div>
             </div>
           </div>
 
@@ -173,7 +188,7 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -194,7 +209,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
@@ -215,7 +230,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-background border border-border rounded-lg pl-9 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
                 <button
                   type="button"
@@ -256,7 +271,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>

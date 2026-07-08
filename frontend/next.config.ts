@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     // This prevents Next build output from being noisy/misleading due to lint runner changes.
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

@@ -33,7 +33,7 @@ export default function LayoutWrapper({
   // Landing page (unauthenticated, not on auth pages)
   if (!isAuthenticated && !isAuthPage) {
     return (
-      <div className="min-h-screen flex flex-col w-full bg-[#FCFCFC] dark:bg-black">
+      <div className="min-h-screen flex flex-col w-full">
         <LandingHeader />
         <div className="flex-1">{children}</div>
         <LandingFooter />

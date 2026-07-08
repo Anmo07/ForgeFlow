@@ -1,26 +1,33 @@
-import SectionTitle from "../Common/SectionTitle";
+"use client";
 
-const checkIcon = (
-  <svg width="16" height="13" viewBox="0 0 16 13" className="fill-current">
-    <path d="M5.8535 12.6631C5.65824 12.8584 5.34166 12.8584 5.1464 12.6631L0.678505 8.1952C0.483242 7.99994 0.483242 7.68336 0.678505 7.4881L2.32921 5.83739C2.52467 5.64193 2.84166 5.64216 3.03684 5.83791L5.14622 7.95354C5.34147 8.14936 5.65859 8.14952 5.85403 7.95388L13.3797 0.420561C13.575 0.22513 13.8917 0.225051 14.087 0.420383L15.7381 2.07143C15.9333 2.26669 15.9333 2.58327 15.7381 2.77854L5.8535 12.6631Z" />
-  </svg>
-);
+import { motion } from "framer-motion";
+import SectionTitle from "../Common/SectionTitle";
+import { CheckCircle2 } from "lucide-react";
+
+const checkVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: 0.1 * i, duration: 0.4 },
+  }),
+};
 
 const AboutSectionOne = () => {
-  const List = ({ text }: { text: string }) => (
-    <p className="mb-5 flex items-center text-lg font-medium text-body-color">
-      <span className="mr-4 flex h-[30px] w-[30px] items-center justify-center rounded-md bg-primary bg-opacity-10 text-primary">
-        {checkIcon}
-      </span>
-      {text}
-    </p>
-  );
+  const features = [
+    "Multi-Tenant Isolation",
+    "Automated Billing",
+    "CRM Pipeline",
+    "Kanban Projects",
+    "PDF Invoicing",
+    "MFA / TOTP Security",
+  ];
 
   return (
-    <section id="about" className="pt-16 md:pt-20 lg:pt-28">
+    <section id="about" className="landing-section pt-16 md:pt-20 lg:pt-28">
       <div className="container">
-        <div className="border-b border-body-color/[.15] pb-16 dark:border-white/[.15] md:pb-20 lg:pb-28">
-          <div className="-mx-4 flex flex-wrap items-center">
+        <div className="border-b border-border/30 pb-16 md:pb-20 lg:pb-28">
+          <div className="flex flex-wrap items-center -mx-4">
             <div className="w-full px-4 lg:w-1/2">
               <SectionTitle
                 title="Why IT Service Providers Choose ForgeFlow"
@@ -28,41 +35,56 @@ const AboutSectionOne = () => {
                 mb="44px"
               />
 
-              <div
-                className="wow fadeInUp mb-12 max-w-[570px] lg:mb-0"
-                data-wow-delay=".15s"
-              >
-                <div className="mx-[-12px] flex flex-wrap">
-                  <div className="w-full px-3 sm:w-1/2 lg:w-full xl:w-1/2">
-                    <List text="Multi-Tenant Isolation" />
-                    <List text="Automated Billing" />
-                    <List text="CRM Pipeline" />
-                  </div>
-
-                  <div className="w-full px-3 sm:w-1/2 lg:w-full xl:w-1/2">
-                    <List text="Kanban Projects" />
-                    <List text="PDF Invoicing" />
-                    <List text="MFA / TOTP Security" />
-                  </div>
+              <div className="mb-12 max-w-[570px] lg:mb-0">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {features.map((text, i) => (
+                    <motion.div
+                      key={text}
+                      custom={i}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={checkVariants}
+                      className="flex items-center gap-3 rounded-lg border border-border/30 bg-white/30 dark:bg-white/[0.02] backdrop-blur-sm px-4 py-3 transition-colors hover:border-primary/30"
+                    >
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
+                      <span className="text-base font-medium text-foreground/80">{text}</span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             </div>
 
             <div className="w-full px-4 lg:w-1/2">
-              <div
-                className="wow fadeInUp relative mx-auto aspect-[25/24] max-w-[500px] lg:mr-0"
-                data-wow-delay=".2s"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="relative mx-auto aspect-[25/24] max-w-[500px] lg:mr-0"
               >
-                <div className="flex items-center justify-center h-full rounded-xl bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20">
-                  <div className="text-center p-8">
-                    <div className="text-6xl mb-4">⚙️</div>
-                    <h3 className="text-xl font-bold text-dark dark:text-white mb-2">Unified Dashboard</h3>
-                    <p className="text-body-color dark:text-body-color-dark text-sm">
+                <div className="card-glow flex items-center justify-center h-full rounded-2xl bg-gradient-to-br from-primary/5 via-[#0ea5e9]/5 to-[#a855f7]/5 dark:from-primary/10 dark:via-[#0ea5e9]/8 dark:to-[#a855f7]/8 border border-border/40 backdrop-blur-sm overflow-hidden">
+                  {/* Background mesh */}
+                  <div
+                    className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08]"
+                    style={{
+                      backgroundImage: `linear-gradient(rgba(74, 108, 247, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(74, 108, 247, 0.5) 1px, transparent 1px)`,
+                      backgroundSize: "40px 40px",
+                    }}
+                  />
+                  <div className="relative text-center p-8">
+                    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-[#0ea5e9]/20 shadow-lg shadow-primary/10">
+                      <svg className="h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">Unified Dashboard</h3>
+                    <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
                       Projects, CRM, Invoices, and Settings — all accessible from a single command center with real-time metrics.
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

@@ -85,13 +85,15 @@ services:
       dockerfile: Dockerfile
     container_name: forgeflow_backend
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@pgbouncer:6432/forgeflow
+      DATABASE_URL: sqlite:////app/data/local.db
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_SECURE: "False"
+    volumes:
+      - ../backend/data:/app/data
     ports:
       - "8000:8000"
     depends_on:
@@ -111,13 +113,15 @@ services:
     container_name: forgeflow_celery
     command: celery -A app.common.celery_app.celery_app worker --loglevel=info
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@pgbouncer:6432/forgeflow
+      DATABASE_URL: sqlite:////app/data/local.db
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_SECURE: "False"
+    volumes:
+      - ../backend/data:/app/data
     depends_on:
       redis:
         condition: service_healthy
