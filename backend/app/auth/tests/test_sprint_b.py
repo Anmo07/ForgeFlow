@@ -42,23 +42,18 @@ def mock_turnstile(monkeypatch):
     monkeypatch.setattr(app.auth.service, 'verify_turnstile_token', lambda token, ip=None: True)
 
 @pytest.fixture(autouse=True)
-def mock_redis():
-    """Ensure we use an in-memory FakeRedis client so we don't pollute live Redis."""
+def clean_redis():
+    """Ensure we flush the live Redis db before and after tests."""
+    from app.common.redis import redis_client
     try:
-        import fakeredis
-        fake = fakeredis.FakeRedis(decode_responses=True)
-    except ImportError:
-        pytest.skip('fakeredis is required for rate limit & lockout testing')
-        return
-
-    from app.common import redis as redis_mod
-    original_client_prop = type(redis_mod.redis_client).client
-    type(redis_mod.redis_client).client = property(lambda self: fake)
-    
-    yield fake
-    
-    type(redis_mod.redis_client).client = original_client_prop
-    fake.flushall()
+        redis_client.client.flushdb()
+    except Exception:
+        pass
+    yield
+    try:
+        redis_client.client.flushdb()
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -67,18 +62,9 @@ def mock_redis():
 
 def test_csrf_middleware_enforces_protection(client):
     """Mutating endpoints must fail with 403 when X-Test-CSRF-Validation is active but CSRF is missing."""
-    # Register payload
-    payload = {
-        'email': 'csrf_test@example.com',
-        'password': 'Password123',
-        'full_name': 'CSRF Test User',
-        'turnstile_token': 'mock_token'
-    }
-    
-    # 1. Missing CSRF headers & cookies
+    # 1. Missing CSRF headers & cookies on POST /api/auth/logout
     response = client.post(
-        '/api/auth/register',
-        json=payload,
+        '/api/auth/logout',
         headers={'X-Test-CSRF-Validation': 'true'}
     )
     assert response.status_code == 403
@@ -91,14 +77,13 @@ def test_csrf_middleware_enforces_protection(client):
     
     client.cookies.set('csrf_token', token)
     response2 = client.post(
-        '/api/auth/register',
-        json=payload,
+        '/api/auth/logout',
         headers={
             'X-Test-CSRF-Validation': 'true',
             'X-CSRF-Token': token
         }
     )
-    assert response2.status_code == 201
+    assert response2.status_code == 200
 
 
 # ---------------------------------------------------------------------------

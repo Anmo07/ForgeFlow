@@ -132,12 +132,12 @@ class TestAccountLockout:
         for _ in range(5):
             lockout.increment_failed_attempts(test_user.id)
         _, cooldown = lockout.increment_failed_attempts(test_user.id)
-        assert cooldown == 2
+        assert cooldown == 60
         lockout.clear_failed_attempts(test_user.id)
         for _ in range(10):
             lockout.increment_failed_attempts(test_user.id)
         count, cooldown = lockout.increment_failed_attempts(test_user.id)
-        assert cooldown == 64
+        assert cooldown == 900
 
     def test_lockout_cooldown_capped(self, test_user):
         for _ in range(20):

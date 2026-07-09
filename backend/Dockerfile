@@ -2,6 +2,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+RUN ln -s /app /backend
+
 # Install system build dependencies (e.g. for building any compiled deps if needed)
 RUN apt-get update && apt-get install -y \
     build-essential \

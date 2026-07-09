@@ -58,3 +58,61 @@ This log documents all security and architectural remediation actions carried ou
 - **Files Checked**:
   - [backend/app/common/database.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/common/database.py)
   - All router endpoints under `backend/app/` audited.
+
+---
+
+## Sprint B — Security Completions
+
+### B1 — Rate Limiting and Account Lockout
+- **Changes**:
+  - Integrated `slowapi==0.1.9` rate limiter utilizing `REDIS_URL` as storage.
+  - Decorated register, login, forgot-password, reset-password, and MFA verify routes with SlowAPI rate limiters.
+  - Implemented Redis-based login lockout counters (`login_fail:{user_id}`) with exponential backoff delay (`30s, 60s, 120s, 300s, 900s`).
+  - Added lockout checks and failed increments to MFA verification and reset-password endpoints, returning consistent `401` responses on credential failures.
+- **Files Touched**:
+  - [backend/requirements.txt](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/requirements.txt)
+  - [backend/app/common/rate_limit.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/common/rate_limit.py)
+  - [backend/app/auth/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/auth/router.py)
+  - [backend/app/auth/service.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/auth/service.py)
+  - [backend/app/auth/lockout.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/auth/lockout.py)
+
+### B2 — CSRF Protection
+- **Changes**:
+  - Added `fastapi-csrf-protect==0.3.3` to backend requirements.
+  - Updated `CSRFMiddleware` to enforce double-submit CSRF cookie checks on all mutating HTTP verbs (`POST`, `PUT`, `PATCH`, `DELETE`) with `samesite='strict'` and `secure=True`.
+  - Added `X-Test-CSRF-Validation` header check to trigger CSRF validation under pytest testing environments.
+- **Files Touched**:
+  - [backend/app/common/middleware.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/common/middleware.py)
+
+### B3 — CORS Allowlist Hardening
+- **Changes**:
+  - Replaced wildcard CORS settings with a comma-separated list `CORS_ALLOWED_ORIGINS` loaded from environment variables.
+  - Restricted CORS allowed headers and methods exactly to the system's requirements.
+- **Files Touched**:
+  - [backend/app/common/config.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/common/config.py)
+  - [backend/app/main.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/main.py)
+  - [.env.example](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/.env.example)
+  - [.env](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/.env)
+
+### B4 — AI Telemetry Consent Clause Fix
+- **Changes**:
+  - Removed AI training clauses claiming access to customer operational and business metrics from the Privacy page.
+- **Files Touched**:
+  - [frontend/app/privacy/page.tsx](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/frontend/app/privacy/page.tsx)
+
+### B5 — MinIO Presigned URLs
+- **Changes**:
+  - Renamed `pdf_url` DB column to `pdf_object_key` on `Invoice` model.
+  - Added Alembic migration script `6ee04aa22805_rename_pdf_url_to_pdf_object_key.py`.
+  - Updated invoices services and download routes to check tenant permissions and stream PDF bytes securely.
+- **Files Touched**:
+  - [backend/app/invoices/models.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/invoices/models.py)
+  - [backend/app/invoices/repository.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/invoices/repository.py)
+  - [backend/app/invoices/service.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/invoices/service.py)
+  - [backend/alembic/versions/6ee04aa22805_rename_pdf_url_to_pdf_object_key.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/alembic/versions/6ee04aa22805_rename_pdf_url_to_pdf_object_key.py) [NEW]
+
+### B6 — Prometheus Endpoint Protection
+- **Changes**:
+  - Restricted `/metrics` Nginx route access to internal range `172.0.0.0/8` and `127.0.0.1`.
+- **Files Touched**:
+  - [infra/nginx.conf](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/infra/nginx.conf)
