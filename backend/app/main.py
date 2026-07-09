@@ -24,15 +24,27 @@ from .security.router import router as security_router
 from .ingress.router import router as ingress_router
 
 from .common.middleware import SecurityHeadersMiddleware, LoggingAndTimingMiddleware, CSRFMiddleware
-from .common.config import CORS_ORIGINS
+from .common.config import CORS_ALLOWED_ORIGINS
 from .common.dependencies import get_db
 from .attachments.models import Attachment
 
+from .common.rate_limit import limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+
 app = FastAPI(title='ForgeFlow Backend', version='0.4.0')
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(LoggingAndTimingMiddleware)
 app.add_middleware(CSRFMiddleware)
-app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "X-Organization-ID"],
+)
 
 # Legacy routes
 app.include_router(auth_router, prefix='/api/auth', tags=['auth'])

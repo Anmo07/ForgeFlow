@@ -28,9 +28,10 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
             import os
             is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+            force_test_validation = request.headers.get('X-Test-CSRF-Validation') == 'true'
             path = request.url.path
             is_auth_route = any((x in path for x in ('/api/auth/login', '/api/auth/register', '/api/auth/refresh')))
-            if not is_auth_route and (not is_testing):
+            if not is_auth_route and (not is_testing or force_test_validation):
                 csrf_cookie = request.cookies.get('csrf_token')
                 csrf_header = request.headers.get('X-CSRF-Token')
                 if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
@@ -40,5 +41,5 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         if not request.cookies.get('csrf_token'):
             import secrets
             token = secrets.token_hex(32)
-            response.set_cookie(key='csrf_token', value=token, httponly=False, samesite='lax', path='/')
+            response.set_cookie(key='csrf_token', value=token, httponly=False, samesite='strict', secure=True, path='/')
         return response

@@ -145,13 +145,16 @@ class AuthService:
         user = self.repo.get_by_id(db, reset_token.user_id)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
+        self.check_account_lockout(user.id)
         user.hashed_password = get_password_hash(new_password)
         reset_token.used = True
         from ..sessions.service import SessionService
         SessionService().invalidate_user_sessions(db, user.id)
+        lockout.clear_failed_attempts(user.id)
         db.commit()
         db.refresh(user)
         return UserResponse.model_validate(user)
+
 
     def check_account_lockout(self, user_id: int) -> None:
         is_locked, cooldown = lockout.is_account_locked(user_id)
@@ -169,13 +172,16 @@ class AuthService:
         return {'secret': secret, 'provisioning_uri': provisioning_uri}
 
     def mfa_setup_verify(self, user_id: int, code: str, db: Session) -> dict:
+        self.check_account_lockout(user_id)
         from ..common.redis import redis_client
         temp_secret = redis_client.get(f'mfa_setup_temp:{user_id}')
         if not temp_secret:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='MFA setup not in progress. Start setup again.')
         temp_secret = temp_secret.decode() if isinstance(temp_secret, bytes) else temp_secret
         if not mfa.verify_totp_code(temp_secret, code):
+            lockout.increment_failed_attempts(user_id)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid TOTP code')
+        lockout.clear_failed_attempts(user_id)
         raw_codes, hashed_codes = mfa.generate_backup_codes(count=8)
         user = self.repo.get_by_id(db, user_id)
         if not user:
@@ -187,6 +193,7 @@ class AuthService:
         db.refresh(user)
         redis_client.delete(f'mfa_setup_temp:{user_id}')
         return {'backup_codes': raw_codes, 'message': 'MFA enabled. Store your backup codes in a safe place.'}
+
 
     def authenticate_user_with_mfa(self, db: Session, login_in: UserLogin, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> dict:
         user_email = login_in.email
@@ -228,7 +235,11 @@ class AuthService:
         user = self.repo.get_by_id(db, user_id)
         if not user or not user.mfa_enabled or (not user.mfa_secret):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='MFA not configured for this user')
+        
+        self.check_account_lockout(user.id)
+        
         if mfa.verify_totp_code(user.mfa_secret, code):
+            lockout.clear_failed_attempts(user.id)
             refresh_token = create_refresh_token(data={'sub': str(user.id)})
             sid = hashlib.sha256(refresh_token.encode()).hexdigest()
             access_token = create_access_token(data={'sub': str(user.id)}, sid=sid)
@@ -238,6 +249,7 @@ class AuthService:
             redis_client.delete(f'mfa_login_temp:{temp_token}')
             return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=UserResponse.model_validate(user))
         if user.mfa_backup_codes and mfa.verify_backup_code(code, user.mfa_backup_codes):
+            lockout.clear_failed_attempts(user.id)
             user.mfa_backup_codes = mfa.consume_backup_code(code, user.mfa_backup_codes)
             db.commit()
             refresh_token = create_refresh_token(data={'sub': str(user.id)})
@@ -248,4 +260,6 @@ class AuthService:
             SessionService().register_session(db, user_id=user.id, refresh_token=refresh_token, expires_at=expires_at, ua_string=user_agent, ip_address=ip_address)
             redis_client.delete(f'mfa_login_temp:{temp_token}')
             return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=UserResponse.model_validate(user))
+        
+        lockout.increment_failed_attempts(user.id)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid 2FA code')

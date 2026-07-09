@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-bold text-foreground mb-3">2. How We Use Information</h2>
               <p>
-                The primary purpose of collecting data is to operate and customize the multi-tenant isolation engine. Additionally, we use aggregated, de-identified operational patterns and data metrics to train and improve the AI models of the platform.
+                The primary purpose of collecting data is to operate and customize the multi-tenant isolation engine. Customer business and operational data (such as projects, tasks, invoices, client details, and CRM records) is strictly confidential and is never used to train or improve machine learning models.
               </p>
               <p className="mt-2 text-foreground font-medium">
                 🔒 Note: Personal identifiers are redacted or hashed at rest, and all client files are subject to field-level database encryption.

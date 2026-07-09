@@ -1,7 +1,7 @@
 from ..common.redis import redis_client
 
 def get_lockout_key(user_id: int) -> str:
-    return f'lockout:user:{user_id}'
+    return f'login_fail:{user_id}'
 
 def get_failed_attempts_count(user_id: int) -> int:
     count = redis_client.get(get_lockout_key(user_id))
@@ -20,9 +20,11 @@ def increment_failed_attempts(user_id: int, max_failures: int=5) -> tuple[int, i
 def calculate_lockout_cooldown(attempt_count: int, max_failures: int=5) -> int:
     if attempt_count < max_failures:
         return 0
-    exponent = attempt_count - max_failures
-    cooldown = min(2 ** exponent, 900)
-    return cooldown
+    index = attempt_count - max_failures
+    delays = [30, 60, 120, 300, 900]
+    if index < len(delays):
+        return delays[index]
+    return 900
 
 def is_account_locked(user_id: int, max_failures: int=5) -> tuple[bool, int]:
     count = get_failed_attempts_count(user_id)

@@ -113,9 +113,9 @@ class InvoiceService:
         if not invoice:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Invoice not found')
         filename = f'{invoice.invoice_number}.pdf'
-        if invoice.pdf_url:
+        if invoice.pdf_object_key:
             from ..common.minio import minio_client
-            pdf_bytes = minio_client.download_file('forgeflow-invoices', invoice.pdf_url)
+            pdf_bytes = minio_client.download_file('forgeflow-invoices', invoice.pdf_object_key)
             if pdf_bytes:
                 return (pdf_bytes, filename)
         client_name = 'Client'
@@ -158,4 +158,4 @@ class InvoiceService:
         pdf_path = f'invoices/{org_id}/{invoice.invoice_number}.pdf'
         uploaded = minio_client.upload_bytes(bucket_name='forgeflow-invoices', object_name=pdf_path, data=pdf_bytes, content_type='application/pdf')
         if uploaded:
-            self.repo.update(db, invoice, pdf_url=pdf_path)
+            self.repo.update(db, invoice, pdf_object_key=pdf_path)

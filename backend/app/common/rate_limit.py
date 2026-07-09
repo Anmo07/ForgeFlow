@@ -89,7 +89,7 @@ def rate_limit_or_429(
     """Check rate limit and raise HTTP 429 if exceeded.
 
     The response includes a ``Retry-After`` header indicating how many
-    seconds the client should wait before retrying.
+    seconds the limit is active.
     """
     allowed, retry_after = rate_limiter.check(key, max_requests, window_seconds)
     if not allowed:
@@ -98,3 +98,17 @@ def rate_limit_or_429(
             detail=detail,
             headers={'Retry-After': str(retry_after)},
         )
+
+
+# SlowAPI integration
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from .config import REDIS_URL
+
+is_testing = os.getenv('TESTING', '').lower() in ('true', '1', 'yes')
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage_uri=REDIS_URL,
+    enabled=not is_testing
+)

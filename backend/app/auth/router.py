@@ -5,7 +5,7 @@ from ..common.dependencies import get_db
 from .schema import UserRegister, UserLogin, UserResponse, TokenResponse, ForgotPasswordRequest, ResetPasswordRequest, MFASetupResponse, MFAVerifyRequest, MFASetupCompleteResponse, MFAVerifyLoginRequest
 from .service import AuthService
 from . import csrf
-from ..common.rate_limit import rate_limit_or_429
+from ..common.rate_limit import rate_limit_or_429, limiter
 router = APIRouter()
 auth_service = AuthService()
 
@@ -23,6 +23,7 @@ def get_csrf_token(response: Response):
     return {'csrf_token': token}
 
 @router.post('/register', response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 def register(req: UserRegister, request: Request, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     user = auth_service.register_user(db, req, ip_address=ip_address)
@@ -34,6 +35,7 @@ def verify_email(token: str, db: Session=Depends(get_db)):
     return auth_service.verify_email(db, token)
 
 @router.post('/login', response_model=TokenResponse)
+@limiter.limit("10/minute")
 def login(req: UserLogin, request: Request, response: Response, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     if ip_address:
@@ -49,6 +51,7 @@ def login(req: UserLogin, request: Request, response: Response, db: Session=Depe
     return token_resp
 
 @router.post('/forgot-password', status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 def forgot_password(req: ForgotPasswordRequest, request: Request, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     if ip_address:
@@ -57,6 +60,7 @@ def forgot_password(req: ForgotPasswordRequest, request: Request, db: Session=De
     return {'message': 'If an account exists with this email, a reset link has been sent.'}
 
 @router.post('/reset-password', response_model=UserResponse)
+@limiter.limit("5/minute")
 def reset_password(req: ResetPasswordRequest, request: Request, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     if ip_address:
@@ -107,6 +111,7 @@ def mfa_setup(request: Request, db: Session=Depends(get_db)):
     return MFASetupResponse(**result)
 
 @router.post('/mfa/verify', response_model=MFASetupCompleteResponse)
+@limiter.limit("10/minute")
 def mfa_verify(req: MFAVerifyRequest, request: Request, db: Session=Depends(get_db)):
     from ..common.security import decode_token
     token_str = request.cookies.get('access_token')
@@ -121,6 +126,7 @@ def mfa_verify(req: MFAVerifyRequest, request: Request, db: Session=Depends(get_
     return MFASetupCompleteResponse(backup_codes=result['backup_codes'])
 
 @router.post('/mfa/verify-login', response_model=TokenResponse)
+@limiter.limit("10/minute")
 def mfa_verify_login(req: MFAVerifyLoginRequest, request: Request, response: Response, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     if ip_address:

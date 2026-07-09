@@ -19,7 +19,7 @@ class Invoice(Base, SoftDeleteMixin):
     tax_amount = Column(Float, default=0.0)
     total = Column(Float, default=0.0)
     notes = Column(Text, nullable=True)
-    pdf_url = Column(String, nullable=True)
+    pdf_object_key = Column(String, nullable=True)
     created_by = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
