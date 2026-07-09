@@ -338,8 +338,9 @@ def test_alembic_upgrades_cleanly():
     env["JWT_SECRET_KEY"] = "alembic_secret"
     env["FIELD_ENCRYPTION_KEY"] = "dH5oTGdheFJZWjRmdnpqVlh6ZnpzUGZqcnM0cmphc3M="
 
-    # Upgrade to head
-    res_up = subprocess.run([".venv/bin/alembic", "-c", "backend/alembic.ini", "upgrade", "head"], env=env)
+    alembic_bin = ".venv/bin/alembic" if os.path.exists(".venv/bin/alembic") else "alembic"
+    alembic_ini = "backend/alembic.ini" if os.path.exists("backend/alembic.ini") else "alembic.ini"
+    res_up = subprocess.run([alembic_bin, "-c", alembic_ini, "upgrade", "head"], env=env)
     assert res_up.returncode == 0
 
     # Clean up

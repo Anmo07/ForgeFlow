@@ -11,7 +11,7 @@ class MembershipRepository:
         return db.query(Membership).filter(Membership.user_id == user_id, Membership.organization_id == org_id).first()
 
     def list_by_org(self, db: Session, org_id: int, limit: int = 100, offset: int = 0) -> List[Membership]:
-        return db.query(Membership).filter(Membership.organization_id == org_id).order_by(Membership.created_at.desc()).offset(offset).limit(limit).all()
+        return db.query(Membership).filter(Membership.organization_id == org_id).order_by(Membership.joined_at.desc()).offset(offset).limit(limit).all()
 
     def create(self, db: Session, user_id: int, org_id: int, role_id: int, invited_by: Optional[int]=None, status: str='invited', invite_token: Optional[str]=None) -> Membership:
         db_mem = Membership(user_id=user_id, organization_id=org_id, role_id=role_id, invited_by=invited_by, status=status, invite_token=invite_token)
