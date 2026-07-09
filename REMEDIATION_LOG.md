@@ -116,3 +116,49 @@ This log documents all security and architectural remediation actions carried ou
   - Restricted `/metrics` Nginx route access to internal range `172.0.0.0/8` and `127.0.0.1`.
 - **Files Touched**:
   - [infra/nginx.conf](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/infra/nginx.conf)
+
+---
+
+## Sprint D — Architecture & Data Integrity
+
+### D1 — Row-Level Security (RLS)
+- **Changes**:
+  - Created a database migration script `7a0f6aa22806_enable_rls.py` to enable PostgreSQL Row-Level Security and Force RLS on all tenant-scoped tables (`projects`, `tasks`, `clients`, `leads`, `deals`, `invoices`, `attachments`).
+  - Added a transaction-level event listener (`after_begin`) to the SQLAlchemy `Session` class to automatically execute `SET LOCAL app.current_org_id = :org_id` on PostgreSQL database sessions, ensuring seamless tenant isolation.
+- **Files Touched**:
+  - [backend/app/common/database.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/common/database.py)
+  - [backend/alembic/versions/7a0f6aa22806_enable_rls.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/alembic/versions/7a0f6aa22806_enable_rls.py) [NEW]
+
+### D2 — Version-Based Optimistic Locking
+- **Changes**:
+  - Modified `TaskUpdate`, `TaskResponse`, `DealUpdate`, and `DealResponse` schemas to include `version`.
+  - Updated task and deal services to perform version verification via `verify_version` and increment versions via `increment_version` during drag-and-drop status or details updates, preventing concurrent modification conflicts.
+- **Files Touched**:
+  - [backend/app/projects/schema.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/projects/schema.py)
+  - [backend/app/crm/schema.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/crm/schema.py)
+  - [backend/app/projects/service.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/projects/service.py)
+  - [backend/app/crm/service.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/crm/service.py)
+
+### D3 — Invoice Idempotency
+- **Changes**:
+  - Configured `POST /api/invoices` to accept an `Idempotency-Key` header.
+  - Implemented Redis-based caching of successful invoice creation responses under key `idempotency:invoice:{org_id}:{key}`, returning the cached response on duplicate submissions to prevent double billing.
+- **Files Touched**:
+  - [backend/app/invoices/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/invoices/router.py)
+
+### D4 — Pagination Hardening
+- **Changes**:
+  - Updated all router list endpoints (`list_clients`, `list_leads`, `list_deals`, `list_projects`, `list_invoices`, `list_orgs`, `list_org_api_keys`, `list_org_members`) to restrict maximum page size limits to exactly `100` instead of `1000`.
+- **Files Touched**:
+  - [backend/app/crm/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/crm/router.py)
+  - [backend/app/projects/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/projects/router.py)
+  - [backend/app/invoices/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/invoices/router.py)
+  - [backend/app/organizations/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/organizations/router.py)
+  - [backend/app/api_keys/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/api_keys/router.py)
+  - [backend/app/memberships/router.py](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/app/memberships/router.py)
+
+### D5 — Non-Root Docker Hardening
+- **Changes**:
+  - Updated `backend/Dockerfile` to create a non-root system user `forgeflow`, configure ownership of `/app`, and execute the application under `USER forgeflow`.
+- **Files Touched**:
+  - [backend/Dockerfile](file:///Users/anmoljangra/Downloads/Project/FogreFlow/ForgeFlow/backend/Dockerfile)

@@ -42,6 +42,13 @@ try:
     from app.projects.models import Project, Task
     from app.crm.models import Client, Lead, Deal
     from app.invoices.models import Invoice, InvoiceLineItem
+    from app.attachments.models import Attachment
+    from app.billing.models import BillingContract, TaskTimeLog
+    from app.notifications.models import Notification
+    from app.events.models import EventOutbox
+    from app.auth.sso_models import SSOConfiguration
+    from app.security.models import SecurityEvent
+    from app.common.audit_log import AuditLog
 except ModuleNotFoundError:
     sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     if sys_path not in sys.path:
@@ -58,6 +65,13 @@ except ModuleNotFoundError:
     from backend.app.projects.models import Project, Task
     from backend.app.crm.models import Client, Lead, Deal
     from backend.app.invoices.models import Invoice, InvoiceLineItem
+    from backend.app.attachments.models import Attachment
+    from backend.app.billing.models import BillingContract, TaskTimeLog
+    from backend.app.notifications.models import Notification
+    from backend.app.events.models import EventOutbox
+    from backend.app.auth.sso_models import SSOConfiguration
+    from backend.app.security.models import SecurityEvent
+    from backend.app.common.audit_log import AuditLog
 
 
 # target_metadata is required for 'autogenerate'

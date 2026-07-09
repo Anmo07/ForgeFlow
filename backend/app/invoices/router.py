@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, status, Header
+from fastapi.responses import Response, JSONResponse
 from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
@@ -15,14 +15,40 @@ class StatusUpdate(BaseModel):
 
 @router.get('', response_model=List[InvoiceListResponse])
 def list_invoices(limit: int=100, offset: int=0, tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return service.list_invoices(db, tenant.organization_id, limit=limit, offset=offset)
 
 @router.post('', response_model=InvoiceResponse, status_code=status.HTTP_201_CREATED)
-def create_invoice(data: InvoiceCreate, tenant: TenantContext=Depends(require_permission('invoice:create')), db: Session=Depends(get_db)):
-    return service.create_invoice(db, tenant.organization_id, data, user_id=tenant.user_id)
+def create_invoice(
+    data: InvoiceCreate, 
+    tenant: TenantContext=Depends(require_permission('invoice:create')), 
+    db: Session=Depends(get_db),
+    idempotency_key: str = Header(None, alias="Idempotency-Key")
+):
+    import json
+    from ..common.redis import redis_client
+    from fastapi.encoders import jsonable_encoder
+
+    redis_key = None
+    if idempotency_key:
+        redis_key = f"idempotency:invoice:{tenant.organization_id}:{idempotency_key}"
+        cached = redis_client.get(redis_key)
+        if cached:
+            try:
+                cached_data = json.loads(cached)
+                return JSONResponse(content=cached_data, status_code=status.HTTP_201_CREATED)
+            except Exception:
+                pass
+
+    invoice = service.create_invoice(db, tenant.organization_id, data, user_id=tenant.user_id)
+
+    if redis_key:
+        serialized = jsonable_encoder(InvoiceResponse.model_validate(invoice))
+        redis_client.set(redis_key, json.dumps(serialized), expire=86400)
+
+    return invoice
 
 @router.get('/metrics', response_model=InvoiceMetrics)
 def get_invoice_metrics(tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):

@@ -10,9 +10,9 @@ service = ProjectService()
 
 @router.get('', response_model=List[ProjectListResponse])
 def list_projects(limit: int=100, offset: int=0, tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return service.list_projects(db, tenant.organization_id, limit=limit, offset=offset)
 
 @router.post('', response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)

@@ -158,8 +158,15 @@ class ProjectService:
         if not task:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Task not found')
         
+        if data.version is not None:
+            from ..common.optimistic_locking import verify_version, increment_version
+            from .models import Task
+            verify_version(db, Task, task_id, data.version, org_id)
+            increment_version(task)
+
         old_assigned_to = task.assigned_to
         updates = data.model_dump(exclude_unset=True)
+        updates.pop('version', None)
         task = self.task_repo.update(db, task, **updates)
         
         actor_name = self._get_actor_name(db, user_id)

@@ -70,6 +70,7 @@ class DealUpdate(BaseModel):
     value: Optional[float] = None
     status: Optional[str] = None
     assigned_to: Optional[int] = None
+    version: Optional[int] = None
 
 class DealResponse(BaseModel):
     id: int
@@ -80,6 +81,7 @@ class DealResponse(BaseModel):
     status: str
     assigned_to: Optional[int] = None
     closed_at: Optional[datetime] = None
+    version: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

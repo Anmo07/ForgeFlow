@@ -17,6 +17,10 @@ RUN pip install --no-cache-dir -r requirements.txt email-validator pytest httpx
 # Copy the rest of the application
 COPY . .
 
+RUN useradd -m -u 1000 forgeflow && chown -R forgeflow:forgeflow /app
+
+USER forgeflow
+
 EXPOSE 8000
 
 # Run the app using uvicorn

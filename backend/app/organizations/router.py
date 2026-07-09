@@ -15,9 +15,9 @@ def create_org(req: OrganizationCreate, current_user: Optional[User]=Depends(get
 
 @router.get('/', response_model=List[OrganizationResponse])
 def list_orgs(skip: int=0, limit: int=100, current_user: Optional[User]=Depends(get_current_user_optional), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     if current_user:
         return org_service.list_organizations_for_user(db, current_user.id, skip, limit)
     return org_service.list_organizations(db, skip, limit)

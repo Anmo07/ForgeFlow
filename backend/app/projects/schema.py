@@ -21,6 +21,7 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = None
     assigned_to: Optional[int] = None
     due_date: Optional[date] = None
+    version: Optional[int] = None
 
 class TaskResponse(BaseModel):
     id: int
@@ -32,6 +33,7 @@ class TaskResponse(BaseModel):
     assigned_to: Optional[int] = None
     due_date: Optional[date] = None
     dependencies: List[int] = []
+    version: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

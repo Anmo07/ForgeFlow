@@ -10,9 +10,9 @@ service = CRMService()
 
 @router.get('/clients', response_model=List[ClientResponse])
 def list_clients(limit: int=100, offset: int=0, tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return service.list_clients(db, tenant.organization_id, limit=limit, offset=offset)
 
 @router.post('/clients', response_model=ClientResponse, status_code=status.HTTP_201_CREATED)
@@ -33,9 +33,9 @@ def delete_client(client_id: int, tenant: TenantContext=Depends(require_permissi
 
 @router.get('/leads', response_model=List[LeadResponse])
 def list_leads(limit: int=100, offset: int=0, tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return service.list_leads(db, tenant.organization_id, limit=limit, offset=offset)
 
 @router.post('/leads', response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
@@ -48,9 +48,9 @@ def update_lead(lead_id: int, data: LeadUpdate, tenant: TenantContext=Depends(re
 
 @router.get('/deals', response_model=List[DealResponse])
 def list_deals(limit: int=100, offset: int=0, tenant: TenantContext=Depends(get_current_tenant), db: Session=Depends(get_db)):
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return service.list_deals(db, tenant.organization_id, limit=limit, offset=offset)
 
 @router.post('/deals', response_model=DealResponse, status_code=status.HTTP_201_CREATED)

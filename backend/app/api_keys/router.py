@@ -37,7 +37,7 @@ def revoke_api_key(key_id: int, db: Session=Depends(get_db), current_user: User=
 @router.get('/organization/{org_id}', response_model=List[APIKeyResponse])
 def list_org_api_keys(org_id: int, limit: int=100, offset: int=0, db: Session=Depends(get_db), current_user: User=Depends(get_current_user)):
     _ = verify_org_membership(org_id, current_user, db)
-    if limit > 1000:
+    if limit > 100:
         from fastapi import HTTPException, status
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 1000')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Maximum page size is 100')
     return key_service.list_keys(db, org_id, limit=limit, offset=offset)

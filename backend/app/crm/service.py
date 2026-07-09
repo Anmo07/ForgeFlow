@@ -93,7 +93,15 @@ class CRMService:
         deal = self.deal_repo.get_by_id(db, deal_id, org_id)
         if not deal:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Deal not found')
+
+        if data.version is not None:
+            from ..common.optimistic_locking import verify_version, increment_version
+            from .models import Deal
+            verify_version(db, Deal, deal_id, data.version, org_id)
+            increment_version(deal)
+
         updates = data.model_dump(exclude_unset=True)
+        updates.pop('version', None)
         new_status = updates.get('status')
         if new_status:
             from datetime import datetime, timezone
