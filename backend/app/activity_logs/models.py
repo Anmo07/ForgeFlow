@@ -17,3 +17,14 @@ class ActivityLog(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     user = relationship('User')
     organization = relationship('Organization')
+
+
+from sqlalchemy import event
+
+@event.listens_for(ActivityLog, "before_update")
+def prevent_activity_log_update(mapper, connection, target):
+    raise RuntimeError("ActivityLog records are immutable and cannot be updated.")
+
+@event.listens_for(ActivityLog, "before_delete")
+def prevent_activity_log_delete(mapper, connection, target):
+    raise RuntimeError("ActivityLog records are immutable and cannot be deleted.")
