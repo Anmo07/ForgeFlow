@@ -6,6 +6,9 @@ import "react-modal-video/css/modal-video.css";
 import ThemeInitializer from "@/components/theme-provider";
 import LayoutWrapper from "@/components/layout-wrapper";
 import { ThemeProvider } from "next-themes";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "@/lib/query-client";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -21,10 +24,15 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en" className={`${inter.variable} h-full antialiased`}>
       <head />
       <body className="min-h-full flex flex-col text-foreground">
-        <ThemeProvider attribute="class" enableSystem={false} defaultTheme="dark">
-          <ThemeInitializer />
-          <LayoutWrapper>{children}</LayoutWrapper>
-        </ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider attribute="class" enableSystem={false} defaultTheme="dark">
+            <ThemeInitializer />
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </ThemeProvider>
+          {process.env.NODE_ENV === "development" && (
+            <ReactQueryDevtools initialIsOpen={false} />
+          )}
+        </QueryClientProvider>
       </body>
     </html>
   );

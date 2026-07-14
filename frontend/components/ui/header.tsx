@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import OrgSwitcher from "./org-switcher";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import NetworkStatus from "./network-status";
 
 const PersonaSwitcher = dynamic(() => import("./persona-switcher"), { ssr: false });
 
@@ -33,6 +34,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50">
+      <NetworkStatus />
       <div className="glass-strong border-b border-border">
         <div className="app-container flex items-center justify-between py-3">
           <div className="flex items-center gap-6">

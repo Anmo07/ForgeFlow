@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useOrgStore } from "@/store/organization";
 import { apiFetch } from "@/lib/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Client {
   id: number;
@@ -80,6 +81,38 @@ export default function CRMPage() {
     "leads",
   );
 
+  const queryClient = useQueryClient();
+
+  const { data: qClients, isFetching: isFetchingClients, isLoading: isLoadingClients } = useQuery<Client[]>({
+    queryKey: ["crmClients", currentOrg?.id],
+    queryFn: () => apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qLeads, isFetching: isFetchingLeads, isLoading: isLoadingLeads } = useQuery<Lead[]>({
+    queryKey: ["crmLeads", currentOrg?.id],
+    queryFn: () => apiFetch<Lead[]>("/api/crm/leads", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qDeals, isFetching: isFetchingDeals, isLoading: isLoadingDeals } = useQuery<Deal[]>({
+    queryKey: ["crmDeals", currentOrg?.id],
+    queryFn: () => apiFetch<Deal[]>("/api/crm/deals", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qMetrics, isFetching: isFetchingMetrics, isLoading: isLoadingMetrics } = useQuery<CRMMetrics>({
+    queryKey: ["crmMetrics", currentOrg?.id],
+    queryFn: () => apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qMembers, isFetching: isFetchingMembers, isLoading: isLoadingMembers } = useQuery<Member[]>({
+    queryKey: ["orgMembers", currentOrg?.id],
+    queryFn: () => apiFetch<Member[]>(`/api/memberships/organization/${currentOrg?.id}`, { orgId: currentOrg?.id }).catch(() => []),
+    enabled: !!currentOrg?.id,
+  });
+
   const [clients, setClients] = useState<Client[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -92,7 +125,28 @@ export default function CRMPage() {
   });
   const [members, setMembers] = useState<Member[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (qClients) setClients(qClients);
+  }, [qClients]);
+
+  useEffect(() => {
+    if (qLeads) setLeads(qLeads);
+  }, [qLeads]);
+
+  useEffect(() => {
+    if (qDeals) setDeals(qDeals);
+  }, [qDeals]);
+
+  useEffect(() => {
+    if (qMetrics) setMetrics(qMetrics);
+  }, [qMetrics]);
+
+  useEffect(() => {
+    if (qMembers) setMembers(qMembers);
+  }, [qMembers]);
+
+  const loading = isLoadingClients || isLoadingLeads || isLoadingDeals || isLoadingMetrics || isLoadingMembers;
+  const isRefreshing = isFetchingClients || isFetchingLeads || isFetchingDeals || isFetchingMetrics || isFetchingMembers;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [errorMsg, setErrorMsg] = useState("");
@@ -121,43 +175,25 @@ export default function CRMPage() {
 
   const loadCRMData = async () => {
     if (!currentOrg) return;
-    setLoading(true);
     setErrorMsg("");
     try {
-      const [clientsData, leadsData, dealsData, metricsData, membersData] =
-        await Promise.all([
-          apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg.id }),
-          apiFetch<Lead[]>("/api/crm/leads", { orgId: currentOrg.id }),
-          apiFetch<Deal[]>("/api/crm/deals", { orgId: currentOrg.id }),
-          apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg.id }),
-          apiFetch<Member[]>(`/api/memberships/organization/${currentOrg.id}`, {
-            orgId: currentOrg.id,
-          }).catch(() => []),
-        ]);
-
-      setClients(clientsData || []);
-      setLeads(leadsData || []);
-      setDeals(dealsData || []);
-      setMetrics(
-        metricsData || {
-          active_leads: 0,
-          pipeline_value: 0,
-          deals_won_value: 0,
-          conversion_rate: 0,
-          total_clients: 0,
-        },
-      );
-      setMembers(membersData || []);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["crmClients", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["crmLeads", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["crmDeals", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["crmMetrics", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
+      ]);
     } catch (err: unknown) {
-      console.error("Error loading CRM data:", err);
-      setErrorMsg(err instanceof Error ? err.message : "Failed to load CRM database");
-    } finally {
-      setLoading(false);
+      console.error("Error invalidating CRM queries:", err);
+      setErrorMsg(err instanceof Error ? err.message : "Failed to load CRM data");
     }
   };
 
   useEffect(() => {
-    loadCRMData();
+    if (currentOrg) {
+      loadCRMData();
+    }
     window.addEventListener("orgChanged", loadCRMData);
     return () => window.removeEventListener("orgChanged", loadCRMData);
   }, [currentOrg]);
@@ -333,9 +369,17 @@ export default function CRMPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">CRM Hub</h1>
-          <p className="text-muted-foreground text-sm">
-            Track clients, incoming leads, and pipeline deals.
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-muted-foreground text-sm">
+              Track clients, incoming leads, and pipeline deals.
+            </p>
+            {isRefreshing && !loading && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded animate-pulse">
+                <Loader2 className="size-2.5 animate-spin" />
+                Refreshing...
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
           <button

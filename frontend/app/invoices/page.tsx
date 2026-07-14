@@ -20,6 +20,7 @@ import {
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { apiFetch } from "@/lib/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface LineItem {
   description: string;
@@ -71,6 +72,26 @@ interface Client {
 export default function InvoicesPage() {
   const { currentOrg } = useOrgStore();
 
+  const queryClient = useQueryClient();
+
+  const { data: qInvoices, isFetching: isFetchingInvoices, isLoading: isLoadingInvoices } = useQuery<Invoice[]>({
+    queryKey: ["invoices", currentOrg?.id],
+    queryFn: () => apiFetch<Invoice[]>("/api/invoices", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qMetrics, isFetching: isFetchingMetrics, isLoading: isLoadingMetrics } = useQuery<InvoiceMetrics>({
+    queryKey: ["invoiceMetrics", currentOrg?.id],
+    queryFn: () => apiFetch<InvoiceMetrics>("/api/invoices/metrics", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
+  const { data: qClients, isFetching: isFetchingClients, isLoading: isLoadingClients } = useQuery<Client[]>({
+    queryKey: ["crmClients", currentOrg?.id],
+    queryFn: () => apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id,
+  });
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [metrics, setMetrics] = useState<InvoiceMetrics>({
     total_billed: 0,
@@ -80,7 +101,21 @@ export default function InvoicesPage() {
     invoice_count: 0,
   });
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (qInvoices) setInvoices(qInvoices);
+  }, [qInvoices]);
+
+  useEffect(() => {
+    if (qMetrics) setMetrics(qMetrics);
+  }, [qMetrics]);
+
+  useEffect(() => {
+    if (qClients) setClients(qClients);
+  }, [qClients]);
+
+  const loading = isLoadingInvoices || isLoadingMetrics || isLoadingClients;
+  const isRefreshing = isFetchingInvoices || isFetchingMetrics || isFetchingClients;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [errorMsg, setErrorMsg] = useState("");
@@ -100,37 +135,23 @@ export default function InvoicesPage() {
 
   const loadInvoiceData = async () => {
     if (!currentOrg) return;
-    setLoading(true);
     setErrorMsg("");
     try {
-      const [invoicesData, metricsData, clientsData] = await Promise.all([
-        apiFetch<Invoice[]>("/api/invoices", { orgId: currentOrg.id }),
-        apiFetch<InvoiceMetrics>("/api/invoices/metrics", {
-          orgId: currentOrg.id,
-        }),
-        apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg.id }),
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["invoices", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["invoiceMetrics", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["crmClients", currentOrg.id] }),
       ]);
-      setInvoices(invoicesData || []);
-      setMetrics(
-        metricsData || {
-          total_billed: 0,
-          total_collected: 0,
-          total_outstanding: 0,
-          total_overdue: 0,
-          invoice_count: 0,
-        },
-      );
-      setClients(clientsData || []);
     } catch (err: unknown) {
-      console.error("Error loading invoice data:", err);
+      console.error("Error invalidating queries:", err);
       setErrorMsg(err instanceof Error ? err.message : "Failed to load invoices");
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadInvoiceData();
+    if (currentOrg) {
+      loadInvoiceData();
+    }
     window.addEventListener("orgChanged", loadInvoiceData);
     return () => window.removeEventListener("orgChanged", loadInvoiceData);
   }, [currentOrg]);
@@ -293,9 +314,17 @@ export default function InvoicesPage() {
           <h1 className="text-3xl font-bold tracking-tight">
             Billing & Invoices
           </h1>
-          <p className="text-muted-foreground text-sm">
-            Issue, track and verify payments seamlessly.
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-muted-foreground text-sm">
+              Issue, track and verify payments seamlessly.
+            </p>
+            {isRefreshing && !loading && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded animate-pulse">
+                <Loader2 className="size-2.5 animate-spin" />
+                Refreshing...
+              </span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}

@@ -30,6 +30,7 @@ from .notifications.router import router as notifications_router
 from .security.router import router as security_router
 from .ingress.router import router as ingress_router
 from .compliance.router import router as compliance_router
+from .common.dlq_router import router as dlq_router
 
 from .common.middleware import (
     SecurityHeadersMiddleware, 
@@ -285,6 +286,7 @@ app.include_router(notifications_router, prefix='/api/v1/notifications', tags=['
 app.include_router(security_router, prefix='/api/v1/security', tags=['security-v1'])
 app.include_router(ingress_router, prefix='/api/v1/ingress', tags=['ingress-v1'])
 app.include_router(compliance_router, prefix='/api/v1/compliance', tags=['compliance-v1'])
+app.include_router(dlq_router, tags=['admin-dlq'])
 
 
 @app.get('/metrics')
