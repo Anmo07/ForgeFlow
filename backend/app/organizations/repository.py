@@ -26,6 +26,15 @@ class OrganizationRepository:
 
     def update(self, db: Session, db_org: Organization, org_in: OrganizationUpdate) -> Organization:
         update_data = org_in.model_dump(exclude_unset=True)
+        if 'sso_client_secret' in update_data:
+            secret = update_data['sso_client_secret']
+            if secret == "********":
+                update_data.pop('sso_client_secret')
+            elif secret == "":
+                update_data['sso_client_secret'] = None
+            elif secret is not None:
+                from ..common.encryption import encrypt_field
+                update_data['sso_client_secret'] = encrypt_field(secret)
         for key, value in update_data.items():
             setattr(db_org, key, value)
         db.commit()

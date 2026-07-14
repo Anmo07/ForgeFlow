@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Users, Shield, Key, Clock, FileText, Settings } from "lucide-react";
+import { Users, Shield, Key, Clock, FileText, Settings, Fingerprint } from "lucide-react";
 
 const settingsNav = [
   { href: "/settings/members", label: "Members", icon: Users },
@@ -12,6 +12,7 @@ const settingsNav = [
   { href: "/settings/api-keys", label: "API Keys", icon: Key },
   { href: "/settings/sessions", label: "Sessions", icon: Clock },
   { href: "/settings/logs", label: "Audit Logs", icon: FileText },
+  { href: "/settings/sso", label: "SSO Config", icon: Fingerprint },
 ];
 
 export default function SettingsLayout({

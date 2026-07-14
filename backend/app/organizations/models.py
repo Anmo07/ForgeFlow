@@ -17,3 +17,10 @@ class Organization(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     is_active = Column(Boolean, default=True)
+    
+    # SSO / OIDC Configuration
+    sso_enabled = Column(Boolean, default=False, nullable=False)
+    sso_provider = Column(String, nullable=True)  # e.g., 'google', 'okta'
+    sso_client_id = Column(String, nullable=True)
+    sso_client_secret = Column(String, nullable=True)  # Encrypted at rest
+    sso_issuer_url = Column(String, nullable=True)

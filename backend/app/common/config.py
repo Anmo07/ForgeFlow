@@ -30,3 +30,8 @@ TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '1x00000000000000000000
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '30'))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv('REFRESH_TOKEN_EXPIRE_DAYS', '30'))
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5500,http://127.0.0.1:5500,http://localhost:80,http://localhost').split(',') if origin.strip()]
+
+# Google OIDC SSO configuration
+GOOGLE_OIDC_CLIENT_ID = os.getenv('GOOGLE_OIDC_CLIENT_ID', 'mock-google-client-id')
+GOOGLE_OIDC_CLIENT_SECRET = os.getenv('GOOGLE_OIDC_CLIENT_SECRET', 'mock-google-client-secret')
+OIDC_REDIRECT_URI = os.getenv('OIDC_REDIRECT_URI', 'http://localhost:8000/api/auth/sso/google/callback')
