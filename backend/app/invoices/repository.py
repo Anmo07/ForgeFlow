@@ -18,8 +18,8 @@ class InvoiceRepository:
         count = db.query(sa_func.count(Invoice.id)).filter(Invoice.organization_id == org_id, Invoice.invoice_number.like(f'{prefix}%')).scalar() or 0
         return f'{prefix}{count + 1:03d}'
 
-    def create(self, db: Session, org_id: int, invoice_number: str, issue_date=None, due_date=None, status='draft', subtotal=0.0, tax_rate=0.0, tax_amount=0.0, total=0.0, notes=None, client_id=None, created_by=None, pdf_object_key=None) -> Invoice:
-        invoice = Invoice(organization_id=org_id, invoice_number=invoice_number, issue_date=issue_date, due_date=due_date, status=status, subtotal=subtotal, tax_rate=tax_rate, tax_amount=tax_amount, total=total, notes=notes, client_id=client_id, created_by=created_by, pdf_object_key=pdf_object_key)
+    def create(self, db: Session, org_id: int, invoice_number: str, issue_date=None, due_date=None, status='draft', subtotal=0.0, tax_rate=0.0, tax_amount=0.0, total=0.0, notes=None, client_id=None, created_by=None, pdf_object_key=None, pdf_status='completed') -> Invoice:
+        invoice = Invoice(organization_id=org_id, invoice_number=invoice_number, issue_date=issue_date, due_date=due_date, status=status, subtotal=subtotal, tax_rate=tax_rate, tax_amount=tax_amount, total=total, notes=notes, client_id=client_id, created_by=created_by, pdf_object_key=pdf_object_key, pdf_status=pdf_status)
         db.add(invoice)
         db.commit()
         db.refresh(invoice)

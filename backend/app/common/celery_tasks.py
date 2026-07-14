@@ -13,18 +13,47 @@ def process_webhook_task(payload: dict):
     print(f'Processing webhook payload: {payload}')
     return {'status': 'processed'}
 
-@celery_app.task
-def generate_invoice_pdf_task(invoice_id: int, org_id: int):
+@celery_app.task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+    acks_late=True,
+    reject_on_worker_lost=True,
+)
+def generate_invoice_pdf_task(self, invoice_id: int, org_id: int):
     from app.common.database import SessionLocal
     from app.invoices.service import InvoiceService
+    from app.invoices.models import Invoice
+    
     db = SessionLocal()
     try:
         service = InvoiceService()
         service.generate_and_store_pdf_sync(db, invoice_id, org_id)
         return {'status': 'pdf_generated', 'invoice_id': invoice_id}
-    except Exception as e:
-        print(f'Error in generate_invoice_pdf_task for invoice {invoice_id}: {e}')
-        raise e
+    except Exception as exc:
+        print(f'Error in generate_invoice_pdf_task for invoice {invoice_id}: {exc}')
+        try:
+            invoice = db.query(Invoice).filter(Invoice.id == invoice_id, Invoice.organization_id == org_id).first()
+            if invoice and invoice.pdf_status != 'pending':
+                invoice.pdf_status = 'pending'
+                db.commit()
+        except Exception:
+            pass
+            
+        try:
+            self.retry(exc=exc)
+        except Exception as retry_exc:
+            try:
+                invoice = db.query(Invoice).filter(Invoice.id == invoice_id, Invoice.organization_id == org_id).first()
+                if invoice:
+                    invoice.pdf_status = 'failed'
+                    db.commit()
+            except Exception:
+                pass
+            raise retry_exc
     finally:
         db.close()
 

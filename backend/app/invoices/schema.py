@@ -49,6 +49,7 @@ class InvoiceResponse(BaseModel):
     total: float
     notes: Optional[str] = None
     pdf_url: Optional[str] = None
+    pdf_status: str
     created_by: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -71,6 +72,7 @@ class InvoiceListResponse(BaseModel):
     tax_amount: float
     total: float
     pdf_url: Optional[str] = None
+    pdf_status: str
     created_at: Optional[datetime] = None
     client_name: Optional[str] = None
 

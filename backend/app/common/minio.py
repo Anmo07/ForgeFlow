@@ -1,7 +1,20 @@
+import os
+import pybreaker
 from minio import Minio
 from datetime import timedelta
 from typing import Optional
 from .config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_SECURE
+from .metrics import PrometheusBreakerListener, CB_STATE
+
+minio_breaker = pybreaker.CircuitBreaker(
+    fail_max=int(os.getenv("MINIO_CB_FAIL_MAX", "5")),
+    reset_timeout=int(os.getenv("MINIO_CB_RESET_TIMEOUT", "60")),
+    name="minio",
+    listeners=[PrometheusBreakerListener()]
+)
+
+# Initialize status to closed (healthy)
+CB_STATE.labels(name="minio").set(0)
 
 class MinioClient:
 
@@ -23,57 +36,41 @@ class MinioClient:
             )
         return self._client
 
+    @minio_breaker
     def ensure_bucket(self, bucket_name: str) -> None:
-        try:
-            if not self.client.bucket_exists(bucket_name):
-                self.client.make_bucket(bucket_name)
-        except Exception as e:
-            print(f'Error checking/creating MinIO bucket {bucket_name}: {e}')
+        if not self.client.bucket_exists(bucket_name):
+            self.client.make_bucket(bucket_name)
 
+    @minio_breaker
     def upload_file(self, bucket_name: str, object_name: str, file_path: str, content_type: str) -> bool:
-        try:
-            self.ensure_bucket(bucket_name)
-            self.client.fput_object(bucket_name, object_name, file_path, content_type=content_type)
-            return True
-        except Exception as e:
-            print(f'Error uploading file {file_path} to {bucket_name}/{object_name}: {e}')
-            return False
+        self.ensure_bucket(bucket_name)
+        self.client.fput_object(bucket_name, object_name, file_path, content_type=content_type)
+        return True
 
+    @minio_breaker
     def upload_bytes(self, bucket_name: str, object_name: str, data: bytes, content_type: str) -> bool:
         from io import BytesIO
-        try:
-            self.ensure_bucket(bucket_name)
-            stream = BytesIO(data)
-            self.client.put_object(bucket_name, object_name, stream, length=len(data), content_type=content_type)
-            return True
-        except Exception as e:
-            print(f'Error uploading bytes to {bucket_name}/{object_name}: {e}')
-            return False
+        self.ensure_bucket(bucket_name)
+        stream = BytesIO(data)
+        self.client.put_object(bucket_name, object_name, stream, length=len(data), content_type=content_type)
+        return True
 
-    def download_file(self, bucket_name: str, object_name: str) -> Optional[bytes]:
+    @minio_breaker
+    def download_file(self, bucket_name: str, object_name: str) -> bytes:
+        response = self.client.get_object(bucket_name, object_name)
         try:
-            response = self.client.get_object(bucket_name, object_name)
-            try:
-                return response.read()
-            finally:
-                response.close()
-                response.release_conn()
-        except Exception as e:
-            print(f'Error downloading file {bucket_name}/{object_name}: {e}')
-            return None
+            return response.read()
+        finally:
+            response.close()
+            response.release_conn()
 
+    @minio_breaker
     def get_presigned_url(self, bucket_name: str, object_name: str, expires_minutes: int=60) -> Optional[str]:
-        try:
-            return self.client.presigned_get_object(bucket_name, object_name, expires=timedelta(minutes=expires_minutes))
-        except Exception as e:
-            print(f'Error generating presigned URL for {bucket_name}/{object_name}: {e}')
-            return None
+        return self.client.presigned_get_object(bucket_name, object_name, expires=timedelta(minutes=expires_minutes))
 
+    @minio_breaker
     def delete_file(self, bucket_name: str, object_name: str) -> bool:
-        try:
-            self.client.remove_object(bucket_name, object_name)
-            return True
-        except Exception as e:
-            print(f'Error deleting file {bucket_name}/{object_name}: {e}')
-            return False
+        self.client.remove_object(bucket_name, object_name)
+        return True
+
 minio_client = MinioClient()

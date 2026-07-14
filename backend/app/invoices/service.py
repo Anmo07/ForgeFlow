@@ -55,14 +55,31 @@ class InvoiceService:
             from ..organizations.models import Organization
             db.query(Organization).filter(Organization.id == org_id).with_for_update().first()
         invoice_number = self.repo.get_next_invoice_number(db, org_id)
-        invoice = self.repo.create(db, org_id, invoice_number=invoice_number, issue_date=data.issue_date, due_date=data.due_date, status='draft', subtotal=subtotal, tax_rate=data.tax_rate, tax_amount=tax_amount, total=total, notes=data.notes, client_id=data.client_id, created_by=user_id)
+        
+        # Check if MinIO is reachable
+        minio_reachable = True
+        try:
+            from ..common.minio import minio_client, minio_breaker
+            if minio_breaker.current_state.name == 'open':
+                minio_reachable = False
+            else:
+                minio_client.client.bucket_exists("health-check-bucket-exists")
+        except Exception:
+            minio_reachable = False
+            
+        pdf_status = 'completed' if minio_reachable else 'pending'
+        
+        invoice = self.repo.create(db, org_id, invoice_number=invoice_number, issue_date=data.issue_date, due_date=data.due_date, status='draft', subtotal=subtotal, tax_rate=data.tax_rate, tax_amount=tax_amount, total=total, notes=data.notes, client_id=data.client_id, created_by=user_id, pdf_status=pdf_status)
         for item in data.line_items:
             self.repo.add_line_item(db, invoice.id, description=item.description, quantity=item.quantity, unit_price=item.unit_price)
+            
         import os
         is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
-        if not is_testing:
+        # Always queue Celery task if not testing, or if MinIO is down to allow backoff retries later
+        if not is_testing or not minio_reachable:
             from ..common.celery_tasks import generate_invoice_pdf_task
             generate_invoice_pdf_task.delay(invoice.id, org_id)
+            
         db.refresh(invoice)
         return InvoiceResponse(**self._enrich_invoice(invoice, db))
 
@@ -115,9 +132,13 @@ class InvoiceService:
         filename = f'{invoice.invoice_number}.pdf'
         if invoice.pdf_object_key:
             from ..common.minio import minio_client
-            pdf_bytes = minio_client.download_file('forgeflow-invoices', invoice.pdf_object_key)
-            if pdf_bytes:
-                return (pdf_bytes, filename)
+            try:
+                pdf_bytes = minio_client.download_file('forgeflow-invoices', invoice.pdf_object_key)
+                if pdf_bytes:
+                    return (pdf_bytes, filename)
+            except Exception:
+                # If MinIO is offline, compile on the fly instead of raising a 500
+                pass
         client_name = 'Client'
         if invoice.client_id:
             from ..crm.models import Client
@@ -158,4 +179,4 @@ class InvoiceService:
         pdf_path = f'invoices/{org_id}/{invoice.invoice_number}.pdf'
         uploaded = minio_client.upload_bytes(bucket_name='forgeflow-invoices', object_name=pdf_path, data=pdf_bytes, content_type='application/pdf')
         if uploaded:
-            self.repo.update(db, invoice, pdf_object_key=pdf_path)
+            self.repo.update(db, invoice, pdf_object_key=pdf_path, pdf_status='completed')

@@ -48,6 +48,12 @@ def create_invoice(
         serialized = jsonable_encoder(InvoiceResponse.model_validate(invoice))
         redis_client.set(redis_key, json.dumps(serialized), expire=86400)
 
+    if getattr(invoice, 'pdf_status', 'completed') == 'pending':
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content=jsonable_encoder(InvoiceResponse.model_validate(invoice))
+        )
+
     return invoice
 
 @router.get('/metrics', response_model=InvoiceMetrics)
