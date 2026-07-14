@@ -14,8 +14,11 @@ class ErrorCode(str, Enum):
     CONFLICT = "CONFLICT"
     RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
 
+from typing import Optional
+
 class ErrorResponse(BaseModel):
     error_code: ErrorCode = Field(..., description="Machine-readable error identifier")
     message: str = Field(..., description="User-safe human-readable message")
     request_id: str = Field(..., description="Correlation ID for tracking and logs")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Time when error occurred")
+    detail: Optional[str] = Field(None, description="FastAPI/Starlette backward compatibility field")

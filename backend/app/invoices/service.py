@@ -75,8 +75,7 @@ class InvoiceService:
             
         import os
         is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
-        # Always queue Celery task if not testing, or if MinIO is down to allow backoff retries later
-        if not is_testing or not minio_reachable:
+        if not is_testing:
             from ..common.celery_tasks import generate_invoice_pdf_task
             generate_invoice_pdf_task.delay(invoice.id, org_id)
             

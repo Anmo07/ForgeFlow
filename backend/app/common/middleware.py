@@ -60,11 +60,13 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
             req_id = request_id_ctx.get() or ""
             logger.error(f"Request timeout exceeded for path {request.url.path}")
             
+            msg = "Request timeout exceeded. Please retry."
             content = ErrorResponse(
                 error_code=ErrorCode.TIMEOUT_ERROR,
-                message="Request timeout exceeded. Please retry.",
+                message=msg,
                 request_id=req_id,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
+                detail=msg
             ).model_dump(mode="json")
             
             return JSONResponse(

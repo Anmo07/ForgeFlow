@@ -115,11 +115,13 @@ app.state.limiter = limiter
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     req_id = request_id_ctx.get() or ""
     logger.warning(f"RateLimitExceeded on {request.url.path}")
+    msg = "Rate limit exceeded. Please slow down."
     content = ErrorResponse(
         error_code=ErrorCode.RATE_LIMIT_EXCEEDED,
-        message="Rate limit exceeded. Please slow down.",
+        message=msg,
         request_id=req_id,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        detail=msg
     ).model_dump(mode="json")
     return JSONResponse(status_code=429, content=content)
 
@@ -144,7 +146,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         error_code=error_code,
         message=str(exc.detail),
         request_id=req_id,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        detail=str(exc.detail)
     ).model_dump(mode="json")
     return JSONResponse(status_code=exc.status_code, content=content)
 
@@ -164,7 +167,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         error_code=ErrorCode.VALIDATION_ERROR,
         message=message,
         request_id=req_id,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        detail=message
     ).model_dump(mode="json")
     return JSONResponse(status_code=422, content=content)
 
@@ -173,11 +177,13 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     req_id = request_id_ctx.get() or ""
     logger.error("SQLAlchemy database exception occurred", exc_info=exc)
     
+    msg = "A database error occurred. Please try again later."
     content = ErrorResponse(
         error_code=ErrorCode.DATABASE_ERROR,
-        message="A database error occurred. Please try again later.",
+        message=msg,
         request_id=req_id,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        detail=msg
     ).model_dump(mode="json")
     return JSONResponse(status_code=503, content=content)
 
@@ -186,11 +192,13 @@ async def general_exception_handler(request: Request, exc: Exception):
     req_id = request_id_ctx.get() or ""
     logger.error("Unhandled exception occurred", exc_info=exc)
     
+    msg = "An unexpected system error occurred. Please contact support."
     content = ErrorResponse(
         error_code=ErrorCode.SYSTEM_ERROR,
-        message="An unexpected system error occurred. Please contact support.",
+        message=msg,
         request_id=req_id,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        detail=msg
     ).model_dump(mode="json")
     return JSONResponse(status_code=500, content=content)
 
