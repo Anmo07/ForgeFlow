@@ -1,30 +1,47 @@
 import pytest
 import redis
+import time
 
 @pytest.fixture(autouse=True)
 def mock_redis_globally(monkeypatch):
-    store = {}
+    store = {} # key -> (value, expire_at)
+    
     class MockRedis:
+        def _get_active(self, key):
+            if key not in store:
+                return None
+            val, expire_at = store[key]
+            if expire_at is not None and time.time() > expire_at:
+                store.pop(key, None)
+                return None
+            return val
+
         def get(self, key):
-            val = store.get(key)
+            val = self._get_active(key)
             if val is not None and isinstance(val, bytes):
                 return val.decode('utf-8')
             return val
             
-        def set(self, key, value, *args, **kwargs):
-            store[key] = value
+        def set(self, key, value, ex=None, *args, **kwargs):
+            expire_at = time.time() + ex if ex is not None else None
+            store[key] = (value, expire_at)
             return True
             
-        def setex(self, key, time, value):
-            store[key] = value
+        def setex(self, key, time_seconds, value):
+            expire_at = time.time() + time_seconds
+            store[key] = (value, expire_at)
             return True
             
         def delete(self, key):
             store.pop(key, None)
             return True
             
-        def expire(self, key, time):
-            return True
+        def expire(self, key, time_seconds):
+            if key in store:
+                val, _ = store[key]
+                store[key] = (val, time.time() + time_seconds)
+                return True
+            return False
             
         def ping(self):
             return True
@@ -34,24 +51,38 @@ def mock_redis_globally(monkeypatch):
             return True
             
         def exists(self, *keys):
-            return sum(1 for k in keys if k in store)
+            return sum(1 for k in keys if self._get_active(k) is not None)
             
         def keys(self, pattern):
             import fnmatch
-            return [k for k in store.keys() if fnmatch.fnmatch(k, pattern)]
+            active_keys = [k for k in list(store.keys()) if self._get_active(k) is not None]
+            return [k for k in active_keys if fnmatch.fnmatch(k, pattern)]
             
         def incr(self, key, amount=1):
-            val = int(store.get(key) or 0) + amount
-            store[key] = str(val)
-            return val
+            val = self._get_active(key)
+            new_val = int(val or 0) + amount
+            expire_at = store[key][1] if key in store else None
+            store[key] = (str(new_val), expire_at)
+            return new_val
             
         def decr(self, key, amount=1):
-            val = int(store.get(key) or 0) - amount
-            store[key] = str(val)
-            return val
+            val = self._get_active(key)
+            new_val = int(val or 0) - amount
+            expire_at = store[key][1] if key in store else None
+            store[key] = (str(new_val), expire_at)
+            return new_val
             
         def ttl(self, key):
-            return 900 if key in store else -2
+            if key not in store:
+                return -2
+            val, expire_at = store[key]
+            if expire_at is None:
+                return -1
+            remaining = int(expire_at - time.time())
+            if remaining <= 0:
+                store.pop(key, None)
+                return -2
+            return remaining
             
         @property
         def client(self):
@@ -80,7 +111,7 @@ def mock_redis_globally(monkeypatch):
     # Patch redis.Redis.from_url globally
     monkeypatch.setattr(redis.Redis, 'from_url', lambda *args, **kwargs: MockRedis())
     
-    # Pre-emptively import both possible namespaces and override their singleton client instances
+    # Pre-emptively import both namespaces and override their singleton client instances
     for prefix in ('app', 'backend.app'):
         try:
             mod = __import__(f"{prefix}.common.redis", fromlist=['redis_client'])
