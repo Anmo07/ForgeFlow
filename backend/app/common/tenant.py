@@ -45,13 +45,23 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
         
     current_user = get_current_user(request, db, token)
     org_id_str = request.headers.get('X-Organization-ID') or request.query_params.get('org_id')
-    if not org_id_str:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Missing organization context (X-Organization-ID header or org_id parameter)')
-    try:
-        org_id = int(org_id_str)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid organization ID format')
-        
+    org_id = None
+    if org_id_str:
+        try:
+            org_id = int(org_id_str)
+        except ValueError:
+            org_id = None
+
+    if org_id is None:
+        first_mem = db.query(Membership).filter(
+            Membership.user_id == current_user.id,
+            Membership.status == 'active'
+        ).first()
+        if first_mem:
+            org_id = first_mem.organization_id
+        else:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Missing organization context (X-Organization-ID header or org_id parameter)')
+            
     membership = db.query(Membership).filter(Membership.user_id == current_user.id, Membership.organization_id == org_id, Membership.status == 'active').first()
     if not membership:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User does not have an active membership in this organization')

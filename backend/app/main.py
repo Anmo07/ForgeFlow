@@ -198,7 +198,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         timestamp=datetime.utcnow(),
         detail=str(exc.detail)
     ).model_dump(mode="json")
-    return JSONResponse(status_code=exc.status_code, content=content)
+    headers = getattr(exc, "headers", None)
+    return JSONResponse(status_code=exc.status_code, content=content, headers=headers)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

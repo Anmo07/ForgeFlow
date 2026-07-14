@@ -9,6 +9,25 @@ from ..memberships.models import Membership
 reusable_oauth2 = HTTPBearer(auto_error=False)
 
 def get_db() -> Generator[Session, None, None]:
+    from .database import engine
+    pool = engine.pool
+    if hasattr(pool, "checkedout") and hasattr(pool, "size"):
+        try:
+            checked_out = pool.checkedout()
+            pool_size = pool.size()
+            if pool_size > 0:
+                utilization = checked_out / pool_size
+                if utilization >= 0.9:
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Database connection pool limit reached",
+                        headers={"Retry-After": "30"}
+                    )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
     db = SessionLocal()
     try:
         yield db

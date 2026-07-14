@@ -27,7 +27,11 @@ def get_csrf_token(response: Response):
 def register(req: UserRegister, request: Request, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
     user = auth_service.register_user(db, req, ip_address=ip_address)
-    auth_service.send_verification_email(db, user.email)
+    try:
+        auth_service.send_verification_email(db, user.email)
+    except Exception as e:
+        import logging
+        logging.getLogger("forgeflow.api").warning(f"Failed to send verification email: {e}")
     return user
 
 @router.get('/verify-email', response_model=UserResponse)
