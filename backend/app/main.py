@@ -106,6 +106,54 @@ async def lifespan(app: FastAPI):
     from .common.database import engine
     engine.dispose()
     logger.info("Database engine pool disposed cleanly.")
+    
+import sentry_sdk
+import os
+
+def scrub_sensitive_fields(event, hint):
+    sensitive_keys = {"password", "token", "secret", "mfa_secret", "api_key", "cookie", "authorization"}
+    
+    def _scrub(val):
+        if isinstance(val, dict):
+            return {
+                k: "[SCRUBBED]" if any(sk in k.lower() for sk in sensitive_keys) else _scrub(v)
+                for k, v in val.items()
+            }
+        elif isinstance(val, list):
+            return [_scrub(item) for item in val]
+        return val
+
+    # Scrub event request, exception mechanism, extra context, etc.
+    if "request" in event:
+        request = event["request"]
+        if "headers" in request:
+            request["headers"] = _scrub(request["headers"])
+        if "cookies" in request:
+            request["cookies"] = _scrub(request["cookies"])
+        if "data" in request:
+            request["data"] = _scrub(request["data"])
+            
+    if "user" in event:
+        event["user"] = _scrub(event["user"])
+        
+    if "contexts" in event:
+        event["contexts"] = _scrub(event["contexts"])
+        
+    if "extra" in event:
+        event["extra"] = _scrub(event["extra"])
+        
+    return event
+
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=os.getenv("SENTRY_ENVIRONMENT", "production"),
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+        send_default_pii=False,
+        before_send=scrub_sensitive_fields
+    )
 
 app = FastAPI(title='ForgeFlow Backend', version='0.4.0', lifespan=lifespan)
 app.state.limiter = limiter

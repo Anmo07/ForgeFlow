@@ -45,6 +45,10 @@ def get_current_user(request: Request, db: Session=Depends(get_db), token: Optio
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
+    
+    from .logging_context import user_id_ctx
+    user_id_ctx.set(str(user.id))
+    
     return user
 
 def verify_org_membership(org_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> int:

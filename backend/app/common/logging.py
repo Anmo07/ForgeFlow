@@ -28,6 +28,12 @@ class CorrelationIdJSONFormatter(jsonlogger.JsonFormatter):
         if o_id:
             log_record["org_id"] = o_id
 
+        # Extract request metadata fields if present
+        for field in ("method", "path", "status_code", "duration_ms"):
+            val = message_dict.get(field) or getattr(record, field, None)
+            if val is not None:
+                log_record[field] = val
+
         # Clean stack trace / exc_info for JSON consistency
         if record.exc_info:
             log_record["exc_info"] = self.formatException(record.exc_info)

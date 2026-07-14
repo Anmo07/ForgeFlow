@@ -9,6 +9,7 @@ from ..memberships.models import Membership
 from ..roles.models import Role
 from ..api_keys.service import APIKeyService
 from .tenant_filtering import current_org_id, current_is_external, show_deleted
+from .logging_context import org_id_ctx
 
 class TenantContext(BaseModel):
     organization_id: int
@@ -25,6 +26,7 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
         try:
             api_key = APIKeyService().authenticate_key(db, plain_key)
             current_org_id.set(api_key.organization_id)
+            org_id_ctx.set(str(api_key.organization_id))
             current_is_external.set(False)
             return TenantContext(
                 organization_id=api_key.organization_id,
@@ -61,6 +63,7 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
         
     is_ext = bool(membership.is_external or current_user.is_external)
     current_org_id.set(org_id)
+    org_id_ctx.set(str(org_id))
     current_is_external.set(is_ext)
     
     return TenantContext(

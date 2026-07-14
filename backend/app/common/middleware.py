@@ -79,7 +79,7 @@ class LoggingAndTimingMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
-        if any(path.endswith(suffix) for suffix in ("/health", "/metrics", "/health/live", "/health/ready", "/health_check")):
+        if any(x in path for x in ("/health/live", "/health/ready", "/metrics", "/docs", "/openapi.json")):
             return await call_next(request)
             
         start_time = time.time()
@@ -94,16 +94,33 @@ class LoggingAndTimingMiddleware(BaseHTTPMiddleware):
             status_code = response.status_code
             log_msg = f"{method} {path} completed with status {status_code} in {duration_ms}ms"
             
-            if status_code >= 400:
-                logger.warning(log_msg)
+            extra = {
+                "method": method,
+                "path": path,
+                "status_code": status_code,
+                "duration_ms": duration_ms
+            }
+            if status_code >= 500:
+                logger.error(log_msg, extra=extra)
+            elif status_code >= 400:
+                logger.warning(log_msg, extra=extra)
             else:
-                logger.info(log_msg)
+                logger.info(log_msg, extra=extra)
                 
             return response
         except Exception as e:
             process_time = time.time() - start_time
             duration_ms = int(process_time * 1000)
-            logger.error(f"{method} {path} failed in {duration_ms}ms with error: {str(e)}", exc_info=True)
+            logger.error(
+                f"{method} {path} failed in {duration_ms}ms with error: {str(e)}", 
+                exc_info=True,
+                extra={
+                    "method": method,
+                    "path": path,
+                    "status_code": 500,
+                    "duration_ms": duration_ms
+                }
+            )
             raise
 
 class CSRFMiddleware(BaseHTTPMiddleware):
