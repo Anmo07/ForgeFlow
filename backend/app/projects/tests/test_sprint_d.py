@@ -64,6 +64,21 @@ def mock_turnstile(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def mock_redis(monkeypatch):
+    db_store = {}
+    class MockRedis:
+        def get(self, key):
+            return db_store.get(key)
+        def set(self, key, value, *args, **kwargs):
+            db_store[key] = value
+            return True
+        def ping(self):
+            return True
+    import app.common.redis
+    monkeypatch.setattr(app.common.redis, 'redis_client', MockRedis())
+
+
+@pytest.fixture(autouse=True)
 def reset_context_vars():
     from app.common.tenant_filtering import current_org_id, current_is_external, show_deleted
     current_org_id.set(None)

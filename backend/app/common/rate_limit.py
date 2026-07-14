@@ -109,6 +109,6 @@ is_testing = os.getenv('TESTING', '').lower() in ('true', '1', 'yes')
 
 limiter = Limiter(
     key_func=get_remote_address,
-    storage_uri=REDIS_URL,
+    storage_uri="memory://" if is_testing else REDIS_URL,
     enabled=not is_testing
 )

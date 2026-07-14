@@ -11,7 +11,7 @@ def test_jwt_secret_required_in_production_mode(monkeypatch):
     env.pop('JWT_SECRET_KEY', None)
     env.pop('TESTING', None)
     env.pop('DATABASE_URL', None)
-    result = subprocess.run([sys.executable, '-c', 'from app.common import config'], cwd=os.path.join(os.path.dirname(__file__), '..', '..'), env=env, capture_output=True, text=True)
+    result = subprocess.run([sys.executable, '-c', 'from app.common import config'], cwd=os.path.join(os.path.dirname(__file__), '..', '..', '..'), env=env, capture_output=True, text=True)
     assert result.returncode != 0
     assert 'JWT_SECRET_KEY' in result.stderr
 
@@ -23,7 +23,7 @@ def test_jwt_placeholder_rejected_in_production_mode(monkeypatch):
     env['JWT_SECRET_KEY'] = 'CHANGE_ME_TO_A_STRONG_RANDOM_VALUE'
     env['DATABASE_URL'] = 'postgresql+psycopg2://localhost/forgeflow'
     env.pop('TESTING', None)
-    result = subprocess.run([sys.executable, '-c', 'from app.common import config'], cwd=os.path.join(os.path.dirname(__file__), '..', '..'), env=env, capture_output=True, text=True)
+    result = subprocess.run([sys.executable, '-c', 'from app.common import config'], cwd=os.path.join(os.path.dirname(__file__), '..', '..', '..'), env=env, capture_output=True, text=True)
     assert result.returncode != 0
     assert 'placeholder' in result.stderr.lower()
 
