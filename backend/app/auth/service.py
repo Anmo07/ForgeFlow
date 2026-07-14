@@ -40,15 +40,18 @@ class AuthService:
         return UserResponse.model_validate(user)
 
     def authenticate_user(self, db: Session, login_in: UserLogin, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> TokenResponse:
+        from app.common.metrics import LOGIN_FAILURE, login_attempts_total, login_failures_total
         verify_turnstile_token(login_in.turnstile_token, ip=ip_address)
         user = self.repo.get_by_email(db, login_in.email)
         if not user or not verify_password(login_in.password, user.hashed_password):
-            from app.common.metrics import LOGIN_FAILURE
             LOGIN_FAILURE.inc()
+            login_attempts_total.labels(status='failure').inc()
+            login_failures_total.inc()
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect email or password', headers={'WWW-Authenticate': 'Bearer'})
         if not user.is_active:
-            from app.common.metrics import LOGIN_FAILURE
             LOGIN_FAILURE.inc()
+            login_attempts_total.labels(status='failure').inc()
+            login_failures_total.inc()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')
         if password_needs_rehash(user.hashed_password):
             user.hashed_password = get_password_hash(login_in.password)
@@ -64,8 +67,9 @@ class AuthService:
         expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         SessionService().register_session(db, user_id=user.id, refresh_token=refresh_token, expires_at=expires_at, ua_string=user_agent, ip_address=ip_address)
         
-        from app.common.metrics import LOGIN_SUCCESS
+        from app.common.metrics import LOGIN_SUCCESS, login_attempts_total
         LOGIN_SUCCESS.inc()
+        login_attempts_total.labels(status='success').inc()
         return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=UserResponse.model_validate(user))
 
     def refresh_tokens(self, db: Session, refresh_token: str, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> TokenResponse:
@@ -159,6 +163,8 @@ class AuthService:
     def check_account_lockout(self, user_id: int) -> None:
         is_locked, cooldown = lockout.is_account_locked(user_id)
         if is_locked:
+            from app.common.metrics import account_lockouts_total
+            account_lockouts_total.inc()
             raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=f'Account locked due to too many failed attempts. Try again in {cooldown} seconds.')
 
     def mfa_setup_start(self, user_id: int, db: Session) -> dict:
@@ -196,6 +202,7 @@ class AuthService:
 
 
     def authenticate_user_with_mfa(self, db: Session, login_in: UserLogin, user_agent: Optional[str]=None, ip_address: Optional[str]=None) -> dict:
+        from app.common.metrics import login_attempts_total, login_failures_total
         user_email = login_in.email
         user = self.repo.get_by_email(db, user_email)
         if user:
@@ -203,6 +210,8 @@ class AuthService:
         verify_turnstile_token(login_in.turnstile_token, ip=ip_address)
         user = self.repo.get_by_email(db, user_email)
         if not user or not verify_password(login_in.password, user.hashed_password):
+            login_attempts_total.labels(status='failure').inc()
+            login_failures_total.inc()
             if user:
                 lockout.increment_failed_attempts(user.id)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect email or password')
@@ -239,6 +248,8 @@ class AuthService:
         self.check_account_lockout(user.id)
         
         if mfa.verify_totp_code(user.mfa_secret, code):
+            from app.common.metrics import mfa_challenges_total
+            mfa_challenges_total.labels(status='success').inc()
             lockout.clear_failed_attempts(user.id)
             refresh_token = create_refresh_token(data={'sub': str(user.id)})
             sid = hashlib.sha256(refresh_token.encode()).hexdigest()
@@ -261,5 +272,7 @@ class AuthService:
             redis_client.delete(f'mfa_login_temp:{temp_token}')
             return TokenResponse(access_token=access_token, refresh_token=refresh_token, user=UserResponse.model_validate(user))
         
+        from app.common.metrics import mfa_challenges_total
+        mfa_challenges_total.labels(status='failure').inc()
         lockout.increment_failed_attempts(user.id)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid 2FA code')

@@ -84,6 +84,10 @@ class InvoiceService:
         for item in data.line_items:
             self.repo.add_line_item(db, invoice.id, description=item.description, quantity=item.quantity, unit_price=item.unit_price)
             
+        # Prometheus: invoice created
+        from ..common.metrics import invoices_created_total
+        invoices_created_total.labels(org_id=str(org_id)).inc()
+
         import os
         is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
         if not is_testing:
@@ -171,6 +175,9 @@ class InvoiceService:
         return InvoiceMetrics(total_billed=total_billed, total_collected=total_collected, total_outstanding=total_outstanding, total_overdue=total_overdue, invoice_count=len(invoices))
 
     def generate_and_store_pdf_sync(self, db: Session, invoice_id: int, org_id: int) -> None:
+        import time
+        from ..common.metrics import pdf_generation_total, pdf_generation_duration
+        start = time.monotonic()
         invoice = self.repo.get_by_id(db, invoice_id, org_id)
         if not invoice:
             return
@@ -184,9 +191,16 @@ class InvoiceService:
         org = db.query(Organization).filter(Organization.id == org_id).first()
         org_name = org.name if org else 'ForgeFlow'
         line_items = [{'description': item.description, 'quantity': item.quantity, 'unit_price': item.unit_price, 'amount': item.amount} for item in invoice.line_items]
-        pdf_bytes = generate_invoice_pdf(invoice_number=invoice.invoice_number, issue_date=str(invoice.issue_date), due_date=str(invoice.due_date), client_name=client_name, org_name=org_name, line_items=line_items, subtotal=invoice.subtotal, tax_rate=invoice.tax_rate, tax_amount=invoice.tax_amount, total=invoice.total, notes=invoice.notes, status=invoice.status)
-        from ..common.minio import minio_client
-        pdf_path = f'invoices/{org_id}/{invoice.invoice_number}.pdf'
-        uploaded = minio_client.upload_bytes(bucket_name='forgeflow-invoices', object_name=pdf_path, data=pdf_bytes, content_type='application/pdf')
-        if uploaded:
-            self.repo.update(db, invoice, pdf_object_key=pdf_path, pdf_status='completed')
+        try:
+            pdf_bytes = generate_invoice_pdf(invoice_number=invoice.invoice_number, issue_date=str(invoice.issue_date), due_date=str(invoice.due_date), client_name=client_name, org_name=org_name, line_items=line_items, subtotal=invoice.subtotal, tax_rate=invoice.tax_rate, tax_amount=invoice.tax_amount, total=invoice.total, notes=invoice.notes, status=invoice.status)
+            from ..common.minio import minio_client
+            pdf_path = f'invoices/{org_id}/{invoice.invoice_number}.pdf'
+            uploaded = minio_client.upload_bytes(bucket_name='forgeflow-invoices', object_name=pdf_path, data=pdf_bytes, content_type='application/pdf')
+            if uploaded:
+                self.repo.update(db, invoice, pdf_object_key=pdf_path, pdf_status='completed')
+            pdf_generation_total.labels(status='success').inc()
+        except Exception:
+            pdf_generation_total.labels(status='failure').inc()
+            raise
+        finally:
+            pdf_generation_duration.observe(time.monotonic() - start)
