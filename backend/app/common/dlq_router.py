@@ -7,8 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
 
-from app.common.database import get_db
-from app.common.dependencies import get_current_user
+from app.common.dependencies import get_db, get_current_user
 from app.common.dlq_models import DLQEvent
 
 logger = logging.getLogger("forgeflow.dlq")
