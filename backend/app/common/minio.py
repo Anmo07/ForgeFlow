@@ -11,7 +11,16 @@ class MinioClient:
     @property
     def client(self) -> Minio:
         if self._client is None:
-            self._client = Minio(endpoint=MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=MINIO_SECURE)
+            import urllib3
+            timeout = urllib3.Timeout(connect=5.0, read=10.0)
+            http_client = urllib3.PoolManager(timeout=timeout)
+            self._client = Minio(
+                endpoint=MINIO_ENDPOINT, 
+                access_key=MINIO_ACCESS_KEY, 
+                secret_key=MINIO_SECRET_KEY, 
+                secure=MINIO_SECURE,
+                http_client=http_client
+            )
         return self._client
 
     def ensure_bucket(self, bucket_name: str) -> None:

@@ -10,7 +10,12 @@ class RedisClient:
     @property
     def client(self) -> redis.Redis:
         if self._client is None:
-            self._client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+            self._client = redis.Redis.from_url(
+                REDIS_URL, 
+                decode_responses=True,
+                socket_timeout=5.0,
+                socket_connect_timeout=5.0
+            )
         return self._client
 
     def __getattr__(self, name):

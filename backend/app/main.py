@@ -1,7 +1,14 @@
-from fastapi import FastAPI, Depends, Response
+import logging
+from contextlib import asynccontextmanager
+from datetime import datetime
+from fastapi import FastAPI, Depends, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func, text
 import prometheus_client
 
 from .auth.router import router as auth_router
@@ -24,27 +31,170 @@ from .security.router import router as security_router
 from .ingress.router import router as ingress_router
 from .compliance.router import router as compliance_router
 
-from .common.middleware import SecurityHeadersMiddleware, LoggingAndTimingMiddleware, CSRFMiddleware
-from .common.config import CORS_ALLOWED_ORIGINS
+from .common.middleware import (
+    SecurityHeadersMiddleware, 
+    LoggingAndTimingMiddleware, 
+    CSRFMiddleware,
+    RequestIDMiddleware,
+    RequestTimeoutMiddleware
+)
+from .common.config import CORS_ALLOWED_ORIGINS, DATABASE_URL
 from .common.dependencies import get_db
 from .attachments.models import Attachment
 
 from .common.rate_limit import limiter
 from slowapi.errors import RateLimitExceeded
-from slowapi import _rate_limit_exceeded_handler
+from .common.errors import ErrorResponse, ErrorCode
+from .common.logging_context import request_id_ctx
+from .common.logging import setup_logging
 
-app = FastAPI(title='ForgeFlow Backend', version='0.4.0')
+# Configure structured JSON logging on import
+setup_logging()
+logger = logging.getLogger("forgeflow.api")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup validation
+    logger.info("Starting ForgeFlow Backend: validating core dependency connectivity...")
+    
+    # 1. Validate DB
+    try:
+        from .common.database import SessionLocal
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        logger.info("Database connection validated successfully.")
+    except Exception as e:
+        logger.critical(f"FATAL: Database connection failed during startup: {e}")
+        raise SystemExit(1)
+        
+    # 2. Validate Redis
+    try:
+        from .common.redis import redis_client
+        if not redis_client.ping():
+            raise Exception("Ping returned False")
+        logger.info("Redis connection validated successfully.")
+    except Exception as e:
+        logger.critical(f"FATAL: Redis connection failed during startup: {e}")
+        raise SystemExit(1)
+        
+    # 3. Validate MinIO
+    try:
+        from .common.minio import minio_client
+        # Simple health check bucket call
+        minio_client.client.bucket_exists("health-check-bucket-exists")
+        logger.info("MinIO connection validated successfully.")
+    except Exception as e:
+        logger.critical(f"FATAL: MinIO connection failed during startup: {e}")
+        raise SystemExit(1)
+        
+    yield
+    
+    # Shutdown cleanup
+    logger.info("Shutting down ForgeFlow Backend: disposing database connection pool...")
+    from .common.database import engine
+    engine.dispose()
+    logger.info("Database engine pool disposed cleanly.")
+
+app = FastAPI(title='ForgeFlow Backend', version='0.4.0', lifespan=lifespan)
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Exception Handlers
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    req_id = request_id_ctx.get() or ""
+    logger.warning(f"RateLimitExceeded on {request.url.path}")
+    content = ErrorResponse(
+        error_code=ErrorCode.RATE_LIMIT_EXCEEDED,
+        message="Rate limit exceeded. Please slow down.",
+        request_id=req_id,
+        timestamp=datetime.utcnow()
+    ).dict()
+    return JSONResponse(status_code=429, content=content)
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    req_id = request_id_ctx.get() or ""
+    logger.warning(f"HTTPException: {exc.detail} (Status: {exc.status_code})")
+    
+    error_code = ErrorCode.SYSTEM_ERROR
+    if exc.status_code == 404:
+        error_code = ErrorCode.NOT_FOUND
+    elif exc.status_code == 403:
+        error_code = ErrorCode.FORBIDDEN
+    elif exc.status_code == 401:
+        error_code = ErrorCode.UNAUTHORIZED
+    elif exc.status_code == 409:
+        error_code = ErrorCode.CONFLICT
+    elif exc.status_code == 503:
+        error_code = ErrorCode.SERVICE_UNAVAILABLE
+        
+    content = ErrorResponse(
+        error_code=error_code,
+        message=str(exc.detail),
+        request_id=req_id,
+        timestamp=datetime.utcnow()
+    ).dict()
+    return JSONResponse(status_code=exc.status_code, content=content)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    req_id = request_id_ctx.get() or ""
+    errors = []
+    for err in exc.errors():
+        loc = " -> ".join(str(x) for x in err.get("loc", []))
+        msg = err.get("msg", "invalid value")
+        errors.append(f"{loc}: {msg}")
+    
+    message = "Validation failed: " + "; ".join(errors)
+    logger.warning(f"RequestValidationError: {message}")
+    
+    content = ErrorResponse(
+        error_code=ErrorCode.VALIDATION_ERROR,
+        message=message,
+        request_id=req_id,
+        timestamp=datetime.utcnow()
+    ).dict()
+    return JSONResponse(status_code=422, content=content)
+
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    req_id = request_id_ctx.get() or ""
+    logger.error("SQLAlchemy database exception occurred", exc_info=exc)
+    
+    content = ErrorResponse(
+        error_code=ErrorCode.DATABASE_ERROR,
+        message="A database error occurred. Please try again later.",
+        request_id=req_id,
+        timestamp=datetime.utcnow()
+    ).dict()
+    return JSONResponse(status_code=503, content=content)
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    req_id = request_id_ctx.get() or ""
+    logger.error("Unhandled exception occurred", exc_info=exc)
+    
+    content = ErrorResponse(
+        error_code=ErrorCode.SYSTEM_ERROR,
+        message="An unexpected system error occurred. Please contact support.",
+        request_id=req_id,
+        timestamp=datetime.utcnow()
+    ).dict()
+    return JSONResponse(status_code=500, content=content)
+
+# Middlewares (ordered so that RequestID runs first in the execution pipeline)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(LoggingAndTimingMiddleware)
+app.add_middleware(RequestTimeoutMiddleware)
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(CSRFMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "X-CSRF-Token", "X-Organization-ID"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "X-Organization-ID", "X-Request-ID"],
 )
 
 # Legacy routes
@@ -83,6 +233,45 @@ def metrics(db: Session = Depends(get_db)):
         media_type=prometheus_client.CONTENT_TYPE_LATEST
     )
 
+# Health & Resilience routes
+@app.get('/api/health/live')
 @app.get('/health')
-async def health_check():
+async def health_check_live():
+    """Liveness check: process is alive."""
+    return {'status': 'ok'}
+
+@app.get('/api/health/ready')
+async def health_check_ready():
+    """Readiness check: deep validation of backend dependencies."""
+    failing = []
+    
+    # 1. Test Database
+    try:
+        from .common.database import SessionLocal
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception:
+        failing.append("database")
+        
+    # 2. Test Redis
+    try:
+        from .common.redis import redis_client
+        if not redis_client.ping():
+            raise Exception("ping failed")
+    except Exception:
+        failing.append("redis")
+        
+    # 3. Test MinIO
+    try:
+        from .common.minio import minio_client
+        minio_client.client.bucket_exists("health-check-bucket-exists")
+    except Exception:
+        failing.append("minio")
+        
+    if failing:
+        return JSONResponse(
+            status_code=503,
+            content={'status': 'degraded', 'failing': failing}
+        )
     return {'status': 'ok'}

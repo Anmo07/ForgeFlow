@@ -1,6 +1,16 @@
+import time
+import asyncio
+import os
+import logging
+from datetime import datetime
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-import time
+from fastapi.responses import JSONResponse
+
+from .logging_context import request_id_ctx, user_id_ctx, org_id_ctx
+from .errors import ErrorResponse, ErrorCode
+
+logger = logging.getLogger("forgeflow.api")
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
@@ -13,14 +23,86 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'none';"
         return response
 
+class RequestIDMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request: Request, call_next):
+        req_id = request.headers.get("X-Request-ID")
+        if not req_id:
+            import uuid
+            req_id = str(uuid.uuid4())
+            
+        request_id_ctx.set(req_id)
+        
+        org_id = request.headers.get("X-Organization-ID")
+        if org_id:
+            org_id_ctx.set(org_id)
+            
+        try:
+            response = await call_next(request)
+            response.headers["X-Request-ID"] = req_id
+            return response
+        finally:
+            request_id_ctx.set(None)
+            org_id_ctx.set(None)
+            user_id_ctx.set(None)
+
+class RequestTimeoutMiddleware(BaseHTTPMiddleware):
+
+    async def dispatch(self, request: Request, call_next):
+        # Allow PDF streaming longer processing time
+        if "/pdf" in request.url.path:
+            return await call_next(request)
+            
+        timeout_seconds = float(os.getenv("API_REQUEST_TIMEOUT_SECONDS", "25.0"))
+        try:
+            return await asyncio.wait_for(call_next(request), timeout=timeout_seconds)
+        except asyncio.TimeoutError:
+            req_id = request_id_ctx.get() or ""
+            logger.error(f"Request timeout exceeded for path {request.url.path}")
+            
+            content = ErrorResponse(
+                error_code=ErrorCode.TIMEOUT_ERROR,
+                message="Request timeout exceeded. Please retry.",
+                request_id=req_id,
+                timestamp=datetime.utcnow()
+            ).dict()
+            
+            return JSONResponse(
+                status_code=503,
+                content=content,
+                headers={"Retry-After": "5"}
+            )
+
 class LoggingAndTimingMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        if any(path.endswith(suffix) for suffix in ("/health", "/metrics", "/health/live", "/health/ready", "/health_check")):
+            return await call_next(request)
+            
         start_time = time.time()
-        response = await call_next(request)
-        process_time = time.time() - start_time
-        response.headers['X-Process-Time'] = str(process_time)
-        return response
+        method = request.method
+        
+        try:
+            response = await call_next(request)
+            process_time = time.time() - start_time
+            response.headers['X-Process-Time'] = str(process_time)
+            
+            duration_ms = int(process_time * 1000)
+            status_code = response.status_code
+            log_msg = f"{method} {path} completed with status {status_code} in {duration_ms}ms"
+            
+            if status_code >= 400:
+                logger.warning(log_msg)
+            else:
+                logger.info(log_msg)
+                
+            return response
+        except Exception as e:
+            process_time = time.time() - start_time
+            duration_ms = int(process_time * 1000)
+            logger.error(f"{method} {path} failed in {duration_ms}ms with error: {str(e)}", exc_info=True)
+            raise
 
 class CSRFMiddleware(BaseHTTPMiddleware):
 

@@ -84,6 +84,7 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     container_name: forgeflow_backend
+    stop_grace_period: 35s
     environment:
       DATABASE_URL: sqlite:////app/data/local.db
       REDIS_URL: redis://redis:6379/0
@@ -111,7 +112,8 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     container_name: forgeflow_celery
-    command: celery -A app.common.celery_app.celery_app worker --loglevel=info
+    stop_grace_period: 35s
+    command: celery -A app.common.celery_app.celery_app worker --loglevel=info --concurrency=4 --without-gossip --without-mingle
     environment:
       DATABASE_URL: sqlite:////app/data/local.db
       REDIS_URL: redis://redis:6379/0
