@@ -54,6 +54,17 @@ logger = logging.getLogger("forgeflow.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import os
+    is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+    if is_testing:
+        logger.info("Running in testing environment: skipping fail-fast dependency validation.")
+        yield
+        logger.info("Shutting down ForgeFlow Backend: disposing database connection pool...")
+        from .common.database import engine
+        engine.dispose()
+        logger.info("Database engine pool disposed cleanly.")
+        return
+
     # Startup validation
     logger.info("Starting ForgeFlow Backend: validating core dependency connectivity...")
     
@@ -109,7 +120,7 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
         message="Rate limit exceeded. Please slow down.",
         request_id=req_id,
         timestamp=datetime.utcnow()
-    ).dict()
+    ).model_dump(mode="json")
     return JSONResponse(status_code=429, content=content)
 
 @app.exception_handler(StarletteHTTPException)
@@ -134,7 +145,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         message=str(exc.detail),
         request_id=req_id,
         timestamp=datetime.utcnow()
-    ).dict()
+    ).model_dump(mode="json")
     return JSONResponse(status_code=exc.status_code, content=content)
 
 @app.exception_handler(RequestValidationError)
@@ -154,7 +165,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         message=message,
         request_id=req_id,
         timestamp=datetime.utcnow()
-    ).dict()
+    ).model_dump(mode="json")
     return JSONResponse(status_code=422, content=content)
 
 @app.exception_handler(SQLAlchemyError)
@@ -167,7 +178,7 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
         message="A database error occurred. Please try again later.",
         request_id=req_id,
         timestamp=datetime.utcnow()
-    ).dict()
+    ).model_dump(mode="json")
     return JSONResponse(status_code=503, content=content)
 
 @app.exception_handler(Exception)
@@ -180,7 +191,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         message="An unexpected system error occurred. Please contact support.",
         request_id=req_id,
         timestamp=datetime.utcnow()
-    ).dict()
+    ).model_dump(mode="json")
     return JSONResponse(status_code=500, content=content)
 
 # Middlewares (ordered so that RequestID runs first in the execution pipeline)

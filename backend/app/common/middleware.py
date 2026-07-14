@@ -65,7 +65,7 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
                 message="Request timeout exceeded. Please retry.",
                 request_id=req_id,
                 timestamp=datetime.utcnow()
-            ).dict()
+            ).model_dump(mode="json")
             
             return JSONResponse(
                 status_code=503,
