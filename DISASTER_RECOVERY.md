@@ -13,6 +13,8 @@
    - Cross-region replication enabled for production attachment and invoice storage.
 3. **Redis Cache / State**:
    - Redis configurations and ACL rules backed up daily. Active session states are ephemeral and do not block core recovery.
+4. **SSO Keys & Cryptographic Secrets**:
+   - The `FIELD_ENCRYPTION_KEY` used to encrypt OIDC client secrets is backed up in highly secure, geo-replicated hardware security modules or Secret Managers (e.g., Vault or cloud-native secrets vault) separate from database snapshots. Losing these keys blocks OIDC credentials decryption.
 
 ## Replication & High Availability
 - **Database**: Hot-standby replica database instances located in a separate Availability Zone (AZ) or region with synchronous/asynchronous replication enabled.
@@ -24,4 +26,6 @@
 3. **Failover**:
    - DB: Promote primary hot-standby replica.
    - DNS: Reroute traffic via Cloudflare load balancers to the secondary disaster recovery target environment.
-4. **Validation**: Smoke test core auth, tenancy checks, and MinIO storage paths.
+4. **Validation & Fallback**:
+   - Validation: Smoke test core auth, Google SSO redirection capability, key manager availability (decryption of tenant SSO configurations), tenancy checks, and MinIO storage paths.
+   - Emergency Override: If Google OIDC provider is completely offline, administrators can use secure local local-auth credentials to bypass SSO and modify/disable OIDC settings.

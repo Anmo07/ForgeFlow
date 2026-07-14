@@ -66,6 +66,16 @@ ForgeFlow operates as a containerized, decoupled monorepo combining a modern Rea
 * **Dynamic User Switching**: Top-right corner menu component that lists and allows immediate switching between different mock personas (Admin, Operations, Engineer) to validate permission sets.
 * **Active Data Seeding**: Creating an organization automatically seeds mock workspaces, activity logs, memberships, custom roles, and API keys.
 
+### 6. Enterprise Single Sign-On (SSO)
+* **Google Workspace Integration**: Support for global OIDC login redirects and callback processing (`GET /api/auth/sso/google/init` and `GET /api/auth/sso/google/callback`).
+* **Tenant-Scoped Credentials**: Allows organization owners to override global settings and supply their own custom OIDC client ID, client secret, and issuer URL from organization settings.
+* **Cookie-Based Sessions**: Successful Google login establishes secure, HttpOnly, SameSite cookie sessions.
+
+### 7. Granular Custom Roles & RBAC
+* **Tenant Role Customization**: Creates custom organization-scoped roles mapping specific permission sets (`POST /api/organizations/{org_id}/roles`).
+* **Role Safety Boundaries**: Blocks updates/deletions on system roles. Prevents deletion of custom roles currently assigned to active tenant memberships, returning a `409 Conflict` detailed list of affected members.
+* **Frontend Access Settings**: Integrated custom roles editor dashboard showing system roles (read-only) and custom roles (editable/deletable).
+
 ---
 
 ## 🔒 Security & Privacy Engineering
@@ -103,7 +113,7 @@ ForgeFlow implements defense-in-depth principles to keep MSP and client client-c
 ### Backend (FastAPI Python Stack)
 * **API Engine**: `fastapi` (0.115.0), `uvicorn[standard]` (0.30.5)
 * **Database ORM & Migrations**: `sqlalchemy` (2.0.35), `alembic` (1.13.2), `psycopg2-binary` (2.9.9)
-* **Cryptographic & Auth Utilities**: `argon2-cffi` (23.1.0), `python-jose[cryptography]` (3.3.0), `passlib[bcrypt]` (1.7.4), `pyotp` (2.9.0)
+* **Cryptographic & Auth Utilities**: `argon2-cffi` (23.1.0), `PyJWT` (2.8.0), `Authlib` (1.3.1), `passlib[bcrypt]` (1.7.4), `pyotp` (2.9.0)
 * **Task Queuing**: `celery` (5.4.0), `redis` (5.0.5)
 * **Object Store SDK**: `minio` (7.2.7)
 * **Document Compilation**: `reportlab` (4.2.5) - prints PDF billing receipts.
