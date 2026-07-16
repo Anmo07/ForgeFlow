@@ -135,3 +135,15 @@ This log tracks the progress of the visual redesign.
 
 ### Blocked Items
 - None
+
+---
+
+## Python Local Environment Configuration
+
+**Status**: Completed
+
+### Changes Made
+- Installed `python@3.13` via Homebrew as a stable project interpreter since the system version (3.14.6) is pre-release and has C API compilation conflicts with package wheels like `psycopg2-binary` and `pydantic-core`.
+- Recreated the `.venv` virtual environment using python3.13.
+- Updated `psycopg2-binary` to `2.9.12` in `requirements.txt` to provide compatible precompiled wheels.
+- Installed and verified all dependencies inside the local virtual environment.
