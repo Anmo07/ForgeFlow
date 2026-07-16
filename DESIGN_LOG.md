@@ -87,3 +87,35 @@ This log tracks the progress of the visual redesign.
 
 ### Blocked Items
 - None
+
+---
+
+## Phase D6 — Invoice Management & Financial Surfaces
+
+**Status**: Completed
+
+### Files Touched
+- `frontend/app/invoices/page.tsx` (Rebuilt summary statistics cards with GlassPanel regular and gradient mappings: amber for Outstanding, emerald for Collected, and red for Overdue; restyled the invoices table wrapper, table header row, and individual row backgrounds to use high-contrast solid styling for maximum legibility of financial figures)
+
+### Components Created
+- None
+
+### Blocked Items
+- None
+
+---
+
+## Phase D7 — Settings, Members & Org Surfaces
+
+**Status**: Completed
+
+### Files Touched
+- `frontend/app/settings/layout.tsx` (Wrapped the organization settings sidebar menu and the main section body inside GlassPanel structures, redesigned tab menu links to render as rounded glass-clear outline pills)
+- `frontend/app/settings/api-keys/page.tsx` (Styled the revealed key secret box to be fully opaque and high-contrast to prevent any blur overlay distortion)
+- `frontend/app/organizations/create/page.tsx` (Wrapped the organization creation wizard card inside a GlassPanel heavy panel, updated text input elements, selects, and textareas to use high-contrast solid backgrounds)
+
+### Components Created
+- None
+
+### Blocked Items
+- None

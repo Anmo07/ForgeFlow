@@ -200,11 +200,11 @@ export default function ApiKeysSettingsPage() {
             Make sure to record it in a safe place, or you will have to
             rotate/regenerate it.
           </p>
-          <div className="flex items-center gap-2 bg-background/80 border border-border p-2 rounded-lg font-mono text-sm break-all text-foreground select-all">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-2.5 rounded-lg font-mono text-sm break-all text-gray-900 dark:text-gray-100 select-all shadow-inner">
             <span className="flex-1">{generatedKey}</span>
             <button
               onClick={handleCopy}
-              className="p-1.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors shrink-0"
             >
               {copied ? (
                 <Check className="size-4 text-emerald-500" />

@@ -6,6 +6,7 @@ import { useOrgStore, Organization } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { Building2, Plus, Trash2, Shield, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { GlassPanel } from "@/components/glass/GlassPanel";
 
 interface InvitedMember {
   email: string;
@@ -210,19 +211,22 @@ export default function CreateOrganizationPage() {
       </div>
 
       <div className="w-full max-w-2xl z-10 my-8">
-        <div className="rounded-2xl p-8 card-glow border border-border/40 bg-white/40 dark:bg-white/[0.02] backdrop-blur-md shadow-2xl">
-          
+        <GlassPanel
+          variant="heavy"
+          radius="xl"
+          className="p-8 border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)]"
+        >
           <div className="flex flex-col mb-8">
-            <Link href="/" className="mb-4 inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/" className="mb-4 inline-flex items-center gap-2 text-xs font-bold text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:text-blue-500 transition-colors">
               <ArrowLeft className="size-3.5" /> Back to Dashboard
             </Link>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
+              <div className="flex items-center justify-center size-10 rounded-lg bg-blue-500/10 text-blue-500">
                 <Building2 className="size-5" />
               </div>
               <div className="text-left">
-                <h1 className="text-2xl font-bold tracking-tight">Create Organization</h1>
-                <p className="text-sm text-muted-foreground">Setup a secure isolated tenant for your client workspace</p>
+                <h1 className="text-2xl font-bold tracking-tight text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Create Organization</h1>
+                <p className="text-sm text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">Setup a secure isolated tenant for your client workspace</p>
               </div>
             </div>
           </div>
@@ -235,10 +239,10 @@ export default function CreateOrganizationPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Organization Profile</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] mb-3">Organization Profile</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="org-name" className="text-xs font-semibold text-foreground">Organization Name</label>
+                  <label htmlFor="org-name" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Organization Name</label>
                   <input
                     id="org-name"
                     type="text"
@@ -246,12 +250,12 @@ export default function CreateOrganizationPage() {
                     placeholder="e.g. NovaTech Operations"
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-border/80 bg-background/50 px-3 py-1 text-sm shadow-sm transition-all focus:border-primary focus:outline-none"
+                    className="w-full h-9 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm"
                   />
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label htmlFor="org-slug" className="text-xs font-semibold text-foreground">Workspace URL slug</label>
+                  <label htmlFor="org-slug" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Workspace URL slug</label>
                   <div className="flex items-center">
                     <input
                       id="org-slug"
@@ -260,9 +264,9 @@ export default function CreateOrganizationPage() {
                       placeholder="e.g. novatech-ops"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      className="w-full h-9 rounded-l-lg border-y border-l border-border/80 bg-background/50 px-3 py-1 text-sm shadow-sm transition-all focus:border-primary focus:outline-none"
+                      className="w-full h-9 rounded-l-[var(--radius-glass-md)] border-y border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm"
                     />
-                    <span className="h-9 px-3 border border-border/80 bg-muted/40 rounded-r-lg flex items-center text-xs text-muted-foreground shrink-0 select-none">
+                    <span className="h-9 px-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-r-[var(--radius-glass-md)] flex items-center text-xs text-gray-500 dark:text-gray-400 shrink-0 select-none">
                       .forgeflow.io
                     </span>
                   </div>
@@ -272,24 +276,24 @@ export default function CreateOrganizationPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="org-website" className="text-xs font-semibold text-foreground">Company Website</label>
+                <label htmlFor="org-website" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Company Website</label>
                 <input
                   id="org-website"
                   type="text"
                   placeholder="e.g. https://novatech.com"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-border/80 bg-background/50 px-3 py-1 text-sm shadow-sm focus:border-primary focus:outline-none"
+                  className="w-full h-9 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="org-industry" className="text-xs font-semibold text-foreground">Industry Sector</label>
+                <label htmlFor="org-industry" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Industry Sector</label>
                 <select
                   id="org-industry"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-border/80 bg-background px-2.5 py-1 text-sm shadow-sm focus:border-primary focus:outline-none"
+                  className="w-full h-9 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-sm text-gray-900 dark:text-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm"
                 >
                   <option value="MSP / IT Services">MSP / IT Services</option>
                   <option value="Cybersecurity">Cybersecurity</option>
@@ -302,12 +306,12 @@ export default function CreateOrganizationPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="org-size" className="text-xs font-semibold text-foreground">Company Size</label>
+                <label htmlFor="org-size" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Company Size</label>
                 <select
                   id="org-size"
                   value={companySize}
                   onChange={(e) => setCompanySize(e.target.value)}
-                  className="w-full h-9 rounded-lg border border-border/80 bg-background px-2.5 py-1 text-sm shadow-sm focus:border-primary focus:outline-none"
+                  className="w-full h-9 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2.5 py-1 text-sm text-gray-900 dark:text-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm"
                 >
                   <option value="1-10">1-10 employees</option>
                   <option value="11-50">11-50 employees</option>
@@ -319,27 +323,27 @@ export default function CreateOrganizationPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="org-desc" className="text-xs font-semibold text-foreground">Workspace Description</label>
+              <label htmlFor="org-desc" className="text-xs font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">Workspace Description</label>
               <textarea
                 id="org-desc"
                 rows={2}
                 placeholder="Briefly describe the purpose of this client tenant workspace..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-lg border border-border/80 bg-background/50 px-3 py-1.5 text-sm shadow-sm focus:border-primary focus:outline-none resize-none"
+                className="w-full rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 shadow-sm resize-none"
               />
             </div>
 
-            <div className="border-t border-border/40 pt-6">
+            <div className="border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Invite Initial Members</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Invite teammates to join this tenant workspace immediately</p>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">Invite Initial Members</h3>
+                  <p className="text-[10px] text-[var(--color-glass-text-tertiary)] dark:text-[var(--color-glass-dark-text-tertiary)] mt-0.5">Invite teammates to join this tenant workspace immediately</p>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddMember}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-all"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 transition-all border border-blue-500/20"
                 >
                   <Plus className="size-3.5" /> Add Row
                 </button>
@@ -354,19 +358,19 @@ export default function CreateOrganizationPage() {
                         placeholder="Teammate Full Name"
                         value={m.fullName}
                         onChange={(e) => handleMemberChange(idx, "fullName", e.target.value)}
-                        className="h-8 rounded-md border border-border bg-background/30 px-2 py-1 text-xs focus:border-primary focus:outline-none"
+                        className="h-8 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       />
                       <input
                         type="email"
                         placeholder="teammate@company.com"
                         value={m.email}
                         onChange={(e) => handleMemberChange(idx, "email", e.target.value)}
-                        className="h-8 rounded-md border border-border bg-background/30 px-2 py-1 text-xs focus:border-primary focus:outline-none"
+                        className="h-8 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       />
                       <select
                         value={m.roleId}
                         onChange={(e) => handleMemberChange(idx, "roleId", parseInt(e.target.value))}
-                        className="h-8 rounded-md border border-border bg-background px-1.5 py-0.5 text-xs focus:border-primary focus:outline-none"
+                        className="h-8 rounded-[var(--radius-glass-md)] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-0.5 text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       >
                         <option value={2}>Admin</option>
                         <option value={3}>Member</option>
@@ -388,14 +392,14 @@ export default function CreateOrganizationPage() {
               </div>
             </div>
 
-            <div className="border-t border-border/40 pt-6 flex justify-between items-center">
-              <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+            <div className="border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] pt-6 flex justify-between items-center">
+              <div className="text-[10px] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] flex items-center gap-1.5">
                 <Shield className="size-3 text-emerald-500" /> Isolated Sandbox Env
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary hover:opacity-90 px-6 py-2 text-sm font-semibold text-primary-foreground shadow transition-colors"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-[var(--radius-glass-md)] bg-blue-600 hover:bg-blue-700 px-6 py-2 text-sm font-bold text-white shadow transition-colors"
               >
                 {loading ? (
                   <>
@@ -410,7 +414,7 @@ export default function CreateOrganizationPage() {
             </div>
             
           </form>
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );

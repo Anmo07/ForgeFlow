@@ -338,72 +338,98 @@ export default function InvoicesPage() {
 
       {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
-          <div className="flex justify-between items-center text-muted-foreground mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">
+        {/* Total Billed */}
+        <GlassPanel
+          variant="regular"
+          radius="xl"
+          className="p-5 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)]"
+        >
+          <div className="flex justify-between items-center text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">
               Total Billed
             </span>
-            <DollarSign className="size-4 text-blue-400" />
+            <DollarSign className="size-4 text-blue-500" />
           </div>
-          <div className="text-3xl font-bold text-foreground">
+          <div className="text-3xl font-extrabold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
             $
             {metrics.total_billed.toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] mt-1">
             Total billing value issued
           </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
-          <div className="flex justify-between items-center text-muted-foreground mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">
+        </GlassPanel>
+
+        {/* Collected (Paid) */}
+        <GlassPanel
+          variant="regular"
+          accentGradient="emerald"
+          radius="xl"
+          className="p-5 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] animate-in fade-in zoom-in duration-300"
+        >
+          <div className="flex justify-between items-center text-emerald-100 dark:text-emerald-200 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">
               Collected
             </span>
-            <CheckCircle className="size-4 text-emerald-400" />
+            <CheckCircle className="size-4 text-emerald-300 dark:text-emerald-400" />
           </div>
-          <div className="text-3xl font-bold text-emerald-400">
+          <div className="text-3xl font-extrabold text-white">
             $
             {metrics.total_collected.toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-emerald-100 dark:text-emerald-300 mt-1">
             Paid and settled invoices
           </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
-          <div className="flex justify-between items-center text-muted-foreground mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">
+        </GlassPanel>
+
+        {/* Outstanding (Total Owed) */}
+        <GlassPanel
+          variant="regular"
+          accentGradient="amber"
+          radius="xl"
+          className="p-5 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] animate-in fade-in zoom-in duration-300"
+        >
+          <div className="flex justify-between items-center text-amber-100 dark:text-amber-200 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">
               Outstanding
             </span>
-            <Clock className="size-4 text-primary" />
+            <Clock className="size-4 text-amber-300 dark:text-amber-400" />
           </div>
-          <div className="text-3xl font-bold text-primary">
+          <div className="text-3xl font-extrabold text-white">
             $
             {metrics.total_outstanding.toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-amber-100 dark:text-amber-300 mt-1">
             Unpaid sent invoices
           </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-5 shadow-sm hover:border-primary/30 transition-all duration-300">
-          <div className="flex justify-between items-center text-muted-foreground mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">
+        </GlassPanel>
+
+        {/* Overdue */}
+        <GlassPanel
+          variant="regular"
+          accentGradient="red"
+          radius="xl"
+          className="p-5 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] animate-in fade-in zoom-in duration-300"
+        >
+          <div className="flex justify-between items-center text-red-100 dark:text-red-200 mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider">
               Overdue
             </span>
-            <AlertTriangle className="size-4 text-rose-400" />
+            <AlertTriangle className="size-4 text-red-300 dark:text-red-400" />
           </div>
-          <div className="text-3xl font-bold text-rose-400">
+          <div className="text-3xl font-extrabold text-white">
             $
             {metrics.total_overdue.toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Past due dates</p>
-        </div>
+          <p className="text-xs text-red-100 dark:text-red-300 mt-1">Past due dates</p>
+        </GlassPanel>
       </div>
 
       {}
@@ -450,10 +476,10 @@ export default function InvoicesPage() {
           </span>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card/20 shadow-sm overflow-hidden backdrop-blur-sm">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-muted/30 text-muted-foreground font-semibold border-b border-border">
+              <thead className="bg-gray-50 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 font-semibold border-b border-gray-200 dark:border-gray-800">
                 <tr>
                   <th className="px-6 py-4">Invoice ID</th>
                   <th className="px-6 py-4">Client</th>
@@ -464,39 +490,39 @@ export default function InvoicesPage() {
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border text-foreground">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100">
                 {filteredInvoices.map((invoice) => {
                   let badgeColor =
-                    "bg-zinc-500/10 text-zinc-400 border border-zinc-500/20";
+                    "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20";
                   if (invoice.status === "paid")
                     badgeColor =
-                      "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
                   if (invoice.status === "overdue")
                     badgeColor =
-                      "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                      "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20";
                   if (invoice.status === "sent")
                     badgeColor =
-                      "bg-primary/10 text-primary border border-primary/20";
+                      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20";
 
                   return (
                     <tr
                       key={invoice.id}
-                      className="hover:bg-muted/10 transition-colors"
+                      className="bg-white dark:bg-gray-900 hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors"
                     >
-                      <td className="px-6 py-4 font-mono font-bold text-primary select-all">
+                      <td className="px-6 py-4 font-mono font-bold text-blue-600 dark:text-blue-400 select-all">
                         {invoice.invoice_number}
                       </td>
                       <td className="px-6 py-4 font-semibold">
-                        <Building className="size-3.5 inline mr-1.5 text-muted-foreground" />
+                        <Building className="size-3.5 inline mr-1.5 text-gray-500 dark:text-gray-400" />
                         {invoice.client_name || "Direct Customer"}
                       </td>
-                      <td className="px-6 py-4 text-muted-foreground">
+                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
                         {new Date(invoice.issue_date).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-muted-foreground">
+                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
                         {new Date(invoice.due_date).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-right font-bold text-foreground">
+                      <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-gray-100">
                         $
                         {invoice.total.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -516,7 +542,7 @@ export default function InvoicesPage() {
                             onChange={(e) =>
                               handleUpdateStatus(invoice.id, e.target.value)
                             }
-                            className="bg-background border border-border rounded px-2 py-1 text-xs outline-none text-foreground"
+                            className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded px-2 py-1 text-xs outline-none text-gray-900 dark:text-gray-100"
                           >
                             <option value="draft">Draft</option>
                             <option value="sent">Sent</option>
@@ -526,7 +552,7 @@ export default function InvoicesPage() {
                           </select>
                           <button
                             onClick={() => setSelectedInvoice(invoice)}
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                             title="View details"
                           >
                             <Eye className="size-4" />
@@ -538,7 +564,7 @@ export default function InvoicesPage() {
                                 invoice.invoice_number,
                               )
                             }
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                             title="Download PDF"
                           >
                             <Download className="size-4" />
@@ -552,7 +578,7 @@ export default function InvoicesPage() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-12 text-center text-muted-foreground"
+                      className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                     >
                       No invoices matching your filter criteria.
                     </td>
