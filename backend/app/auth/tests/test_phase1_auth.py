@@ -2,12 +2,12 @@ import pytest
 from fastapi.testclient import TestClient
 import json
 from datetime import datetime, timedelta
-from backend.app.main import app
-from backend.app.auth.models import User, PasswordResetToken
-from backend.app.common.database import SessionLocal
-from backend.app.auth.service import AuthService
-from backend.app.common.redis import redis_client
-from backend.app.auth import password_reset, mfa, lockout
+from app.main import app
+from app.auth.models import User, PasswordResetToken
+from app.common.database import SessionLocal
+from app.auth.service import AuthService
+from app.common.redis import redis_client
+from app.auth import password_reset, mfa, lockout
 
 @pytest.fixture
 def client():
@@ -15,8 +15,8 @@ def client():
 
 @pytest.fixture
 def db():
-    from backend.app.common.database import Base, engine
-    from backend.app.auth.models import User, PasswordResetToken
+    from app.common.database import Base, engine
+    from app.auth.models import User, PasswordResetToken
     Base.metadata.create_all(bind=engine)
     connection = SessionLocal()
     try:
@@ -27,7 +27,7 @@ def db():
 
 @pytest.fixture
 def test_user(db):
-    from backend.app.common.security import get_password_hash
+    from app.common.security import get_password_hash
     user = User(email='testuser@example.com', hashed_password=get_password_hash('TestPassword123'), full_name='Test User', is_active=True, is_verified=False)
     db.add(user)
     db.commit()
@@ -89,9 +89,10 @@ class TestPasswordReset:
         assert reset_token.used is True
 
     def test_reset_password_expired_token(self, db, test_user):
+        from datetime import timezone
         service = AuthService()
         raw_token, token_hash = password_reset.generate_reset_token()
-        expires_at = datetime.utcnow() - timedelta(minutes=1)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=1)
         reset_token = PasswordResetToken(user_id=test_user.id, token_hash=token_hash, expires_at=expires_at)
         db.add(reset_token)
         db.commit()

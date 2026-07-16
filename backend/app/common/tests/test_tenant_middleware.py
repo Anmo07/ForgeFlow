@@ -68,7 +68,9 @@ def test_tenant_extraction_header_success(client):
     assert response.json()['org_id'] == 1
     assert response.json()['user_id'] == 1
 
-def test_tenant_extraction_missing_header(client):
+def test_tenant_extraction_missing_header(client, db_session):
+    db_session.query(Membership).delete()
+    db_session.commit()
     response = client.get('/api/test-only/test-tenant')
     assert response.status_code == 400
     assert 'Missing organization context' in response.json()['detail']

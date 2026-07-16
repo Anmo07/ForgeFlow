@@ -130,7 +130,7 @@ def reset_key_manager() -> None:
 
 _VERSION_PREFIX_RE = re.compile(r'^(v\d+):(.+)$', re.DOTALL)
 
-def encrypt_field(plaintext: str) -> str:
+def encrypt_field(plaintext: Optional[str]) -> Optional[str]:
     """Encrypt a plaintext string using the active key version.
 
     Returns a string in the format ``v<N>:<ciphertext_base64>``.
@@ -148,7 +148,7 @@ def encrypt_field(plaintext: str) -> str:
         raise ValueError(f'Encryption failed: {e}')
 
 
-def decrypt_field(ciphertext: str) -> str:
+def decrypt_field(ciphertext: Optional[str]) -> Optional[str]:
     """Decrypt a ciphertext string.
 
     Supports both versioned (``v<N>:...``) and legacy (unversioned) formats.

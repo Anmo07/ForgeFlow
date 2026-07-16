@@ -1,10 +1,11 @@
 import pytest
+from typing import Optional
 import os
 from cryptography.fernet import Fernet
-from backend.app.common.encryption import encrypt_field, decrypt_field, reset_key_manager
-from backend.app.common.email_service import EmailService, ConsoleBackend, FileBackend
-from backend.app.common.tenant_filtering import set_tenant_context, get_tenant_context
-from backend.app.common.unverified_restriction import require_verified
+from app.common.encryption import encrypt_field, decrypt_field, reset_key_manager
+from app.common.email_service import EmailService, ConsoleBackend, FileBackend, EmailBackend
+from app.common.tenant_filtering import set_tenant_context, get_tenant_context
+from app.common.unverified_restriction import require_verified
 
 class TestFieldEncryption:
 
@@ -105,9 +106,9 @@ class TestEmailService:
         service = EmailService()
         emails = []
 
-        class MockBackend:
+        class MockBackend(EmailBackend):
 
-            def send(self, to, subject, html_body, text_body=None):
+            def send(self, to: str, subject: str, html_body: str, text_body: Optional[str]=None) -> bool:
                 emails.append({'to': to, 'subject': subject, 'html_body': html_body, 'text_body': text_body})
                 return True
         service.backend = MockBackend()
@@ -116,17 +117,17 @@ class TestEmailService:
         assert len(emails) == 1
         email = emails[0]
         assert email['to'] == 'invitee@example.com'
-        assert 'Test Org' in email['subject']
-        assert 'Alice' in email['html_body']
-        assert 'Accept Invitation' in email['html_body']
+        assert 'Test Org' in (email['subject'] or '')
+        assert 'Alice' in (email['html_body'] or '')
+        assert 'Accept Invitation' in (email['html_body'] or '')
 
     def test_password_reset_email_template(self):
         service = EmailService()
         emails = []
 
-        class MockBackend:
+        class MockBackend(EmailBackend):
 
-            def send(self, to, subject, html_body, text_body=None):
+            def send(self, to: str, subject: str, html_body: str, text_body: Optional[str]=None) -> bool:
                 emails.append({'to': to, 'subject': subject, 'html_body': html_body})
                 return True
         service.backend = MockBackend()
@@ -135,16 +136,16 @@ class TestEmailService:
         assert len(emails) == 1
         email = emails[0]
         assert email['to'] == 'user@example.com'
-        assert 'password' in email['subject'].lower()
-        assert 'Reset Password' in email['html_body']
+        assert 'password' in (email['subject'] or '').lower()
+        assert 'Reset Password' in (email['html_body'] or '')
 
     def test_email_verification_template(self):
         service = EmailService()
         emails = []
 
-        class MockBackend:
+        class MockBackend(EmailBackend):
 
-            def send(self, to, subject, html_body, text_body=None):
+            def send(self, to: str, subject: str, html_body: str, text_body: Optional[str]=None) -> bool:
                 emails.append({'to': to, 'subject': subject, 'html_body': html_body})
                 return True
         service.backend = MockBackend()
@@ -153,14 +154,14 @@ class TestEmailService:
         assert len(emails) == 1
         email = emails[0]
         assert email['to'] == 'verify@example.com'
-        assert 'verify' in email['subject'].lower()
-        assert 'Verify Email' in email['html_body']
+        assert 'verify' in (email['subject'] or '').lower()
+        assert 'Verify Email' in (email['html_body'] or '')
 
 class TestUnverifiedRestrictions:
 
     def test_require_verified_decorator_allows_verified(self):
-        from backend.app.auth.models import User
-        from backend.app.common.security import get_password_hash
+        from app.auth.models import User
+        from app.common.security import get_password_hash
         mock_user = User(email='verified@example.com', hashed_password=get_password_hash('test'), is_verified=True)
 
         @require_verified
@@ -171,8 +172,8 @@ class TestUnverifiedRestrictions:
         assert result['message'] == 'Success'
 
     def test_require_verified_decorator_rejects_unverified(self):
-        from backend.app.auth.models import User
-        from backend.app.common.security import get_password_hash
+        from app.auth.models import User
+        from app.common.security import get_password_hash
         from fastapi import HTTPException
         mock_user = User(email='unverified@example.com', hashed_password=get_password_hash('test'), is_verified=False)
 

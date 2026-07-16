@@ -1,18 +1,19 @@
 import pytest
+from fastapi import HTTPException
 import json
 import threading
-from backend.app.common.optimistic_locking import verify_version, increment_version, OptimisticLockException
-from backend.app.common.audit_log import AuditService
-from backend.app.projects.models import Project
-from backend.app.common.database import SessionLocal
+from app.common.optimistic_locking import verify_version, increment_version, OptimisticLockException
+from app.common.audit_log import AuditService
+from app.projects.models import Project
+from app.common.database import SessionLocal
 
 @pytest.fixture
 def db():
-    from backend.app.auth.models import User
-    from backend.app.organizations.models import Organization
-    from backend.app.common.audit_log import AuditLog
-    from backend.app.projects.models import Project, Task
-    from backend.app.common.database import Base, engine
+    from app.auth.models import User
+    from app.organizations.models import Organization
+    from app.common.audit_log import AuditLog
+    from app.projects.models import Project, Task
+    from app.common.database import Base, engine
 
     Base.metadata.create_all(bind=engine)
     session = SessionLocal()
@@ -41,14 +42,14 @@ class TestOptimisticLocking:
         project = Project(organization_id=1, name='Test Project', version=1)
         db.add(project)
         db.commit()
-        verify_version(db, Project, project.id, provided_version=1, org_id=1)
+        verify_version(db, Project, int(project.id), provided_version=1, org_id=1)
 
     def test_verify_version_mismatch(self, db):
         project = Project(organization_id=1, name='Test Project', version=1)
         db.add(project)
         db.commit()
         with pytest.raises(OptimisticLockException) as exc_info:
-            verify_version(db, Project, project.id, provided_version=0, org_id=1)
+            verify_version(db, Project, int(project.id), provided_version=0, org_id=1)
         assert '409' in str(exc_info.value.status_code)
         assert 'Conflict' in exc_info.value.detail
 
@@ -56,8 +57,8 @@ class TestOptimisticLocking:
         project = Project(organization_id=1, name='Test Project', version=1)
         db.add(project)
         db.commit()
-        with pytest.raises(Exception) as exc_info:
-            verify_version(db, Project, project.id, provided_version=1, org_id=2)
+        with pytest.raises(HTTPException) as exc_info:
+            verify_version(db, Project, int(project.id), provided_version=1, org_id=2)
         assert '404' in str(exc_info.value.status_code) or 'not found' in str(exc_info.value).lower()
 
     def test_optimistic_lock_lost_update_scenario(self, db):
@@ -155,6 +156,7 @@ class TestConcurrency:
         def read_project():
             session = SessionLocal()
             project = session.query(Project).filter(Project.id == project_id).first()
+            assert project is not None
             results.append(project.name)
             session.close()
         threads = [threading.Thread(target=read_project) for _ in range(10)]
@@ -173,10 +175,12 @@ class TestConcurrency:
         conflicts = []
 
         def update_project(new_name, provided_ver):
+            session = None
             try:
                 session = SessionLocal()
-                verify_version(session, Project, project_id, provided_version=provided_ver, org_id=1)
+                verify_version(session, Project, int(project_id), provided_version=provided_ver, org_id=1)
                 project = session.query(Project).filter(Project.id == project_id).first()
+                assert project is not None
                 project.name = new_name
                 increment_version(project)
                 session.commit()
@@ -185,7 +189,8 @@ class TestConcurrency:
             except Exception:
                 conflicts.append(True)
             finally:
-                session.close()
+                if session:
+                    session.close()
 
         t1 = threading.Thread(target=update_project, args=('Name-1', 1))
         t2 = threading.Thread(target=update_project, args=('Name-2', 1))

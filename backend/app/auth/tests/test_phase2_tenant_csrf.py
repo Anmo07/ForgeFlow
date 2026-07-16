@@ -1,15 +1,15 @@
 import pytest
 from fastapi.testclient import TestClient
-from backend.app.main import app
-from backend.app.auth.models import User
-from backend.app.organizations.models import Organization
-from backend.app.memberships.models import Membership
-from backend.app.projects.models import Project
-from backend.app.roles.models import Role
-from backend.app.common.database import SessionLocal, Base, engine
-from backend.app.auth import csrf
-from backend.app.memberships import invite_token
-from backend.app.common.redis import redis_client
+from app.main import app
+from app.auth.models import User
+from app.organizations.models import Organization
+from app.memberships.models import Membership
+from app.projects.models import Project
+from app.roles.models import Role
+from app.common.database import SessionLocal, Base, engine
+from app.auth import csrf
+from app.memberships import invite_token
+from app.common.redis import redis_client
 
 @pytest.fixture
 def client():
@@ -47,7 +47,7 @@ def org_b(db):
 
 @pytest.fixture
 def user_a(db, org_a):
-    from backend.app.common.security import get_password_hash
+    from app.common.security import get_password_hash
     user = User(email='usera@example.com', hashed_password=get_password_hash('Password123'), full_name='User A', is_active=True, is_verified=True)
     db.add(user)
     db.commit()
@@ -64,7 +64,7 @@ def user_a(db, org_a):
 
 @pytest.fixture
 def user_b(db, org_b):
-    from backend.app.common.security import get_password_hash
+    from app.common.security import get_password_hash
     user = User(email='userb@example.com', hashed_password=get_password_hash('Password123'), full_name='User B', is_active=True, is_verified=True)
     db.add(user)
     db.commit()
@@ -103,7 +103,7 @@ class TestCSRFProtection:
 class TestTenantIsolation:
 
     def test_user_cannot_access_other_org_projects(self, db, user_a, user_b, org_a, org_b):
-        from backend.app.projects.repository import ProjectRepository
+        from app.projects.repository import ProjectRepository
         project_b = Project(organization_id=org_b.id, name='Org B Project', description='Should not be visible to User A')
         db.add(project_b)
         db.commit()
@@ -115,12 +115,12 @@ class TestTenantIsolation:
         assert len(projects_b) == 1
 
     def test_tenant_context_extraction(self, db, user_a, org_a):
-        from backend.app.common.tenant import get_tenant_context
+        from app.common.tenant import get_tenant_context
         context = get_tenant_context(db, user_a, org_a.id)
         assert context == org_a.id
 
     def test_tenant_context_prevents_cross_org_access(self, db, user_a, org_a, org_b):
-        from backend.app.common.tenant import get_tenant_context
+        from app.common.tenant import get_tenant_context
         try:
             context = get_tenant_context(db, user_a, org_b.id)
             assert False, 'Should have raised HTTPException'

@@ -29,9 +29,9 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
             org_id_ctx.set(str(api_key.organization_id))
             current_is_external.set(False)
             return TenantContext(
-                organization_id=api_key.organization_id,
-                api_key_id=api_key.id,
-                permissions=api_key.permissions,
+                organization_id=int(api_key.organization_id),
+                api_key_id=int(api_key.id),
+                permissions=list(api_key.permissions) if api_key.permissions else [],
                 is_external=False
             )
         except HTTPException as e:
@@ -94,9 +94,9 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
     current_is_external.set(is_ext)
 
     return TenantContext(
-        organization_id=org_id,
-        user_id=current_user.id,
-        role_id=membership.role_id,
+        organization_id=int(org_id),
+        user_id=int(current_user.id),
+        role_id=int(membership.role_id) if membership.role_id is not None else None,
         permissions=permissions,
         is_external=is_ext
     )
@@ -129,7 +129,11 @@ def before_compile_tenant_isolation(query):
             if is_ext and hasattr(entity, 'client_organization_id'):
                 query = query.enable_assertions(False).filter(entity.client_organization_id == org_id)
             elif hasattr(entity, 'organization_id'):
-                query = query.enable_assertions(False).filter(entity.organization_id == org_id)
+                if entity.__name__ == 'Role':
+                    from sqlalchemy import or_
+                    query = query.enable_assertions(False).filter(or_(entity.organization_id == org_id, entity.organization_id == None))
+                else:
+                    query = query.enable_assertions(False).filter(entity.organization_id == org_id)
     return query
 
 def get_tenant_context(db, user, org_id: int) -> int:
