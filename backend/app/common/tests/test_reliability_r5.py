@@ -42,8 +42,7 @@ def setup_db():
     """Create a fresh database for each test."""
     SessionLocal.close_all()
     engine.dispose()
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
     SessionLocal.close_all()
@@ -52,7 +51,9 @@ def setup_db():
 
 def _seed_org_and_user(db):
     """Seed a test organization, user, role with permissions, and membership."""
-    org = Organization(name='TestOrg R5', slug='testorg-r5')
+    import uuid as _uuid
+    unique_slug = f"testorg-r5-{_uuid.uuid4().hex[:8]}"
+    org = Organization(name='TestOrg R5', slug=unique_slug)
     db.add(org)
     db.flush()
 
