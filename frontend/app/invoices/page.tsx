@@ -21,6 +21,7 @@ import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { apiFetch } from "@/lib/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { GlassPanel } from "@/components/glass/GlassPanel";
 
 interface LineItem {
   description: string;
@@ -565,15 +566,23 @@ export default function InvoicesPage() {
 
       {}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setIsModalOpen(false)}
+            className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px] cursor-pointer"
+          />
+          <GlassPanel
+            variant="heavy"
+            radius="xl"
+            className="w-full max-w-2xl shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex flex-col max-h-[90vh] z-10 animate-in fade-in zoom-in duration-200"
+          >
+            <div className="p-5 border-b border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 Create Customer Invoice
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] p-1 rounded-lg transition-colors border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
               >
                 <X className="size-5" />
               </button>
@@ -796,21 +805,29 @@ export default function InvoicesPage() {
                 </button>
               </div>
             </form>
-          </div>
+          </GlassPanel>
         </div>
       )}
 
       {}
       {selectedInvoice && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in duration-200">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setSelectedInvoice(null)}
+            className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px] cursor-pointer"
+          />
+          <GlassPanel
+            variant="heavy"
+            radius="xl"
+            className="w-full max-w-xl shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex flex-col max-h-[85vh] z-10 animate-in fade-in zoom-in duration-200"
+          >
+            <div className="p-5 border-b border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 Invoice Details: {selectedInvoice.invoice_number}
               </h2>
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] p-1 rounded-lg transition-colors border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
               >
                 <X className="size-5" />
               </button>
@@ -938,7 +955,7 @@ export default function InvoicesPage() {
                 </button>
               </div>
             </div>
-          </div>
+          </GlassPanel>
         </div>
       )}
     </div>

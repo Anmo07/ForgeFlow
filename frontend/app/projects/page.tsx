@@ -18,6 +18,7 @@ import {
   Loader2,
   X,
 } from "lucide-react";
+import { GlassPanel } from "@/components/glass/GlassPanel";
 
 interface Project {
   id: number;
@@ -378,24 +379,31 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border w-full max-w-lg rounded-xl shadow-xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            onClick={() => setIsModalOpen(false)}
+            className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px] cursor-pointer"
+          />
+          <GlassPanel
+            variant="heavy"
+            radius="xl"
+            className="w-full max-w-lg shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex flex-col z-10 animate-in fade-in zoom-in duration-200"
+          >
+            <div className="p-5 border-b border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex items-center justify-between">
+              <h2 className="text-lg font-bold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 Create New Project
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted/40 transition-colors"
+                className="text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] p-1 rounded-lg transition-colors border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
               >
                 <X className="size-5" />
               </button>
             </div>
             <form onSubmit={handleCreateProject} className="p-5 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
                   Project Name
                 </label>
                 <input
@@ -404,12 +412,12 @@ export default function ProjectsPage() {
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   placeholder="e.g. Acme App Launch"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-glass-md)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
                   Description
                 </label>
                 <textarea
@@ -417,19 +425,19 @@ export default function ProjectsPage() {
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   placeholder="Describe the project goal..."
                   rows={3}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                  className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-glass-md)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120 resize-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
                     Initial Status
                   </label>
                   <select
                     value={newProjectStatus}
                     onChange={(e) => setNewProjectStatus(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-glass-md)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120"
                   >
                     <option value="planning">Planning</option>
                     <option value="in_progress">In Progress</option>
@@ -438,13 +446,13 @@ export default function ProjectsPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
                     Priority
                   </label>
                   <select
                     value={newProjectPriority}
                     onChange={(e) => setNewProjectPriority(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-glass-md)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -455,36 +463,36 @@ export default function ProjectsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
                   Due Date
                 </label>
                 <input
                   type="date"
                   value={newProjectDueDate}
                   onChange={(e) => setNewProjectDueDate(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-glass-md)] px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-colors duration-120"
                 />
               </div>
 
-              <div className="pt-4 border-t border-border flex justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-border hover:bg-muted text-sm font-semibold rounded-lg transition-colors"
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] text-sm font-semibold rounded-[var(--radius-glass-md)] text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-[var(--radius-glass-md)] transition-colors flex items-center gap-2 disabled:opacity-50 shadow-[0_2px_8px_rgba(59,130,246,0.25)]"
                 >
                   {isSubmitting && <Loader2 className="size-4 animate-spin" />}
                   Create Project
                 </button>
               </div>
             </form>
-          </div>
+          </GlassPanel>
         </div>
       )}
     </div>

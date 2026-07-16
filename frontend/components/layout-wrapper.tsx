@@ -8,6 +8,8 @@ import Sidebar from "@/components/ui/sidebar";
 import LandingHeader from "@/components/landing/Header";
 import LandingFooter from "@/components/landing/Footer";
 import ScrollToTop from "@/components/landing/ScrollToTop";
+import { CommandPalette } from "@/components/glass/CommandPalette";
+import { ToastContainer } from "@/components/glass/Toast";
 
 export default function LayoutWrapper({
   children,
@@ -57,14 +59,14 @@ export default function LayoutWrapper({
   }
 
   return (
-    <div className="min-h-screen flex flex-col w-full bg-[image:var(--gradient-app-light)] dark:bg-[image:var(--gradient-app-dark)] transition-colors duration-300">
+    <div className="min-h-screen bg-[image:var(--gradient-app-light)] dark:bg-[image:var(--gradient-app-dark)] transition-colors duration-300">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar items={sidebarItems} />
-        <main className="flex-1 overflow-auto">
-          <div className="app-container py-6">{children}</div>
-        </main>
-      </div>
+      <Sidebar items={sidebarItems} />
+      <main className="pl-0 md:pl-[240px] xl:pl-[260px] pt-14 min-h-screen flex flex-col">
+        <div className="app-container flex-1 py-6">{children}</div>
+      </main>
+      <CommandPalette />
+      <ToastContainer />
     </div>
   );
 }

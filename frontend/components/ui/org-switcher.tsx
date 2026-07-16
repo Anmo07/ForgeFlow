@@ -52,25 +52,24 @@ export default function OrgSwitcher() {
   };
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left w-full max-w-[130px]">
       <div>
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="inline-flex w-full items-center justify-between gap-x-2.5 rounded-lg px-3.5 py-1.5 text-sm font-semibold text-foreground glass glass-hover transition-all duration-200"
+          className="inline-flex w-full items-center justify-between gap-x-1.5 rounded-[var(--radius-glass-pill)] px-2.5 py-1 text-xs font-semibold glass-clear hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] transition-all duration-200 text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
           id="menu-button"
           aria-expanded="true"
           aria-haspopup="true"
         >
-          <Building2 className="size-4 text-primary" />
-          <span className="truncate max-w-[140px]">
+          <span className="truncate flex-1 text-left">
             {loading
-              ? "Loading..."
+              ? "..."
               : currentOrg
                 ? currentOrg.name
                 : "Select Tenant"}
           </span>
-          <ChevronDown className="size-3.5 text-muted-foreground" />
+          <ChevronDown className="size-3 shrink-0 text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]" />
         </button>
       </div>
 
@@ -78,13 +77,13 @@ export default function OrgSwitcher() {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
-            className="absolute left-0 z-20 mt-2 w-56 origin-top-left rounded-lg glass-strong focus:outline-none transition-all duration-200"
+            className="absolute right-0 sm:left-0 z-20 mt-2 w-56 origin-top-left rounded-[var(--radius-glass-lg)] glass-heavy focus:outline-none transition-all duration-200 border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)]"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
           >
             <div className="py-1" role="none">
-              <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground border-b border-border mb-1">
+              <div className="px-3 py-1.5 text-xs font-semibold text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] border-b border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] mb-1">
                 Switch Organization
               </div>
               <div className="max-h-48 overflow-y-auto">
@@ -93,23 +92,23 @@ export default function OrgSwitcher() {
                     key={org.id}
                     onClick={() => handleSelect(org)}
                     className={cn(
-                      "flex w-full items-center px-4 py-2 text-sm text-left hover:bg-muted/50 transition-colors duration-150",
+                      "flex w-full items-center px-4 py-2 text-sm text-left transition-colors duration-120 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)]",
                       currentOrg?.id === org.id
-                        ? "text-primary font-bold bg-primary/10"
-                        : "text-foreground",
+                        ? "text-blue-500 font-semibold bg-[var(--color-glass-selected)] dark:bg-[var(--color-glass-dark-selected)]"
+                        : "text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]",
                     )}
                     role="menuitem"
                   >
-                    <Building2 className="size-3.5 mr-2 text-muted-foreground" />
+                    <Building2 className="size-3.5 mr-2 text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]" />
                     <span className="truncate">{org.name}</span>
                   </button>
                 ))}
               </div>
               
-              <div className="border-t border-border mt-1 pt-1 flex flex-col gap-0.5">
+              <div className="border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] mt-1 pt-1 flex flex-col gap-0.5">
                 <button
                   onClick={handleCreateOrg}
-                  className="flex w-full items-center px-4 py-2 text-sm text-left text-primary hover:bg-primary/5 transition-colors duration-150 font-medium"
+                  className="flex w-full items-center px-4 py-2 text-sm text-left text-blue-500 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] transition-colors duration-120 font-medium"
                   role="menuitem"
                 >
                   <Plus className="size-4 mr-2" />
@@ -120,7 +119,7 @@ export default function OrgSwitcher() {
                     setOpen(false);
                     router.push("/login");
                   }}
-                  className="flex w-full items-center px-4 py-2 text-sm text-left text-primary hover:bg-primary/5 transition-colors duration-150 font-medium"
+                  className="flex w-full items-center px-4 py-2 text-sm text-left text-blue-500 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] transition-colors duration-120 font-medium"
                   role="menuitem"
                 >
                   <LogIn className="size-4 mr-2" />
