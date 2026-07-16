@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pythonjsonlogger import jsonlogger
 from .logging_context import request_id_ctx, user_id_ctx, org_id_ctx
 
@@ -10,7 +10,7 @@ class CorrelationIdJSONFormatter(jsonlogger.JsonFormatter):
         super().add_fields(log_record, record, message_dict)
         
         # Inject standard JSON fields
-        log_record["timestamp"] = datetime.utcnow().isoformat() + "Z"
+        log_record["timestamp"] = datetime.now(timezone.utc).isoformat() + "Z"
         log_record["level"] = record.levelname
         log_record["logger"] = record.name
         log_record["environment"] = os.getenv("ENVIRONMENT", "production")

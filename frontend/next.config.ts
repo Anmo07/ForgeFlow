@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
+  outputFileTracingRoot: path.join(__dirname),
   eslint: {
     // `next lint` is deprecated; we run `eslint` via `npm run lint` instead.
     // This prevents Next build output from being noisy/misleading due to lint runner changes.
