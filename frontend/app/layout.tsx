@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import dynamic from "next/dynamic";
+import { LiquidGlassFilter } from "@/components/glass/LiquidGlassFilter";
 
 const ReactQueryDevtools = dynamic(
   () =>
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en" className={`${inter.variable} h-full antialiased`}>
       <head />
       <body className="min-h-full flex flex-col text-foreground">
+        <LiquidGlassFilter />
         <QueryClientProvider client={queryClient}>
           <ThemeProvider attribute="class" enableSystem={false} defaultTheme="dark">
             <ThemeInitializer />

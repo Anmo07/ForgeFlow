@@ -374,3 +374,262 @@
 .animate-scale-in { animation: scale-in 0.5s ease-out forwards; }
 .animate-play-pulse { animation: play-pulse 2s ease-out infinite; }
 .animate-marquee { animation: marquee 25s linear infinite; }
+
+/* ============================================================
+   iOS 26 LIQUID GLASS DESIGN SYSTEM — ForgeFlow
+   Adapted from Apple's iOS/iPadOS 26 design language.
+   ============================================================ */
+
+@theme {
+  /* ----------------------------------------------------------
+     GLASS SURFACE TOKENS
+     Two variants:
+     - glass-regular: Main navigation glass (sidebar, top nav,
+       tab bars). Adaptive — responds to background content.
+     - glass-clear: Modal overlays, tooltips, popovers. Less
+       adaptive, more transparent.
+     ---------------------------------------------------------- */
+
+  /* Regular glass — light mode */
+  --color-glass-regular-bg:        rgba(255, 255, 255, 0.72);
+  --color-glass-regular-border:    rgba(255, 255, 255, 0.85);
+  --color-glass-regular-shadow:    rgba(0, 0, 0, 0.08);
+  --color-glass-regular-specular:  rgba(255, 255, 255, 0.60);
+
+  /* Clear glass — light mode */
+  --color-glass-clear-bg:          rgba(255, 255, 255, 0.45);
+  --color-glass-clear-border:      rgba(255, 255, 255, 0.60);
+  --color-glass-clear-shadow:      rgba(0, 0, 0, 0.05);
+
+  /* Regular glass — dark mode */
+  --color-glass-dark-regular-bg:        rgba(28, 28, 32, 0.78);
+  --color-glass-dark-regular-border:    rgba(255, 255, 255, 0.12);
+  --color-glass-dark-regular-shadow:    rgba(0, 0, 0, 0.35);
+  --color-glass-dark-regular-specular:  rgba(255, 255, 255, 0.08);
+
+  /* Clear glass — dark mode */
+  --color-glass-dark-clear-bg:          rgba(28, 28, 32, 0.55);
+  --color-glass-dark-clear-border:      rgba(255, 255, 255, 0.08);
+  --color-glass-dark-clear-shadow:      rgba(0, 0, 0, 0.25);
+
+  /* ----------------------------------------------------------
+     GLASS BLUR & SATURATION
+     Apple uses ~20px blur with 180% saturation as the baseline.
+     ---------------------------------------------------------- */
+  --glass-blur:                    20px;
+  --glass-blur-heavy:              32px;   /* Modals */
+  --glass-blur-light:              12px;   /* Subtle cards */
+  --glass-saturate:                180%;
+  --glass-saturate-heavy:          200%;
+
+  /* ----------------------------------------------------------
+     BACKGROUND GRADIENT SYSTEM
+     Rich gradients beneath glass surfaces are what make glass
+     beautiful. Without interesting content behind the glass,
+     it just looks like fog.
+     ---------------------------------------------------------- */
+
+  /* Primary app background — light mode */
+  --gradient-app-light:
+    radial-gradient(ellipse 80% 60% at 20% 10%,
+      rgba(147, 197, 253, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%,
+      rgba(196, 181, 253, 0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 60% 40%,
+      rgba(167, 243, 208, 0.15) 0%, transparent 60%),
+    linear-gradient(135deg, #f0f4ff 0%, #fafbff 50%, #f5f0ff 100%);
+
+  /* Primary app background — dark mode */
+  --gradient-app-dark:
+    radial-gradient(ellipse 80% 60% at 20% 10%,
+      rgba(30, 58, 138, 0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%,
+      rgba(88, 28, 135, 0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 60% 40%,
+      rgba(6, 78, 59, 0.20) 0%, transparent 60%),
+    linear-gradient(135deg, #0a0e1a 0%, #0d1117 50%, #0e0a1a 100%);
+
+  /* Accent gradient for metric cards and key surfaces */
+  --gradient-accent-blue:
+    linear-gradient(135deg,
+      rgba(59, 130, 246, 0.15) 0%,
+      rgba(147, 197, 253, 0.08) 100%);
+
+  --gradient-accent-purple:
+    linear-gradient(135deg,
+      rgba(139, 92, 246, 0.15) 0%,
+      rgba(196, 181, 253, 0.08) 100%);
+
+  --gradient-accent-emerald:
+    linear-gradient(135deg,
+      rgba(16, 185, 129, 0.15) 0%,
+      rgba(167, 243, 208, 0.08) 100%);
+
+  --gradient-accent-amber:
+    linear-gradient(135deg,
+      rgba(245, 158, 11, 0.15) 0%,
+      rgba(253, 230, 138, 0.08) 100%);
+
+  /* ----------------------------------------------------------
+     BORDER RADIUS SYSTEM
+     iOS 26 uses larger, more organic radii than typical web UI.
+     ---------------------------------------------------------- */
+  --radius-glass-sm:     10px;   /* Badges, tags, small pills */
+  --radius-glass-md:     14px;   /* Buttons, inputs */
+  --radius-glass-lg:     18px;   /* Cards, panels */
+  --radius-glass-xl:     24px;   /* Modals, drawers */
+  --radius-glass-2xl:    32px;   /* Large feature cards */
+  --radius-glass-pill:   9999px; /* Tabs, toggles */
+
+  /* ----------------------------------------------------------
+     SHADOW SYSTEM
+     iOS 26 uses multi-layer shadows with a specular highlight
+     on the top edge (inner glow) plus outer depth shadows.
+     ---------------------------------------------------------- */
+  --shadow-glass-sm:
+    0 2px 8px var(--color-glass-regular-shadow),
+    inset 0 1px 0 var(--color-glass-regular-specular);
+
+  --shadow-glass-md:
+    0 4px 20px var(--color-glass-regular-shadow),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 var(--color-glass-regular-specular);
+
+  --shadow-glass-lg:
+    0 8px 40px var(--color-glass-regular-shadow),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 var(--color-glass-regular-specular);
+
+  --shadow-glass-dark-sm:
+    0 2px 8px var(--color-glass-dark-regular-shadow),
+    inset 0 1px 0 var(--color-glass-dark-regular-specular);
+
+  --shadow-glass-dark-md:
+    0 4px 20px var(--color-glass-dark-regular-shadow),
+    0 1px 4px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 var(--color-glass-dark-regular-specular);
+
+  --shadow-glass-dark-lg:
+    0 8px 40px var(--color-glass-dark-regular-shadow),
+    0 2px 8px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 var(--color-glass-dark-regular-specular);
+
+  /* ----------------------------------------------------------
+     TYPOGRAPHY ON GLASS
+     Text that sits on glass needs enough weight/contrast to
+     read clearly. These tokens set safe color values.
+     ---------------------------------------------------------- */
+  --color-glass-text-primary:      rgba(10, 10, 20, 0.92);
+  --color-glass-text-secondary:    rgba(10, 10, 20, 0.58);
+  --color-glass-text-tertiary:     rgba(10, 10, 20, 0.38);
+
+  --color-glass-dark-text-primary:   rgba(255, 255, 255, 0.95);
+  --color-glass-dark-text-secondary: rgba(255, 255, 255, 0.60);
+  --color-glass-dark-text-tertiary:  rgba(255, 255, 255, 0.35);
+
+  /* ----------------------------------------------------------
+     INTERACTIVE STATE TOKENS
+     Hover/active states on glass elements
+     ---------------------------------------------------------- */
+  --color-glass-hover:    rgba(0, 0, 0, 0.04);
+  --color-glass-active:   rgba(0, 0, 0, 0.08);
+  --color-glass-selected: rgba(59, 130, 246, 0.12);
+
+  --color-glass-dark-hover:    rgba(255, 255, 255, 0.06);
+  --color-glass-dark-active:   rgba(255, 255, 255, 0.10);
+  --color-glass-dark-selected: rgba(96, 165, 250, 0.18);
+
+  /* ----------------------------------------------------------
+     ANIMATION TOKENS
+     Glass elements animate opacity/transform, never blur itself.
+     ---------------------------------------------------------- */
+  --duration-glass-enter:    220ms;
+  --duration-glass-exit:     160ms;
+  --duration-glass-hover:    120ms;
+  --ease-glass:              cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-glass-spring:       cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ----------------------------------------------------------
+   CORE GLASS UTILITY CLASSES
+   Use these as Tailwind @layer utilities so they compose
+   with responsive and dark mode variants.
+   ---------------------------------------------------------- */
+@layer utilities {
+  .glass-regular {
+    background: var(--color-glass-regular-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--color-glass-regular-border);
+    box-shadow: var(--shadow-glass-md);
+  }
+
+  .glass-clear {
+    background: var(--color-glass-clear-bg);
+    backdrop-filter: blur(var(--glass-blur-light)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-light)) saturate(var(--glass-saturate));
+    border: 1px solid var(--color-glass-clear-border);
+    box-shadow: var(--shadow-glass-sm);
+  }
+
+  .glass-heavy {
+    background: var(--color-glass-regular-bg);
+    backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturate-heavy));
+    -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(var(--glass-saturate-heavy));
+    border: 1px solid var(--color-glass-regular-border);
+    box-shadow: var(--shadow-glass-lg);
+  }
+
+  /* Dark mode variants */
+  .dark .glass-regular {
+    background: var(--color-glass-dark-regular-bg);
+    border-color: var(--color-glass-dark-regular-border);
+    box-shadow: var(--shadow-glass-dark-md);
+  }
+
+  .dark .glass-clear {
+    background: var(--color-glass-dark-clear-bg);
+    border-color: var(--color-glass-dark-clear-border);
+    box-shadow: var(--shadow-glass-dark-sm);
+  }
+
+  .dark .glass-heavy {
+    background: var(--color-glass-dark-regular-bg);
+    border-color: var(--color-glass-dark-regular-border);
+    box-shadow: var(--shadow-glass-dark-lg);
+  }
+
+  /* Fallback: no backdrop-filter support */
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass-regular,
+    .glass-clear,
+    .glass-heavy {
+      background: rgba(248, 249, 252, 0.97);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+    .dark .glass-regular,
+    .dark .glass-clear,
+    .dark .glass-heavy {
+      background: rgba(22, 22, 30, 0.97);
+      border-color: rgba(255, 255, 255, 0.10);
+    }
+  }
+
+  /* Accessibility: reduced transparency */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-regular,
+    .glass-clear,
+    .glass-heavy {
+      background: rgba(248, 249, 252, 0.97) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .dark .glass-regular,
+    .dark .glass-clear,
+    .dark .glass-heavy {
+      background: rgba(22, 22, 30, 0.97) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+}

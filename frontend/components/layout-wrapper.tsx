@@ -57,7 +57,7 @@ export default function LayoutWrapper({
   }
 
   return (
-    <div className="min-h-screen flex flex-col w-full">
+    <div className="min-h-screen flex flex-col w-full bg-[image:var(--gradient-app-light)] dark:bg-[image:var(--gradient-app-dark)] transition-colors duration-300">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar items={sidebarItems} />
