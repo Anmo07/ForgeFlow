@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 
 export default function ScrollUp() {
-  useEffect(() => window.document.scrollingElement?.scrollTo(0, 0), []);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0 });
+    }
+  }, []);
 
   return null;
 }

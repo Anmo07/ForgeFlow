@@ -23,20 +23,16 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setAuth: (user, accessToken, refreshToken) => {
-        if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
-          const token = accessToken || "mock-access-token";
-          if (typeof window !== "undefined") {
-            document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-          }
+        const token = accessToken || "mock-access-token";
+        if (typeof window !== "undefined") {
+          document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
         }
         set({ user, isAuthenticated: true });
       },
 
       clearAuth: () => {
-        if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
-          if (typeof window !== "undefined") {
-            document.cookie = `access_token=; path=/; max-age=0; SameSite=Lax`;
-          }
+        if (typeof window !== "undefined") {
+          document.cookie = `access_token=; path=/; max-age=0; SameSite=Lax`;
         }
         set({ user: null, isAuthenticated: false });
       },

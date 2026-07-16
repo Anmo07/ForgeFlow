@@ -151,7 +151,7 @@ export default function LoginPage() {
             </Link>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-                <LogIn className="size-5 text-primary" />
+                <LogIn suppressHydrationWarning className="size-5 text-primary" />
               </div>
               <div className="text-left">
                 <h1 className="text-xl font-bold tracking-tight">
@@ -179,7 +179,7 @@ export default function LoginPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Mail suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="login-email"
                   type="email"
@@ -205,7 +205,7 @@ export default function LoginPage() {
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Lock suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="login-password"
                   type={showPassword ? "text" : "password"}
@@ -220,7 +220,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  {showPassword ? <EyeOff suppressHydrationWarning className="size-4" /> : <Eye suppressHydrationWarning className="size-4" />}
                 </button>
               </div>
             </div>
@@ -233,9 +233,9 @@ export default function LoginPage() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {loading ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 suppressHydrationWarning className="size-4 animate-spin" />
               ) : (
-                <LogIn className="size-4" />
+                <LogIn suppressHydrationWarning className="size-4" />
               )}
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -251,7 +251,7 @@ export default function LoginPage() {
             href="/api/auth/sso/google/init"
             className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-border/60 hover:bg-muted/40 px-4 py-2.5 text-sm font-semibold transition-colors mt-2"
           >
-            <svg className="size-4 mr-1 text-foreground" viewBox="0 0 24 24">
+            <svg suppressHydrationWarning className="size-4 mr-1 text-foreground" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

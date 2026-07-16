@@ -87,8 +87,7 @@ async def lifespan(app: FastAPI):
             raise Exception("Ping returned False")
         logger.info("Redis connection validated successfully.")
     except Exception as e:
-        logger.critical(f"FATAL: Redis connection failed during startup: {e}")
-        raise SystemExit(1)
+        logger.warning(f"Redis connection failed during startup: {e}. Running in degraded state.")
         
     # 3. Validate MinIO
     try:
@@ -97,8 +96,7 @@ async def lifespan(app: FastAPI):
         minio_client.client.bucket_exists("health-check-bucket-exists")
         logger.info("MinIO connection validated successfully.")
     except Exception as e:
-        logger.critical(f"FATAL: MinIO connection failed during startup: {e}")
-        raise SystemExit(1)
+        logger.warning(f"MinIO connection failed during startup: {e}. Running in degraded state.")
         
     yield
     

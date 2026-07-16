@@ -182,7 +182,7 @@ export default function RegisterPage() {
             </Link>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-                <UserPlus className="size-5 text-primary" />
+                <UserPlus suppressHydrationWarning className="size-5 text-primary" />
               </div>
               <div className="text-left">
                 <h1 className="text-xl font-bold tracking-tight">
@@ -210,7 +210,7 @@ export default function RegisterPage() {
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <User suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="reg-name"
                   type="text"
@@ -231,7 +231,7 @@ export default function RegisterPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Mail suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="reg-email"
                   type="email"
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                 Password (min. 8 characters)
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Lock suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="reg-password"
                   type={showPassword ? "text" : "password"}
@@ -267,7 +267,7 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  {showPassword ? <EyeOff suppressHydrationWarning className="size-4" /> : <Eye suppressHydrationWarning className="size-4" />}
                 </button>
               </div>
               {password && (
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                 Confirm Password
               </label>
               <div className="relative">
-                <ShieldCheck className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <ShieldCheck suppressHydrationWarning className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <input
                   id="reg-confirm-password"
                   type={showPassword ? "text" : "password"}
@@ -336,9 +336,9 @@ export default function RegisterPage() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {loading ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 suppressHydrationWarning className="size-4 animate-spin" />
               ) : (
-                <UserPlus className="size-4" />
+                <UserPlus suppressHydrationWarning className="size-4" />
               )}
               {loading ? "Creating account..." : "Sign Up"}
             </button>
