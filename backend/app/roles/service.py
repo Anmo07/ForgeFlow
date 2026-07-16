@@ -4,6 +4,7 @@ from typing import List
 from .repository import RoleRepository
 from .schema import RoleCreate, RoleUpdate
 from .models import Role
+from ..common.redis import redis_client
 
 class RoleService:
 
@@ -32,10 +33,13 @@ class RoleService:
         db_role = self.get_role_by_id(db, role_id)
         if db_role.is_system:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Cannot modify system roles')
-        return self.repo.update(db, db_role, role_in)
+        result = self.repo.update(db, db_role, role_in)
+        redis_client.delete(f"cache:role_permissions:{role_id}")
+        return result
 
     def delete_role(self, db: Session, role_id: int) -> None:
         db_role = self.get_role_by_id(db, role_id)
         if db_role.is_system:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Cannot delete system roles')
+        redis_client.delete(f"cache:role_permissions:{role_id}")
         self.repo.delete(db, db_role)

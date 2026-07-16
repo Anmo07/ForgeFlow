@@ -87,3 +87,22 @@ This document logs all application reliability, telemetry, and observability spr
 * **Tests added/modified**:
   - `backend/app/projects/tests/test_reliability_r4.py` (7 chaos/degradation test cases passing)
 * **Blocked items**: None
+
+---
+
+## Sprint R5 — Performance and Caching
+
+* **Status**: Completed
+* **What changed**: Added Redis caching for CRM metrics and role permissions with write-through invalidation, GZip response compression, composite database index for tenant lookups, and Celery worker prefetch tuning.
+* **Files touched**:
+  - `backend/app/crm/service.py` — CRM metrics Redis caching (5 min TTL) + cache invalidation on all write operations
+  - `backend/app/common/tenant.py` — Role permissions Redis caching (5 min TTL) with fail-open fallback
+  - `backend/app/roles/service.py` — Role permission cache invalidation on update/delete
+  - `backend/app/memberships/models.py` — Composite index `(user_id, organization_id, status)`
+  - `backend/app/main.py` — GZipMiddleware for responses > 1KB
+  - `backend/app/common/celery_app.py` — `worker_prefetch_multiplier=1` for fair task dispatch
+* **Dependencies added**: None (uses existing `redis` and `starlette` packages)
+* **Tests added/modified**:
+  - `backend/app/common/tests/test_reliability_r5.py` (7 test cases passing)
+* **Blocked items**: None
+

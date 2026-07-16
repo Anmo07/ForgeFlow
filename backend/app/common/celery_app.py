@@ -13,7 +13,8 @@ celery_app.conf.update(
     task_track_started=True,
     task_acks_late=True,
     task_reject_on_worker_lost=True,
-    worker_cancel_long_running_tasks_on_connection_loss=True
+    worker_cancel_long_running_tasks_on_connection_loss=True,
+    worker_prefetch_multiplier=1,  # Fair dispatch: one task at a time per worker
 )
 
 @before_task_publish.connect

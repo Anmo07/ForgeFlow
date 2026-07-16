@@ -65,17 +65,34 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
     membership = db.query(Membership).filter(Membership.user_id == current_user.id, Membership.organization_id == org_id, Membership.status == 'active').first()
     if not membership:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User does not have an active membership in this organization')
-        
-    role = db.query(Role).filter(Role.id == membership.role_id).first()
+
+    # Resolve role permissions — prefer Redis cache, fall back to DB
     permissions = []
-    if role:
-        permissions = [p.name for p in role.permissions]
-        
+    if membership.role_id:
+        import json as _json
+        from .redis import redis_client as _redis
+        cache_key = f"cache:role_permissions:{membership.role_id}"
+        cached = _redis.get(cache_key)
+        if cached:
+            try:
+                permissions = _json.loads(cached)
+            except Exception:
+                permissions = []
+
+        if not permissions:
+            role = db.query(Role).filter(Role.id == membership.role_id).first()
+            if role:
+                permissions = [p.name for p in role.permissions]
+                try:
+                    _redis.set(cache_key, _json.dumps(permissions), expire=300)
+                except Exception:
+                    pass  # fail-open: skip cache write if Redis is down
+
     is_ext = bool(membership.is_external or current_user.is_external)
     current_org_id.set(org_id)
     org_id_ctx.set(str(org_id))
     current_is_external.set(is_ext)
-    
+
     return TenantContext(
         organization_id=org_id,
         user_id=current_user.id,

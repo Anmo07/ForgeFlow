@@ -254,6 +254,8 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Middlewares (ordered so that RequestID runs first in the execution pipeline)
 app.add_middleware(SecurityHeadersMiddleware)
+from starlette.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)  # Compress responses > 1KB
 app.add_middleware(LoggingAndTimingMiddleware)
 app.add_middleware(RequestTimeoutMiddleware)
 app.add_middleware(RequestIDMiddleware)
