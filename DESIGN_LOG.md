@@ -71,3 +71,19 @@ This log tracks the progress of the visual redesign.
 
 ### Blocked Items
 - None
+
+---
+
+## Phase D5 — Kanban Board & CRM Pipeline
+
+**Status**: Completed
+
+### Files Touched
+- `frontend/app/projects/[id]/page.tsx` (Redesigned tasks Kanban columns with horizontal scrolling flex rows, styled headers as glass-clear pills, updated TaskCard to use GlassPanel regular, and added drag active state scale/shadow lift effects)
+- `frontend/app/crm/page.tsx` (Replaced Deals list/table with a 5-column drag-and-drop Kanban pipeline board with horizontal scrolling support, styled column headers, styled Closed Won column with emerald heavy glass accent)
+
+### Components Created
+- `DealCard` sub-component inside `frontend/app/crm/page.tsx` (Displays deal value, client name matching, win probability badges with threshold colors, and drag shadow lifting)
+
+### Blocked Items
+- None

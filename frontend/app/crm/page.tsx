@@ -22,6 +22,8 @@ import {
 import { useOrgStore } from "@/store/organization";
 import { apiFetch } from "@/lib/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { GlassPanel } from "@/components/glass/GlassPanel";
+import { cn } from "@/lib/utils";
 
 interface Client {
   id: number;
@@ -317,6 +319,22 @@ export default function CRMPage() {
       console.error(err);
       setErrorMsg("Failed to update deal status");
     }
+  };
+
+  const handleDealDragStart = (e: React.DragEvent, dealId: number) => {
+    e.dataTransfer.setData("text/plain", dealId.toString());
+  };
+
+  const handleDealDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDealDrop = async (e: React.DragEvent, targetStatus: string) => {
+    e.preventDefault();
+    const dealIdStr = e.dataTransfer.getData("text/plain");
+    if (!dealIdStr) return;
+    const dealId = Number(dealIdStr);
+    await handleUpdateDealStatus(dealId, targetStatus);
   };
 
   const filteredClients = clients.filter(
@@ -733,90 +751,76 @@ export default function CRMPage() {
           )}
 
           {activeTab === "deals" && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-muted/30 text-muted-foreground font-semibold border-b border-border">
-                  <tr>
-                    <th className="px-6 py-4">Deal Name</th>
-                    <th className="px-6 py-4">Pipeline Stage</th>
-                    <th className="px-6 py-4 text-right">Value</th>
-                    <th className="px-6 py-4">Closed Date</th>
-                    <th className="px-6 py-4 text-center">Move Stage</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border text-foreground">
-                  {filteredDeals.map((deal) => {
-                    let badgeColor =
-                      "bg-zinc-500/10 text-zinc-400 border border-zinc-500/20";
-                    if (deal.status === "closed_won")
-                      badgeColor =
-                        "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                    if (deal.status === "closed_lost")
-                      badgeColor =
-                        "bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                    if (
-                      deal.status === "proposal" ||
-                      deal.status === "negotiation"
-                    )
-                      badgeColor =
-                        "bg-primary/10 text-primary border border-primary/20";
-
-                    return (
-                      <tr
-                        key={deal.id}
-                        className="hover:bg-muted/10 transition-colors"
+            <div className="flex gap-6 overflow-x-auto pb-4 pt-2 -mx-4 px-4 min-h-[550px] scrollbar-thin">
+              {[
+                { id: "discovery", name: "Discovery", color: "bg-zinc-400" },
+                { id: "proposal", name: "Proposal", color: "bg-blue-400" },
+                { id: "negotiation", name: "Negotiation", color: "bg-amber-400" },
+                { id: "closed_won", name: "Closed Won", color: "bg-emerald-400", accent: "emerald" as const },
+                { id: "closed_lost", name: "Closed Lost", color: "bg-rose-400" },
+              ].map((stage) => {
+                const stageDeals = filteredDeals.filter((d) => d.status === stage.id);
+                return (
+                  <div
+                    key={stage.id}
+                    onDragOver={handleDealDragOver}
+                    onDrop={(e) => handleDealDrop(e, stage.id)}
+                    className="flex flex-col w-[280px] shrink-0 min-h-[500px] bg-white/5 dark:bg-black/20 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] rounded-[var(--radius-glass-xl)] p-4"
+                  >
+                    {/* Column header */}
+                    {stage.accent === "emerald" ? (
+                      <GlassPanel
+                        variant="heavy"
+                        accentGradient="emerald"
+                        radius="pill"
+                        className="px-4 py-2 flex items-center justify-between mb-4 flex-shrink-0 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)] border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
                       >
-                        <td className="px-6 py-4 font-semibold flex items-center gap-2">
-                          <Briefcase className="size-4 text-primary/80" />
-                          {deal.name || "Unnamed Deal"}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badgeColor}`}
-                          >
-                            {deal.status.replace("_", " ")}
+                        <div className="flex items-center gap-2">
+                          <span className="size-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                          <span className="text-sm font-bold text-white">
+                            {stage.name}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 text-right font-bold text-foreground">
-                          ${deal.value.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-xs text-muted-foreground">
-                          {deal.closed_at
-                            ? new Date(deal.closed_at).toLocaleDateString()
-                            : "Open"}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center">
-                            <select
-                              value={deal.status}
-                              onChange={(e) =>
-                                handleUpdateDealStatus(deal.id, e.target.value)
-                              }
-                              className="bg-background/80 border border-border rounded px-2 py-1 text-xs outline-none text-foreground"
-                            >
-                              <option value="discovery">Discovery</option>
-                              <option value="proposal">Proposal</option>
-                              <option value="negotiation">Negotiation</option>
-                              <option value="closed_won">Closed Won</option>
-                              <option value="closed_lost">Closed Lost</option>
-                            </select>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {filteredDeals.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-12 text-center text-muted-foreground"
-                      >
-                        No deals matching your search criteria.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        </div>
+                        <span className="text-xs font-extrabold bg-white/20 text-white px-2 py-0.5 rounded-[var(--radius-glass-pill)]">
+                          {stageDeals.length}
+                        </span>
+                      </GlassPanel>
+                    ) : (
+                      <div className="glass-clear rounded-[var(--radius-glass-pill)] px-4 py-2 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] flex items-center justify-between mb-4 flex-shrink-0 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)]">
+                        <div className="flex items-center gap-2">
+                          <span className={`size-2 rounded-full ${stage.color}`}></span>
+                          <span className="text-sm font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
+                            {stage.name}
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold glass-clear border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] px-2 py-0.5 rounded-[var(--radius-glass-pill)] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
+                          {stageDeals.length}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Column body */}
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                      {stageDeals.map((deal) => (
+                        <DealCard
+                          key={deal.id}
+                          deal={deal}
+                          leads={leads}
+                          onEdit={(d) => {
+                            // Deal edit / view stage
+                          }}
+                          onDragStart={handleDealDragStart}
+                        />
+                      ))}
+                      {stageDeals.length === 0 && (
+                        <div className="h-full min-h-[150px] flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
+                          Drag deals here
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1129,3 +1133,110 @@ export default function CRMPage() {
     </div>
   );
 }
+
+interface DealCardProps {
+  deal: Deal;
+  leads: Lead[];
+  onEdit: (deal: Deal) => void;
+  onDragStart: (e: React.DragEvent, dealId: number) => void;
+}
+
+function DealCard({
+  deal,
+  leads,
+  onEdit,
+  onDragStart,
+}: DealCardProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const lead = leads.find((l) => l.id === deal.lead_id);
+  const clientName = lead ? lead.client_name || lead.client_company || "Client" : "Client";
+
+  // Calculate simulated win probability
+  const getProbability = () => {
+    switch (deal.status) {
+      case "discovery":
+        return 15;
+      case "proposal":
+        return 40;
+      case "negotiation":
+        return 75;
+      case "closed_won":
+        return 100;
+      case "closed_lost":
+        return 0;
+      default:
+        return 50;
+    }
+  };
+
+  const prob = getProbability();
+  let probClass = "text-amber-600 dark:text-amber-400 border-amber-500/20";
+  if (prob < 25) {
+    probClass = "text-red-600 dark:text-red-400 border-red-500/20";
+  } else if (prob > 60) {
+    probClass = "text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+  }
+
+  const handleDragStartLocal = (e: React.DragEvent) => {
+    setIsDragging(true);
+    onDragStart(e, deal.id);
+  };
+
+  const handleDragEndLocal = () => {
+    setIsDragging(false);
+  };
+
+  return (
+    <GlassPanel
+      variant="regular"
+      radius="lg"
+      draggable
+      onDragStart={handleDragStartLocal}
+      onDragEnd={handleDragEndLocal}
+      className={cn(
+        "p-4 cursor-grab active:cursor-grabbing transition-all duration-150 select-none space-y-3 group border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)]",
+        isDragging
+          ? "opacity-60 scale-[1.02] shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)]"
+          : "hover:shadow-[var(--shadow-glass-md)] dark:hover:shadow-[var(--shadow-glass-dark-md)]"
+      )}
+    >
+      <div className="flex justify-between items-start gap-2">
+        <span
+          className={cn(
+            "text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[var(--radius-glass-pill)] border glass-clear",
+            probClass
+          )}
+        >
+          {prob}% Win Prob
+        </span>
+        <button
+          onClick={() => onEdit(deal)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:text-blue-500 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] rounded transition-colors"
+          title="Edit Deal"
+        >
+          {/* We'll use Contact or user edit indicator since Edit2 will be imported */}
+          <Contact className="size-3" />
+        </button>
+      </div>
+
+      <div>
+        <h4 className="font-bold text-sm text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] leading-snug">
+          {deal.name || "Unnamed Deal"}
+        </h4>
+        <p className="text-xs text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] truncate mt-0.5">
+          {clientName}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] text-[10px] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
+        <span className="font-bold text-sm text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
+          ${deal.value.toLocaleString()}
+        </span>
+        <span className="text-[9px] text-[var(--color-glass-text-tertiary)] dark:text-[var(--color-glass-dark-text-tertiary)]">
+          {deal.closed_at ? new Date(deal.closed_at).toLocaleDateString() : "Open"}
+        </span>
+      </div>
+    </GlassPanel>
+  );
+}
+

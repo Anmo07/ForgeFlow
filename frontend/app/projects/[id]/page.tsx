@@ -20,6 +20,8 @@ import {
   User,
   Tag,
 } from "lucide-react";
+import { GlassPanel } from "@/components/glass/GlassPanel";
+import { cn } from "@/lib/utils";
 
 interface Task {
   id: number;
@@ -354,25 +356,25 @@ export default function ProjectDetailPage() {
       )}
 
       {}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
+      <div className="flex gap-6 overflow-x-auto pb-4 pt-2 -mx-4 px-4 min-h-[550px] scrollbar-thin">
+        {/* To Do */}
         <div
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "todo")}
-          className="bg-card/10 border border-border rounded-xl p-4 flex flex-col min-h-[500px]"
+          className="flex flex-col w-[320px] shrink-0 min-h-[500px] bg-white/5 dark:bg-black/20 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] rounded-[var(--radius-glass-xl)] p-4"
         >
-          <div className="flex items-center justify-between mb-4 border-b border-border pb-3 shrink-0">
+          <div className="glass-clear rounded-[var(--radius-glass-pill)] px-4 py-2 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] flex items-center justify-between mb-4 flex-shrink-0 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)]">
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-zinc-400"></span>
-              <h3 className="font-bold text-sm tracking-tight text-foreground">
+              <span className="text-sm font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 To Do
-              </h3>
+              </span>
             </div>
-            <span className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-full font-bold">
+            <span className="text-xs font-bold glass-clear border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] px-2 py-0.5 rounded-[var(--radius-glass-pill)] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
               {todoTasks.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-3">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
             {todoTasks.map((t) => (
               <TaskCard
                 key={t.id}
@@ -384,31 +386,31 @@ export default function ProjectDetailPage() {
               />
             ))}
             {todoTasks.length === 0 && (
-              <div className="h-full flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
+              <div className="h-full min-h-[150px] flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
                 Drag tasks here
               </div>
             )}
           </div>
         </div>
 
-        {}
+        {/* In Progress */}
         <div
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "in_progress")}
-          className="bg-card/10 border border-border rounded-xl p-4 flex flex-col min-h-[500px]"
+          className="flex flex-col w-[320px] shrink-0 min-h-[500px] bg-white/5 dark:bg-black/20 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] rounded-[var(--radius-glass-xl)] p-4"
         >
-          <div className="flex items-center justify-between mb-4 border-b border-border pb-3 shrink-0">
+          <div className="glass-clear rounded-[var(--radius-glass-pill)] px-4 py-2 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] flex items-center justify-between mb-4 flex-shrink-0 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)]">
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-amber-400"></span>
-              <h3 className="font-bold text-sm tracking-tight text-foreground">
+              <span className="text-sm font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 In Progress
-              </h3>
+              </span>
             </div>
-            <span className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-full font-bold">
+            <span className="text-xs font-bold glass-clear border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] px-2 py-0.5 rounded-[var(--radius-glass-pill)] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
               {inProgressTasks.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-3">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
             {inProgressTasks.map((t) => (
               <TaskCard
                 key={t.id}
@@ -420,31 +422,31 @@ export default function ProjectDetailPage() {
               />
             ))}
             {inProgressTasks.length === 0 && (
-              <div className="h-full flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
+              <div className="h-full min-h-[150px] flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
                 Drag tasks here
               </div>
             )}
           </div>
         </div>
 
-        {}
+        {/* Done */}
         <div
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, "done")}
-          className="bg-card/10 border border-border rounded-xl p-4 flex flex-col min-h-[500px]"
+          className="flex flex-col w-[320px] shrink-0 min-h-[500px] bg-white/5 dark:bg-black/20 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] rounded-[var(--radius-glass-xl)] p-4"
         >
-          <div className="flex items-center justify-between mb-4 border-b border-border pb-3 shrink-0">
+          <div className="glass-clear rounded-[var(--radius-glass-pill)] px-4 py-2 border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] flex items-center justify-between mb-4 flex-shrink-0 shadow-[var(--shadow-glass-sm)] dark:shadow-[var(--shadow-glass-dark-sm)]">
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full bg-emerald-400"></span>
-              <h3 className="font-bold text-sm tracking-tight text-foreground">
+              <span className="text-sm font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
                 Done
-              </h3>
+              </span>
             </div>
-            <span className="text-xs bg-muted/40 text-muted-foreground px-2 py-0.5 rounded-full font-bold">
+            <span className="text-xs font-bold glass-clear border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)] px-2 py-0.5 rounded-[var(--radius-glass-pill)] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
               {doneTasks.length}
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-3">
+          <div className="flex-1 overflow-y-auto space-y-3 pr-1">
             {doneTasks.map((t) => (
               <TaskCard
                 key={t.id}
@@ -456,7 +458,7 @@ export default function ProjectDetailPage() {
               />
             ))}
             {doneTasks.length === 0 && (
-              <div className="h-full flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
+              <div className="h-full min-h-[150px] flex items-center justify-center text-center p-6 border-2 border-dashed border-border/50 rounded-lg text-xs text-muted-foreground/60 select-none">
                 Drag tasks here
               </div>
             )}
@@ -611,41 +613,67 @@ function TaskCard({
   onDelete,
   onDragStart,
 }: TaskCardProps) {
+  const [isDragging, setIsDragging] = useState(false);
+
   const assigneeName = task.assigned_to
     ? members.find((m) => m.user_id === task.assigned_to)?.user_name ||
       "Assigned"
     : null;
 
-  let priorityClass = "text-zinc-400 bg-zinc-500/10 border-zinc-500/20";
-  if (task.priority === "high") {
-    priorityClass = "text-rose-400 bg-rose-500/10 border-rose-500/20";
-  } else if (task.priority === "medium") {
-    priorityClass = "text-amber-400 bg-amber-500/10 border-amber-500/20";
-  }
+  const priorityStyles = {
+    low: "text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    medium: "text-amber-600 dark:text-amber-400 border-amber-500/20",
+    high: "text-red-600 dark:text-red-400 border-red-500/20",
+    critical: "text-rose-600 dark:text-rose-400 border-rose-500/20",
+  };
+
+  const priorityClass =
+    priorityStyles[task.priority as keyof typeof priorityStyles] ||
+    "text-zinc-500 border-zinc-500/20";
+
+  const handleDragStartLocal = (e: React.DragEvent) => {
+    setIsDragging(true);
+    onDragStart(e, task.id);
+  };
+
+  const handleDragEndLocal = () => {
+    setIsDragging(false);
+  };
 
   return (
-    <div
+    <GlassPanel
+      variant="regular"
+      radius="lg"
       draggable
-      onDragStart={(e) => onDragStart(e, task.id)}
-      className="bg-card/40 border border-border rounded-lg p-4 shadow-sm hover:border-amber-500/15 cursor-grab active:cursor-grabbing transition-all select-none space-y-3 group"
+      onDragStart={handleDragStartLocal}
+      onDragEnd={handleDragEndLocal}
+      className={cn(
+        "p-4 cursor-grab active:cursor-grabbing transition-all duration-150 select-none space-y-3 group border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)]",
+        isDragging
+          ? "opacity-60 scale-[1.02] shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)]"
+          : "hover:shadow-[var(--shadow-glass-md)] dark:hover:shadow-[var(--shadow-glass-dark-md)]"
+      )}
     >
       <div className="flex justify-between items-start gap-2">
         <span
-          className={`text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded border ${priorityClass}`}
+          className={cn(
+            "text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-[var(--radius-glass-pill)] border glass-clear",
+            priorityClass
+          )}
         >
           {task.priority}
         </span>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onEdit(task)}
-            className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded transition-colors"
+            className="p-1 text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:text-blue-500 hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] rounded transition-colors"
             title="Edit task"
           >
             <Edit2 className="size-3" />
           </button>
           <button
             onClick={() => onDelete(task.id)}
-            className="p-1 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors"
+            className="p-1 text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 rounded transition-colors"
             title="Delete task"
           >
             <Trash2 className="size-3" />
@@ -653,32 +681,32 @@ function TaskCard({
         </div>
       </div>
 
-      <h4 className="font-bold text-sm text-foreground leading-snug">
+      <h4 className="font-bold text-sm text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] leading-snug">
         {task.title}
       </h4>
 
       {task.description && (
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] line-clamp-2 leading-relaxed">
           {task.description}
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between pt-2 border-t border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] text-[10px] text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)]">
         <div className="flex items-center gap-1">
           <Calendar className="size-3 text-amber-500/50" />
           <span>{task.due_date || "No due date"}</span>
         </div>
         {assigneeName ? (
-          <div className="flex items-center gap-1 bg-muted/40 px-1.5 py-0.5 rounded text-foreground font-medium">
+          <div className="flex items-center gap-1 glass-clear px-1.5 py-0.5 rounded-[var(--radius-glass-sm)] text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] font-semibold border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]">
             <User className="size-3 text-amber-500/70" />
             <span>{assigneeName}</span>
           </div>
         ) : (
-          <span className="text-[9px] text-muted-foreground/60 italic">
+          <span className="text-[9px] text-[var(--color-glass-text-tertiary)] dark:text-[var(--color-glass-dark-text-tertiary)] italic">
             Unassigned
           </span>
         )}
       </div>
-    </div>
+    </GlassPanel>
   );
 }
