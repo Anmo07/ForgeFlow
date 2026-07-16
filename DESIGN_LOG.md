@@ -119,3 +119,19 @@ This log tracks the progress of the visual redesign.
 
 ### Blocked Items
 - None
+
+---
+
+## Phase D8 — Accessibility, Performance & Progressive Enhancement
+
+**Status**: Completed
+
+### Files Touched
+- `frontend/app/globals.css` (Added hardware acceleration and GPU compositor layer properties to `.glass-heavy` classes)
+- `frontend/components/glass/Toast.tsx` (Added prefers-reduced-motion queries using Framer Motion to fall back to solid fades without active sliding animations when motion transitions are restricted)
+
+### Components Created
+- None
+
+### Blocked Items
+- None
