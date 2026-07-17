@@ -12,97 +12,52 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
+Error: expect(page).toHaveURL(expected) failed
 
-```
-Error: page.fill: Test timeout of 30000ms exceeded.
+Expected pattern: /.*dashboard/
+Received string:  "http://localhost:3000/login"
+Timeout: 5000ms
+
 Call log:
-  - waiting for locator('input[placeholder*="Password"]')
+  - Expect "toHaveURL" with timeout 5000ms
+    12 × unexpected value "http://localhost:3000/login"
 
 ```
-
-# Page snapshot
 
 ```yaml
-- generic [ref=e1]:
-  - generic [ref=e6]:
-    - generic [ref=e7]:
-      - link "ForgeFlow" [ref=e8] [cursor=pointer]:
-        - /url: /
-        - generic [ref=e9]: ForgeFlow
-      - generic [ref=e10]:
-        - img [ref=e12]
-        - generic [ref=e15]:
-          - heading "Create an account" [level=1] [ref=e16]
-          - paragraph [ref=e17]: Start using ForgeFlow today
-    - generic [ref=e18]:
-      - generic [ref=e19]:
-        - generic [ref=e20]: Full Name
-        - generic [ref=e21]:
-          - img [ref=e22]
-          - textbox "Full Name" [ref=e25]:
-            - /placeholder: John Doe
-      - generic [ref=e26]:
-        - generic [ref=e27]: Email Address
-        - generic [ref=e28]:
-          - img [ref=e29]
-          - textbox "Email Address" [active] [ref=e32]:
-            - /placeholder: name@company.com
-            - text: user_1696@e2e.local
-      - generic [ref=e33]:
-        - generic [ref=e34]: Password (min. 8 characters)
-        - generic [ref=e35]:
-          - img [ref=e36]
-          - textbox "Password (min. 8 characters)" [ref=e39]:
-            - /placeholder: ••••••••
-          - button [ref=e40]:
-            - img [ref=e41]
-      - generic [ref=e44]:
-        - generic [ref=e45]: Confirm Password
-        - generic [ref=e46]:
-          - img [ref=e47]
-          - textbox "Confirm Password" [ref=e50]:
-            - /placeholder: ••••••••
-      - generic [ref=e51]:
-        - checkbox "I agree to the Terms of Service and Privacy Policy." [ref=e52]
-        - generic [ref=e53]:
-          - text: I agree to the
-          - link "Terms of Service" [ref=e54] [cursor=pointer]:
-            - /url: /terms
-          - text: and
-          - link "Privacy Policy" [ref=e55] [cursor=pointer]:
-            - /url: /privacy
-          - text: .
-      - button "Sign Up" [ref=e58]:
-        - img [ref=e59]
-        - text: Sign Up
-    - paragraph [ref=e62]:
-      - text: Already have an account?
-      - link "Log In" [ref=e63] [cursor=pointer]:
-        - /url: /login
-  - button "Open Next.js Dev Tools" [ref=e69] [cursor=pointer]:
-    - img [ref=e70]
-  - alert [ref=e73]
-  - generic [ref=e74]:
-    - img [ref=e76]
-    - button "Open Tanstack query devtools" [ref=e124] [cursor=pointer]:
-      - img [ref=e125]
+- link "ForgeFlow":
+  - /url: /
+- heading "Welcome back" [level=1]
+- paragraph: Log in to your ForgeFlow account
+- text: Please complete the security challenge. Email Address
+- textbox "Email Address":
+  - /placeholder: name@company.com
+  - text: e2e_admin_51020@forgeflow.local
+- text: Password
+- link "Forgot password?":
+  - /url: "#"
+- textbox "Password":
+  - /placeholder: ••••••••
+  - text: SuperPassword123!
+- button
+- button "Sign In"
+- text: Or continue with
+- link "Sign In with Google":
+  - /url: /api/auth/sso/google/init
+  - img
+  - text: Sign In with Google
+- paragraph:
+  - text: Don't have an account?
+  - link "Sign Up":
+    - /url: /register
+- alert
+- button "Open Tanstack query devtools":
+  - img
 ```
 
 # Test source
 
 ```ts
-  1   | import { test, expect } from "@playwright/test";
-  2   | import { execSync } from "child_process";
-  3   | import * as path from "path";
-  4   | import * as fs from "fs";
-  5   | 
-  6   | function getEnvFromRoot() {
-  7   |   const envPath = path.resolve(__dirname, "../../.env");
-  8   |   const envVars: Record<string, string> = { ...process.env };
-  9   |   if (fs.existsSync(envPath)) {
-  10  |     const content = fs.readFileSync(envPath, "utf8");
   11  |     content.split("\n").forEach(line => {
   12  |       const match = line.trim().match(/^([\w.\-]+)\s*=\s*(.*)?\s*$/);
   13  |       if (match) {
@@ -182,9 +137,8 @@ Call log:
   87  |     // 1. Go to register page
   88  |     await page.goto("/register");
   89  |     await page.fill('input[type="email"]', `user_${Math.floor(Math.random() * 10000)}@e2e.local`);
-> 90  |     await page.fill('input[placeholder*="Password"]', "SecurePass1!");
-      |                ^ Error: page.fill: Test timeout of 30000ms exceeded.
-  91  |     await page.fill('input[placeholder*="Full Name"]', "E2E Registrant");
+  90  |     await page.fill('#reg-password', "SecurePass1!");
+  91  |     await page.fill('#reg-name', "E2E Registrant");
   92  |     
   93  |     // Simulate turnstile checked
   94  |     await page.evaluate(() => {
@@ -204,7 +158,8 @@ Call log:
   108 |     await page.click('button[type="submit"]');
   109 | 
   110 |     // Confirm redirected to dashboard
-  111 |     await expect(page).toHaveURL(/.*dashboard/);
+> 111 |     await expect(page).toHaveURL(/.*dashboard/);
+      |                        ^ Error: expect(page).toHaveURL(expected) failed
   112 | 
   113 |     // Logout
   114 |     await page.click('button[title="Sign Out"]');
@@ -284,4 +239,25 @@ Call log:
   188 |     const fileBytes = fs.readFileSync(downloadPath!);
   189 |     
   190 |     // Verify magic bytes %PDF
+  191 |     const pdfMagicBytes = fileBytes.toString("utf8", 0, 4);
+  192 |     expect(pdfMagicBytes).toBe("%PDF");
+  193 |   });
+  194 | 
+  195 |   // Flow 3: Kanban Task Lifecycle
+  196 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
+  197 |     await page.goto("/login");
+  198 |     await page.fill('input[type="email"]', adminEmail);
+  199 |     await page.fill('input[type="password"]', adminPassword);
+  200 |     await page.click('button[type="submit"]');
+  201 | 
+  202 |     // Create project
+  203 |     await page.goto("/projects");
+  204 |     await page.click("text=Create Project");
+  205 |     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
+  206 |     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
+  207 |     await page.click("text=Create");
+  208 | 
+  209 |     // Add tasks
+  210 |     await page.click("text=E2E Projects Space");
+  211 |     
 ```
