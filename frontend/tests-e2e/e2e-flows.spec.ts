@@ -71,10 +71,12 @@ async function submitLoginForm(page: any, email: string, pass: string) {
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
   let seededData: any = null;
-  const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.com`;
+  let adminEmail = "";
   const adminPassword = "SuperPassword123!";
 
   test.beforeEach(async ({ page }) => {
+    adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.com`;
+
     page.on('console', msg => {
       console.log(`BROWSER CONSOLE [${msg.type()}]: ${msg.text()}`);
     });
@@ -295,6 +297,6 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.click("text=Send Invitation");
 
     // Assert listed in pending
-    await expect(page.locator("text=invitee_user@forgeflow.com")).toBeVisible();
+    await expect(page.locator("text=invitee_user@forgeflow.com").last()).toBeVisible();
   });
 });
