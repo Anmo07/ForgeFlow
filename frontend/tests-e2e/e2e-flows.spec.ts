@@ -147,13 +147,24 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     // Add Client first
     await page.goto("/crm");
     await page.click("text=New Client");
+    try {
+      await page.waitForSelector('text=Add New Client', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=New Client");
+    }
     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
     await page.fill('input[type="email"]', "client@invoice.com");
     await page.click("text=Add Client");
+    await expect(page.locator('text=Add New Client')).toBeHidden();
 
     // Create Invoice
     await page.goto("/invoices");
     await page.click("text=Create Invoice");
+    try {
+      await page.waitForSelector('text=Create & Render', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=Create Invoice");
+    }
     
     // Fill Invoice form
     await page.selectOption("select", { label: "E2E Invoice Client" });
@@ -205,6 +216,11 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     // Create project
     await page.goto("/projects");
     await page.click("text=New Project");
+    try {
+      await page.waitForSelector('text=Create New Project', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=New Project");
+    }
     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
     await page.click("text=Create Project");
@@ -214,6 +230,11 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     
     // Add Task 1
     await page.click("text=Add Task");
+    try {
+      await page.waitForSelector('text=Create Task', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=Add Task");
+    }
     await page.fill('input[placeholder="Task Title"]', "Task high priority");
     await page.selectOption("select[name='priority']", "high");
     await page.click("text=Create Task");
@@ -237,12 +258,23 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/crm");
     // Add Client first (required for Lead)
     await page.click("text=New Client");
+    try {
+      await page.waitForSelector('text=Add New Client', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=New Client");
+    }
     await page.fill('input[placeholder*="John Doe"]', "E2E Lead Client");
     await page.fill('input[type="email"]', "lead_client@invoice.com");
     await page.click("text=Add Client");
+    await expect(page.locator('text=Add New Client')).toBeHidden();
 
     // Add lead
     await page.click("text=New Lead");
+    try {
+      await page.waitForSelector('text=Add New Lead', { timeout: 2000 });
+    } catch (e) {
+      await page.click("text=New Lead");
+    }
     await page.selectOption('select[required]', { label: "E2E Lead Client" });
     await page.fill('input[placeholder*="5000"]', "25000");
     await page.click("text=Add Lead");

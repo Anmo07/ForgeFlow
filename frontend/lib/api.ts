@@ -261,11 +261,11 @@ if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined
   };
 
   window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
-    const urlString = typeof input === "string" ? input : (input instanceof URL ? input.href : input.url);
+    let urlString = typeof input === "string" ? input : (input instanceof URL ? input.href : input.url);
     if (urlString.includes("/api/")) {
       let pathname = "";
       try {
-        pathname = new URL(urlString, window.location.origin).pathname;
+        pathname = new URL(urlString, typeof window !== "undefined" ? window.location.origin : "http://localhost:3000").pathname;
       } catch (e) {
         pathname = urlString.split("?")[0];
       }
@@ -280,6 +280,33 @@ if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined
           status: 200,
           headers: { "Content-Type": "application/json" }
         });
+      }
+
+      // If mock mode is disabled, forward to real backend
+      if (process.env.NEXT_PUBLIC_MOCK_MODE !== "true") {
+        const backendBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const absoluteUrl = `${backendBase}${pathname}${urlString.includes("?") ? `?${urlString.split("?")[1]}` : ""}`;
+        
+        const newInit = { ...init };
+        const headers = { ...init?.headers } as Record<string, string>;
+        
+        // Retrieve access token
+        const useAuthStoreModule = require("@/store/auth");
+        const token = useAuthStoreModule.useAuthStore.getState().accessToken || (typeof window !== "undefined" ? localStorage.getItem("access_token") : null);
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        
+        const activeOrgId = useOrgStore.getState().currentOrg?.id;
+        if (activeOrgId) {
+          headers["X-Organization-ID"] = String(activeOrgId);
+        }
+        
+        newInit.headers = headers;
+        newInit.credentials = "include";
+        
+        return originalFetch(absoluteUrl, newInit);
       }
     }
     return originalFetch(input, init);
