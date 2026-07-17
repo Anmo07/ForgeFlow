@@ -175,7 +175,9 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.waitForSelector(clientSelector, { state: "attached" });
     const clientOptionVal = await page.locator(clientSelector).getAttribute("value");
     await page.selectOption('label:has-text("Client Organization") + select', clientOptionVal || "");
-    await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
+    const today = new Date().toISOString().split("T")[0];
+    await page.fill('label:has-text("Issue Date") + input', today);
+    await page.fill('label:has-text("Due Date") + input', today);
     // Set 3 line items
     await page.fill('input[placeholder*="product or service"]', "Item 1");
     await page.fill('input[placeholder="Qty"]', "2");
@@ -196,7 +198,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.click('button:has-text("Create & Render")');
 
     // Verify it appears in table
-    const totalCell = page.locator("text=$275.00");
+    const totalCell = page.locator("table tbody td:has-text('$275.00')");
     await expect(totalCell).toBeVisible();
 
     // Download PDF (intercept browser download event)
