@@ -71,7 +71,7 @@ async function submitLoginForm(page: any, email: string, pass: string) {
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
   let seededData: any = null;
-  const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.local`;
+  const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.com`;
   const adminPassword = "SuperPassword123!";
 
   test.beforeEach(() => {
@@ -96,7 +96,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   test("Flow 1: Authentication Lifecycle & Account Lockout", async ({ page }) => {
     // 1. Go to register page
     await page.goto("/register");
-    await page.fill('input[type="email"]', `user_${Math.floor(Math.random() * 10000)}@e2e.local`);
+    await page.fill('input[type="email"]', `user_${Math.floor(Math.random() * 10000)}@e2e.com`);
     await page.fill('#reg-password', "SecurePass1!");
     await page.fill('#reg-name', "E2E Registrant");
     
@@ -141,7 +141,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/crm");
     await page.click("text=New Client");
     await page.fill('input[placeholder*="Client Name"]', "E2E Invoice Client");
-    await page.fill('input[type="email"]', "client@invoice.local");
+    await page.fill('input[type="email"]', "client@invoice.com");
     await page.click("text=Save");
 
     // Create Invoice
@@ -245,10 +245,10 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/settings");
     await page.click("text=Members");
     await page.click("text=Invite Member");
-    await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.local");
+    await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.com");
     await page.click("text=Send Invitation");
 
     // Assert listed in pending
-    await expect(page.locator("text=invitee_user@forgeflow.local")).toBeVisible();
+    await expect(page.locator("text=invitee_user@forgeflow.com")).toBeVisible();
   });
 });
