@@ -110,6 +110,12 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
 
+    console.log("DEBUG: After login submit - URL:", page.url());
+    const cookies = await page.context().cookies();
+    console.log("DEBUG: After login submit - Cookies:", JSON.stringify(cookies, null, 2));
+    const localStorageData = await page.evaluate(() => JSON.stringify(localStorage));
+    console.log("DEBUG: After login submit - LocalStorage:", localStorageData);
+
     // Confirm redirected to dashboard
     await expect(page).toHaveURL(/.*dashboard/);
 

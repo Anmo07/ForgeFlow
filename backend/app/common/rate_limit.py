@@ -106,9 +106,10 @@ from slowapi.util import get_remote_address
 from .config import REDIS_URL
 
 is_testing = os.getenv('TESTING', '').lower() in ('true', '1', 'yes')
+rate_limit_disabled = os.getenv('RATE_LIMIT_DISABLED', '').lower() in ('true', '1', 'yes') or is_testing
 
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri="memory://" if is_testing else REDIS_URL,
-    enabled=not is_testing
+    enabled=not rate_limit_disabled
 )

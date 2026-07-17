@@ -6,15 +6,15 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 4: CRM Leads & Deals pipeline
-- Location: tests-e2e/e2e-flows.spec.ts:230:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 5: Invite Members and Roles
+- Location: tests-e2e/e2e-flows.spec.ts:247:7
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+Error: page.goto: net::ERR_ABORTED at http://localhost:3000/settings
 Call log:
-  - navigating to "http://localhost:3000/crm", waiting until "load"
+  - navigating to "http://localhost:3000/settings", waiting until "load"
 
 ```
 
@@ -116,23 +116,6 @@ Call log:
 # Test source
 
 ```ts
-  134 |   });
-  135 | 
-  136 |   // Flow 2: Invoice Creation and PDF Download
-  137 |   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
-  138 |     // Bypass lockout by logging in with seed details
-  139 |     await page.goto("/login");
-  140 |     await submitLoginForm(page, adminEmail, adminPassword);
-  141 |     await expect(page).toHaveURL(/.*dashboard/);
-  142 | 
-  143 |     // Navigate to Invoices
-  144 |     await page.goto("/invoices");
-  145 | 
-  146 |     // Add Client first
-  147 |     await page.goto("/crm");
-  148 |     await page.click("text=New Client");
-  149 |     await page.fill('input[placeholder*="Client Name"]', "E2E Invoice Client");
-  150 |     await page.fill('input[type="email"]', "client@invoice.com");
   151 |     await page.click("text=Save");
   152 | 
   153 |     // Create Invoice
@@ -216,8 +199,7 @@ Call log:
   231 |     await page.goto("/login");
   232 |     await submitLoginForm(page, adminEmail, adminPassword);
   233 | 
-> 234 |     await page.goto("/crm");
-      |                ^ Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+  234 |     await page.goto("/crm");
   235 |     // Add lead
   236 |     await page.click("text=New Lead");
   237 |     await page.fill('input[placeholder="Lead Title"]', "Enterprise Deal Lead");
@@ -234,7 +216,8 @@ Call log:
   248 |     await page.goto("/login");
   249 |     await submitLoginForm(page, adminEmail, adminPassword);
   250 | 
-  251 |     await page.goto("/settings");
+> 251 |     await page.goto("/settings");
+      |                ^ Error: page.goto: net::ERR_ABORTED at http://localhost:3000/settings
   252 |     await page.click("text=Members");
   253 |     await page.click("text=Invite Member");
   254 |     await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.com");

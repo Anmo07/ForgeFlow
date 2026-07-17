@@ -361,12 +361,25 @@ export async function apiFetch<T = unknown>(
 
   // If unauthorized or not found, fall back to mock data
   if (!response.ok) {
+    let errorMessage = response.statusText || 'Unsuccessful response';
+    try {
+      // Clone the response to parse it so we don't consume the body if needed elsewhere
+      const errorJson = await response.clone().json();
+      if (errorJson && typeof errorJson === "object") {
+        errorMessage = errorJson.detail || errorJson.message || errorMessage;
+      }
+    } catch (e) {
+      // ignore json parsing errors
+    }
+
     if (response.status === 401) {
       if (typeof window !== "undefined") {
         useAuthStore.getState().clearAuth();
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
-      throw new ApiError(response.status, "Session expired. Redirecting to login...");
+      throw new ApiError(response.status, errorMessage || "Session expired. Redirecting to login...");
     }
 
     if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
@@ -376,7 +389,7 @@ export async function apiFetch<T = unknown>(
       console.warn(`API responded with ${response.status} for ${path}, falling back to local mock data.`);
       return getMockDataForPath(path) as T;
     }
-    throw new ApiError(response.status, `API error ${response.status}: ${response.statusText || 'Unsuccessful response'}`);
+    throw new ApiError(response.status, errorMessage);
   }
 
   if (response.status === 204) {
