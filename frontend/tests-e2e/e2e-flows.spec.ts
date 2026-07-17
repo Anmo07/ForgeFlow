@@ -62,6 +62,7 @@ function runTeardown(orgId: number, userId: number) {
 async function submitLoginForm(page: any, email: string, pass: string) {
   await page.waitForSelector("form");
   await page.evaluate(() => {
+    localStorage.clear();
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
   await page.fill('input[type="email"]', email);
@@ -176,22 +177,22 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.selectOption('label:has-text("Client Organization") + select', clientOptionVal || "");
     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
     // Set 3 line items
-    await page.fill('input[placeholder="Item description"]', "Item 1");
+    await page.fill('input[placeholder*="product or service"]', "Item 1");
     await page.fill('input[placeholder="Qty"]', "2");
     await page.fill('input[placeholder="Price"]', "50");
 
-    await page.click("text=Add Line Item");
-    await page.fill('input[placeholder="Item description"] >> nth=1', "Item 2");
+    await page.click("text=Add Item");
+    await page.fill('input[placeholder*="product or service"] >> nth=1', "Item 2");
     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
     await page.fill('input[placeholder="Price"] >> nth=1', "100");
 
-    await page.click("text=Add Line Item");
-    await page.fill('input[placeholder="Item description"] >> nth=2', "Item 3");
+    await page.click("text=Add Item");
+    await page.fill('input[placeholder*="product or service"] >> nth=2', "Item 3");
     await page.fill('input[placeholder="Qty"] >> nth=2', "5");
     await page.fill('input[placeholder="Price"] >> nth=2', "10");
 
-    await page.fill('input[placeholder="Tax rate"]', "10");
-    await page.fill('textarea[placeholder="Notes"]', "E2E Test Invoice Notes");
+    await page.fill('label:has-text("Tax Rate") + input', "10");
+    await page.fill('textarea[placeholder*="Notes"]', "E2E Test Invoice Notes");
     await page.click('button:has-text("Create & Render")');
 
     // Verify it appears in table
@@ -253,7 +254,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await taskCard.dragTo(inProgressColumn);
 
     await page.reload();
-    await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
+    await expect(page.locator('div').filter({ has: page.locator('span', { hasText: /^In Progress$/ }) })).toContainText("Task high priority");
   });
 
   // Flow 4: CRM Deal Pipeline
