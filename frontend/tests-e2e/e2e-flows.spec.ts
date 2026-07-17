@@ -87,8 +87,8 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     // 1. Go to register page
     await page.goto("/register");
     await page.fill('input[type="email"]', `user_${Math.floor(Math.random() * 10000)}@e2e.local`);
-    await page.fill('input[placeholder*="Password"]', "SecurePass1!");
-    await page.fill('input[placeholder*="Full Name"]', "E2E Registrant");
+    await page.fill('#reg-password', "SecurePass1!");
+    await page.fill('#reg-name', "E2E Registrant");
     
     // Simulate turnstile checked
     await page.evaluate(() => {
