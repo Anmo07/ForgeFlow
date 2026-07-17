@@ -256,7 +256,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await taskCard.dragTo(inProgressColumn);
 
     await page.reload();
-    await expect(page.locator('div').filter({ has: page.locator('span', { hasText: /^In Progress$/ }) })).toContainText("Task high priority");
+    await expect(page.locator('div[class*="w-[320px]"]').filter({ hasText: "In Progress" })).toContainText("Task high priority");
   });
 
   // Flow 4: CRM Deal Pipeline
