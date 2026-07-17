@@ -145,10 +145,12 @@ export default function RegisterPage() {
           }),
         });
 
+        localStorage.setItem("access_token", loginData.access_token);
         setAuth(loginData.user, loginData.access_token, loginData.refresh_token);
       } catch (backendErr) {
         console.warn("Backend registration failed, proceeding with local mock session:", backendErr);
         // Authenticate with local mock session if backend is down
+        localStorage.setItem("access_token", "mock-access-token");
         setAuth(newUser, "mock-access-token", "mock-refresh-token");
       }
       

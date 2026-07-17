@@ -99,6 +99,7 @@ export default function LoginPage() {
         // Remember credentials upon successful backend login
         localStorage.setItem("forgeflow_last_email", email);
         localStorage.setItem("forgeflow_last_password", password);
+        localStorage.setItem("access_token", data.access_token);
         setAuth(data.user, data.access_token);
       } catch (backendErr) {
         throw backendErr instanceof Error ? backendErr : new Error("Login failed");
