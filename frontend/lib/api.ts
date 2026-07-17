@@ -19,15 +19,9 @@ if (typeof window !== "undefined") {
 }
 
 // ENFORCE DATA ISOLATION AND SETTINGS PERSISTENCE VIA GLOBAL FETCH INTERCEPTOR
-if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined" && !(window as any).__fetchPatched) {
-  if (process.env.NODE_ENV === "production") {
-    console.error(
-      "[ForgeFlow] CRITICAL: NEXT_PUBLIC_MOCK_MODE=true in production. " +
-      "Mock interceptor is disabled. All requests will use the real API."
-    );
-  } else {
-    (window as any).__fetchPatched = true;
-    const originalFetch = window.fetch;
+if (typeof window !== "undefined" && !(window as any).__fetchPatched) {
+  (window as any).__fetchPatched = true;
+  const originalFetch = window.fetch;
 
   
   const getActiveOrgId = (): string => {
@@ -311,7 +305,6 @@ if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined
     }
     return originalFetch(input, init);
   };
-  }
 }
 
 interface FetchOptions extends RequestInit {

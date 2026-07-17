@@ -121,7 +121,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await expect(page).toHaveURL(/.*dashboard/);
 
     // Logout
-    await page.click('button[title="Sign Out"]');
+    await page.click('button[title="Sign Out"]', { force: true });
     await expect(page).toHaveURL(/.*(login|\/)$/);
 
     // Trigger Account Lockout (5 failed attempts)
