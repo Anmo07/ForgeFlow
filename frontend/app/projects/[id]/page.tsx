@@ -66,6 +66,11 @@ export default function ProjectDetailPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -232,6 +237,32 @@ export default function ProjectDetailPage() {
       setErrorMsg("Failed to update task status");
     }
   };
+
+  if (!hasMounted) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40">
+        <Loader2 className="size-10 text-amber-500 animate-spin" />
+        <span className="text-sm text-muted-foreground mt-2">
+          Loading project workspace...
+        </span>
+      </div>
+    );
+  }
+
+  if (!currentOrg) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <Folder className="size-16 text-muted-foreground/50 mb-4 animate-pulse" />
+        <h3 className="text-xl font-bold tracking-tight">
+          Select an organization
+        </h3>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md">
+          Please select or create an organization from the workspace switcher in
+          the header to view and manage project details.
+        </p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -6,9 +6,11 @@ import { Building2, ChevronDown, Plus, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function OrgSwitcher() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { currentOrg, setCurrentOrg } = useOrgStore();
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [open, setOpen] = useState(false);
@@ -35,15 +37,22 @@ export default function OrgSwitcher() {
 
   useEffect(() => {
     fetchOrgs();
-  }, [currentOrg, setCurrentOrg]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSelect = (org: Organization) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'org-switcher.tsx:handleSelect',message:'Org switched',data:{newOrgId:org.id,newOrgName:org.name,prevOrgId:currentOrg?.id},timestamp:Date.now(),hypothesisId:'B',runId:'post-fix'})}).catch(()=>{});
+    // #endregion
     setCurrentOrg(org);
     setOpen(false);
+    queryClient.clear();
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("orgChanged"));
     }
+
+    router.push("/dashboard");
   };
 
   const handleCreateOrg = () => {

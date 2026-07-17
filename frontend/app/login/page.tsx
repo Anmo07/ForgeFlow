@@ -94,27 +94,9 @@ export default function LoginPage() {
         // Remember credentials upon successful backend login
         localStorage.setItem("forgeflow_last_email", email);
         localStorage.setItem("forgeflow_last_password", password);
-        setAuth(data.user, data.access_token, data.refresh_token);
+        setAuth(data.user, data.access_token);
       } catch (backendErr) {
-        console.warn("Backend login failed, attempting local credentials matching:", backendErr);
-        
-        const localUsers = JSON.parse(localStorage.getItem("forgeflow_users") || "[]");
-        const match = localUsers.find((u: any) => u.email === email && u.password === password);
-        
-        if (match) {
-          const userObj = {
-            id: match.id,
-            email: match.email,
-            full_name: match.full_name,
-            is_active: match.is_active
-          };
-          // Remember credentials upon successful local login
-          localStorage.setItem("forgeflow_last_email", email);
-          localStorage.setItem("forgeflow_last_password", password);
-          setAuth(userObj, "mock-access-token", "mock-refresh-token");
-        } else {
-          throw new Error("Invalid email or password.");
-        }
+        throw backendErr instanceof Error ? backendErr : new Error("Login failed");
       }
       
       window.location.href = "/dashboard";

@@ -86,13 +86,17 @@ services:
     container_name: forgeflow_backend
     stop_grace_period: 35s
     environment:
-      DATABASE_URL: sqlite:////app/data/local.db
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/local.db}
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_SECURE: "False"
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-smtp}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-False}
     volumes:
       - ../backend/data:/app/data
     ports:
@@ -115,13 +119,17 @@ services:
     stop_grace_period: 35s
     command: celery -A app.common.celery_app.celery_app worker --loglevel=info --concurrency=4 --without-gossip --without-mingle
     environment:
-      DATABASE_URL: sqlite:////app/data/local.db
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/local.db}
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_SECURE: "False"
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-smtp}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-False}
     volumes:
       - ../backend/data:/app/data
     depends_on:
@@ -222,6 +230,19 @@ services:
       - FLOWER_BASIC_AUTH=${FLOWER_BASIC_AUTH:-admin:admin}
     depends_on:
       - redis
+    networks:
+      - forgeflow_net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: forgeflow_mailpit
+    ports:
+      - "8025:8025"   # Web UI — view captured emails
+      - "1025:1025"   # SMTP server — your app sends here
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
     networks:
       - forgeflow_net
 

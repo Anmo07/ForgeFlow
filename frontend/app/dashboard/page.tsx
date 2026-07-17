@@ -166,6 +166,16 @@ export default function DashboardPage() {
     }
   }, [currentOrg, hasMounted, isAuthenticated]);
 
+  useEffect(() => {
+    const handleOrgChanged = () => {
+      if (hasMounted && isAuthenticated) {
+        loadDashboardData();
+      }
+    };
+    window.addEventListener("orgChanged", handleOrgChanged);
+    return () => window.removeEventListener("orgChanged", handleOrgChanged);
+  }, [hasMounted, isAuthenticated, currentOrg]);
+
   if (!hasMounted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0a09]">

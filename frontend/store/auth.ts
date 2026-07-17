@@ -12,7 +12,7 @@ interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
 
-  setAuth: (user: AuthUser, accessToken?: string | null, refreshToken?: string | null) => void;
+  setAuth: (user: AuthUser, accessToken?: string | null) => void;
   clearAuth: () => void;
 }
 
@@ -22,10 +22,9 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
 
-      setAuth: (user, accessToken, refreshToken) => {
-        const token = accessToken || "mock-access-token";
-        if (typeof window !== "undefined") {
-          document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+      setAuth: (user, accessToken) => {
+        if (typeof window !== "undefined" && accessToken) {
+          document.cookie = `access_token=${accessToken}; path=/; max-age=86400; SameSite=Lax`;
         }
         set({ user, isAuthenticated: true });
       },
@@ -43,6 +42,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      skipHydration: true,
     }
   )
 );

@@ -23,6 +23,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'forgeflow-theme',
+      skipHydration: true,
     }
   )
 );

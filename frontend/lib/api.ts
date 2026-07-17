@@ -1,3 +1,6 @@
+import { useOrgStore } from "@/store/organization";
+import { useAuthStore } from "@/store/auth";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class ApiError extends Error {
@@ -17,8 +20,15 @@ if (typeof window !== "undefined") {
 
 // ENFORCE DATA ISOLATION AND SETTINGS PERSISTENCE VIA GLOBAL FETCH INTERCEPTOR
 if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined" && !(window as any).__fetchPatched) {
-  (window as any).__fetchPatched = true;
-  const originalFetch = window.fetch;
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[ForgeFlow] CRITICAL: NEXT_PUBLIC_MOCK_MODE=true in production. " +
+      "Mock interceptor is disabled. All requests will use the real API."
+    );
+  } else {
+    (window as any).__fetchPatched = true;
+    const originalFetch = window.fetch;
+
   
   const getActiveOrgId = (): string => {
     try {
@@ -263,6 +273,9 @@ if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined
       const method = init?.method?.toUpperCase() || "GET";
       const mockResult = handleMockRequest(pathname, method, init?.body as string);
       if (mockResult !== null) {
+        // #region agent log
+        fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'api.ts:fetchInterceptor',message:'Fetch interceptor returned mock',data:{pathname,method},timestamp:Date.now(),hypothesisId:'A',runId:'pre-fix'})}).catch(()=>{});
+        // #endregion
         return new Response(JSON.stringify(mockResult), {
           status: 200,
           headers: { "Content-Type": "application/json" }
@@ -271,6 +284,7 @@ if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && typeof window !== "undefined
     }
     return originalFetch(input, init);
   };
+  }
 }
 
 interface FetchOptions extends RequestInit {
@@ -294,6 +308,9 @@ export async function apiFetch<T = unknown>(
   path: string,
   options: FetchOptions = {},
 ): Promise<T> {
+  // #region agent log
+  fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'api.ts:apiFetch:entry',message:'apiFetch called',data:{path,orgId:options.orgId,mockMode:process.env.NEXT_PUBLIC_MOCK_MODE,method:options.method||'GET'},timestamp:Date.now(),hypothesisId:'A',runId:'pre-fix'})}).catch(()=>{});
+  // #endregion
   const { orgId, timeout = 30000, headers: customHeaders, ...rest } = options; // Default 30s timeout
 
   const headers: Record<string, string> = {
@@ -301,8 +318,9 @@ export async function apiFetch<T = unknown>(
     ...(customHeaders as Record<string, string>),
   };
 
-  if (orgId) {
-    headers["X-Organization-ID"] = String(orgId);
+  const activeOrgId = orgId || useOrgStore.getState().currentOrg?.id;
+  if (activeOrgId) {
+    headers["X-Organization-ID"] = String(activeOrgId);
   }
 
   const method = rest.method || "GET";
@@ -330,6 +348,9 @@ export async function apiFetch<T = unknown>(
     });
   } catch (error: any) {
     if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
+      // #region agent log
+      fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'api.ts:apiFetch:network-fallback',message:'Network error mock fallback',data:{path,error:String(error?.message||error)},timestamp:Date.now(),hypothesisId:'A',runId:'pre-fix'})}).catch(()=>{});
+      // #endregion
       console.warn(`API call failed for ${path}, falling back to local mock data:`, error);
       return getMockDataForPath(path) as T;
     }
@@ -340,7 +361,18 @@ export async function apiFetch<T = unknown>(
 
   // If unauthorized or not found, fall back to mock data
   if (!response.ok) {
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        useAuthStore.getState().clearAuth();
+        window.location.href = "/login";
+      }
+      throw new ApiError(response.status, "Session expired. Redirecting to login...");
+    }
+
     if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") {
+      // #region agent log
+      fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'api.ts:apiFetch:http-fallback',message:'HTTP error mock fallback',data:{path,status:response.status},timestamp:Date.now(),hypothesisId:'A',runId:'pre-fix'})}).catch(()=>{});
+      // #endregion
       console.warn(`API responded with ${response.status} for ${path}, falling back to local mock data.`);
       return getMockDataForPath(path) as T;
     }

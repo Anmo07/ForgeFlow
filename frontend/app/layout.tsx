@@ -5,6 +5,7 @@ import "./globals.css";
 import "react-modal-video/css/modal-video.css";
 import ThemeInitializer from "@/components/theme-provider";
 import LayoutWrapper from "@/components/layout-wrapper";
+import { StoreHydration } from "@/components/store-hydration";
 import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
@@ -36,6 +37,7 @@ export default function RootLayout({
         <LiquidGlassFilter />
         <QueryClientProvider client={queryClient}>
           <ThemeProvider attribute="class" enableSystem={false} defaultTheme="dark">
+            <StoreHydration />
             <ThemeInitializer />
             <LayoutWrapper>{children}</LayoutWrapper>
           </ThemeProvider>
