@@ -3,18 +3,47 @@ import { execSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 
+function getEnvFromRoot() {
+  const envPath = path.resolve(__dirname, "../../.env");
+  const envVars: Record<string, string> = { ...process.env };
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, "utf8");
+    content.split("\n").forEach(line => {
+      const match = line.trim().match(/^([\w.\-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let value = match[2] || "";
+        if (value.length > 0 && value.startsWith('"') && value.endsWith('"')) {
+          value = value.substring(1, value.length - 1);
+        }
+        if (value.length > 0 && value.startsWith("'") && value.endsWith("'")) {
+          value = value.substring(1, value.length - 1);
+        }
+        envVars[key] = value;
+      }
+    });
+  }
+  return envVars;
+}
+
 // Helper to run backend seeding/teardown commands
 function runSeeding(orgName: string, email: string, pass: string) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  const result = execSync(`"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`, { encoding: "utf8" });
+  const result = execSync(
+    `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
+    { encoding: "utf8", env: getEnvFromRoot() }
+  );
   return JSON.parse(result);
 }
 
 function runTeardown(orgId: number, userId: number) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/teardown_test_org.py");
-  execSync(`"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`);
+  execSync(
+    `"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`,
+    { env: getEnvFromRoot() }
+  );
 }
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
