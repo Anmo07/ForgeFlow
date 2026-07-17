@@ -5,14 +5,16 @@ import * as fs from "fs";
 
 // Helper to run backend seeding/teardown commands
 function runSeeding(orgName: string, email: string, pass: string) {
+  const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  const result = execSync(`python3 ${scriptPath} "${orgName}" "${email}" "${pass}"`, { encoding: "utf8" });
+  const result = execSync(`"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`, { encoding: "utf8" });
   return JSON.parse(result);
 }
 
 function runTeardown(orgId: number, userId: number) {
+  const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/teardown_test_org.py");
-  execSync(`python3 ${scriptPath} ${orgId} ${userId}`);
+  execSync(`"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`);
 }
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
