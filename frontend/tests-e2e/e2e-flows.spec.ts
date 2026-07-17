@@ -170,7 +170,10 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     }
     
     // Fill Invoice form
-    await page.selectOption("select", { label: "E2E Invoice Client" });
+    const clientSelector = 'select option:has-text("E2E Invoice Client")';
+    await page.waitForSelector(clientSelector, { state: "attached" });
+    const clientOptionVal = await page.locator(clientSelector).getAttribute("value");
+    await page.selectOption("select", clientOptionVal || "");
     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
     // Set 3 line items
     await page.fill('input[placeholder="Item description"]', "Item 1");
@@ -240,7 +243,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
       await page.click("text=Add Task");
     }
     await page.fill('input[placeholder*="OIDC"]', "Task high priority");
-    await page.selectOption("select[name='priority']", "high");
+    await page.selectOption('div:has(h2:has-text("Add New Task")) form div:has-text("Priority") select', "high");
     await page.click("text=Create Task");
 
     // Drag-and-drop simulation & verify persisting
