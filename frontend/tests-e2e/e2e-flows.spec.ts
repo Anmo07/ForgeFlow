@@ -110,12 +110,6 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
 
-    console.log("DEBUG: After login submit - URL:", page.url());
-    const cookies = await page.context().cookies();
-    console.log("DEBUG: After login submit - Cookies:", JSON.stringify(cookies, null, 2));
-    const localStorageData = await page.evaluate(() => JSON.stringify(localStorage));
-    console.log("DEBUG: After login submit - LocalStorage:", localStorageData);
-
     // Confirm redirected to dashboard
     await expect(page).toHaveURL(/.*dashboard/);
 
@@ -146,7 +140,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     // Add Client first
     await page.goto("/crm");
     await page.click("text=New Client");
-    await page.fill('input[placeholder*="Client Name"]', "E2E Invoice Client");
+    await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
     await page.fill('input[type="email"]', "client@invoice.com");
     await page.click("text=Save");
 
@@ -199,6 +193,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
+    await expect(page).toHaveURL(/.*dashboard/);
 
     // Create project
     await page.goto("/projects");
@@ -230,6 +225,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
+    await expect(page).toHaveURL(/.*dashboard/);
 
     await page.goto("/crm");
     // Add lead
@@ -247,6 +243,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   test("Flow 5: Invite Members and Roles", async ({ page }) => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
+    await expect(page).toHaveURL(/.*dashboard/);
 
     await page.goto("/settings");
     await page.click("text=Members");
