@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 3: Kanban Projects and Tasks
-- Location: tests-e2e/e2e-flows.spec.ts:196:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 5: Invite Members and Roles
+- Location: tests-e2e/e2e-flows.spec.ts:248:7
 
 # Error details
 
@@ -16,73 +16,68 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+Error: page.click: Test timeout of 30000ms exceeded.
 Call log:
-  - navigating to "http://localhost:3000/login", waiting until "load"
+  - waiting for locator('text=Members')
 
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - link "ForgeFlow" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e9]: ForgeFlow
+      - generic [ref=e10]:
+        - img [ref=e12]
+        - generic [ref=e15]:
+          - heading "Welcome back" [level=1] [ref=e16]
+          - paragraph [ref=e17]: Log in to your ForgeFlow account
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]: Email Address
+        - generic [ref=e21]:
+          - img [ref=e22]
+          - textbox "Email Address" [ref=e25]:
+            - /placeholder: name@company.com
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: Password
+          - link "Forgot password?" [ref=e29] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e30]:
+          - img [ref=e31]
+          - textbox "Password" [ref=e34]:
+            - /placeholder: ••••••••
+          - button [ref=e35]:
+            - img [ref=e36]
+      - button "Sign In" [ref=e41]:
+        - img [ref=e42]
+        - text: Sign In
+    - generic [ref=e47]: Or continue with
+    - link "Sign In with Google" [ref=e49] [cursor=pointer]:
+      - /url: /api/auth/sso/google/init
+      - img [ref=e50]
+      - generic [ref=e55]: Sign In with Google
+    - paragraph [ref=e56]:
+      - text: Don't have an account?
+      - link "Sign Up" [ref=e57] [cursor=pointer]:
+        - /url: /register
+  - button "Open Next.js Dev Tools" [ref=e63] [cursor=pointer]:
+    - img [ref=e64]
+  - alert [ref=e67]
+  - generic [ref=e68]:
+    - img [ref=e70]
+    - button "Open Tanstack query devtools" [ref=e118] [cursor=pointer]:
+      - img [ref=e119]
 ```
 
 # Test source
 
 ```ts
-  97  |       input.type = "hidden";
-  98  |       input.name = "cf-turnstile-response";
-  99  |       input.value = "mocked-turnstile-response-token";
-  100 |       document.querySelector("form")?.appendChild(input);
-  101 |     });
-  102 | 
-  103 |     // We skip actual email verify/MFA TOTP code extraction in client E2E if mock authentication modes are toggled,
-  104 |     // but we simulate the authentication flow steps.
-  105 |     await page.goto("/login");
-  106 |     await page.fill('input[type="email"]', adminEmail);
-  107 |     await page.fill('input[type="password"]', adminPassword);
-  108 |     await page.click('button[type="submit"]');
-  109 | 
-  110 |     // Confirm redirected to dashboard
-  111 |     await expect(page).toHaveURL(/.*dashboard/);
-  112 | 
-  113 |     // Logout
-  114 |     await page.click('button[title="Sign Out"]');
-  115 |     await expect(page).toHaveURL(/.*login/);
-  116 | 
-  117 |     // Trigger Account Lockout (5 failed attempts)
-  118 |     for (let i = 0; i < 5; i++) {
-  119 |       await page.fill('input[type="email"]', adminEmail);
-  120 |       await page.fill('input[type="password"]', "wrong-password");
-  121 |       await page.click('button[type="submit"]');
-  122 |     }
-  123 | 
-  124 |     // Lockout UI/Notification validation
-  125 |     await page.fill('input[type="email"]', adminEmail);
-  126 |     await page.fill('input[type="password"]', adminPassword);
-  127 |     await page.click('button[type="submit"]');
-  128 |     await expect(page.locator("text=locked").or(page.locator("text=too many attempts")).or(page.locator("text=lockout"))).toBeVisible();
-  129 |   });
-  130 | 
-  131 |   // Flow 2: Invoice Creation and PDF Download
-  132 |   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
-  133 |     // Bypass lockout by logging in with seed details
-  134 |     await page.goto("/login");
-  135 |     await page.fill('input[type="email"]', adminEmail);
-  136 |     await page.fill('input[type="password"]', adminPassword);
-  137 |     await page.click('button[type="submit"]');
-  138 |     await expect(page).toHaveURL(/.*dashboard/);
-  139 | 
-  140 |     // Navigate to Invoices
-  141 |     await page.goto("/invoices");
-  142 | 
-  143 |     // Add Client first
-  144 |     await page.goto("/crm");
-  145 |     await page.click("text=New Client");
-  146 |     await page.fill('input[placeholder*="Client Name"]', "E2E Invoice Client");
-  147 |     await page.fill('input[type="email"]', "client@invoice.local");
-  148 |     await page.click("text=Save");
-  149 | 
-  150 |     // Create Invoice
-  151 |     await page.goto("/invoices");
-  152 |     await page.click("text=Create Invoice");
-  153 |     
-  154 |     // Fill Invoice form
   155 |     await page.selectOption("select", { label: "E2E Invoice Client" });
   156 |     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
   157 |     // Set 3 line items
@@ -125,8 +120,7 @@ Call log:
   194 | 
   195 |   // Flow 3: Kanban Task Lifecycle
   196 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
-> 197 |     await page.goto("/login");
-      |                ^ Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+  197 |     await page.goto("/login");
   198 |     await page.fill('input[type="email"]', adminEmail);
   199 |     await page.fill('input[type="password"]', adminPassword);
   200 |     await page.click('button[type="submit"]');
@@ -184,7 +178,8 @@ Call log:
   252 |     await page.click('button[type="submit"]');
   253 | 
   254 |     await page.goto("/settings");
-  255 |     await page.click("text=Members");
+> 255 |     await page.click("text=Members");
+      |                ^ Error: page.click: Test timeout of 30000ms exceeded.
   256 |     await page.click("text=Invite Member");
   257 |     await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.local");
   258 |     await page.click("text=Send Invitation");
