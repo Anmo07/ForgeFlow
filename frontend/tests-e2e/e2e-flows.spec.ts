@@ -92,7 +92,10 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     }
   });
 
-  test.afterEach(() => {
+  test.afterEach(async ({ page }) => {
+    try {
+      await page.evaluate(() => localStorage.clear());
+    } catch (e) {}
     if (seededData && seededData.org_id && seededData.user_id) {
       try {
         runTeardown(seededData.org_id, seededData.user_id);
