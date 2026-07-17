@@ -142,7 +142,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.click("text=New Client");
     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
     await page.fill('input[type="email"]', "client@invoice.com");
-    await page.click("text=Save");
+    await page.click("text=Add Client");
 
     // Create Invoice
     await page.goto("/invoices");
@@ -168,7 +168,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     await page.fill('input[placeholder="Tax rate"]', "10");
     await page.fill('textarea[placeholder="Notes"]', "E2E Test Invoice Notes");
-    await page.click('button:has-text("Create")');
+    await page.click('button:has-text("Create & Render")');
 
     // Verify it appears in table
     const totalCell = page.locator("text=$275.00");
@@ -197,10 +197,10 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     // Create project
     await page.goto("/projects");
-    await page.click("text=Create Project");
+    await page.click("text=New Project");
     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
-    await page.click("text=Create");
+    await page.click("text=Create Project");
 
     // Add tasks
     await page.click("text=E2E Projects Space");
@@ -209,7 +209,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.click("text=Add Task");
     await page.fill('input[placeholder="Task Title"]', "Task high priority");
     await page.selectOption("select[name='priority']", "high");
-    await page.click("text=Create");
+    await page.click("text=Create Task");
 
     // Drag-and-drop simulation & verify persisting
     // (Playwright dragTo handles drag simulation)
@@ -228,11 +228,17 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await expect(page).toHaveURL(/.*dashboard/);
 
     await page.goto("/crm");
+    // Add Client first (required for Lead)
+    await page.click("text=New Client");
+    await page.fill('input[placeholder*="John Doe"]', "E2E Lead Client");
+    await page.fill('input[type="email"]', "lead_client@invoice.com");
+    await page.click("text=Add Client");
+
     // Add lead
     await page.click("text=New Lead");
-    await page.fill('input[placeholder="Lead Title"]', "Enterprise Deal Lead");
-    await page.fill('input[placeholder="Value"]', "25000");
-    await page.click("text=Save");
+    await page.selectOption('select[required]', { label: "E2E Lead Client" });
+    await page.fill('input[placeholder*="5000"]', "25000");
+    await page.click("text=Add Lead");
 
     // Check pipeline dashboard update
     await page.goto("/dashboard");
@@ -245,10 +251,8 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
 
-    await page.goto("/settings");
-    await page.click("text=Members");
-    await page.click("text=Invite Member");
-    await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.com");
+    await page.goto("/settings/members");
+    await page.fill('input[placeholder="user@example.com"]', "invitee_user@forgeflow.com");
     await page.click("text=Send Invitation");
 
     // Assert listed in pending

@@ -6,84 +6,86 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 4: CRM Leads & Deals pipeline
-- Location: tests-e2e/e2e-flows.spec.ts:225:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 5: Invite Members and Roles
+- Location: tests-e2e/e2e-flows.spec.ts:249:7
 
 # Error details
 
 ```
-Error: expect(page).toHaveURL(expected) failed
+Error: expect(locator).toBeVisible() failed
 
-Expected pattern: /.*dashboard/
-Received string:  "http://localhost:3000/login?"
+Locator: locator('text=invitee_user@forgeflow.com')
+Expected: visible
 Timeout: 5000ms
+Error: element(s) not found
 
 Call log:
-  - Expect "toHaveURL" with timeout 5000ms
-    9 × unexpected value "http://localhost:3000/login?"
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('text=invitee_user@forgeflow.com')
 
 ```
 
 ```yaml
-- link "ForgeFlow":
-  - /url: /
-- heading "Welcome back" [level=1]
-- paragraph: Log in to your ForgeFlow account
-- text: Email Address
-- textbox "Email Address":
-  - /placeholder: name@company.com
-- text: Password
-- link "Forgot password?":
-  - /url: "#"
-- textbox "Password":
-  - /placeholder: ••••••••
-- button
-- button "Sign In"
-- text: Or continue with
-- link "Sign In with Google":
-  - /url: /api/auth/sso/google/init
+- banner:
+  - text: Settings / Members
+  - button "Search... ⌘K"
+  - button "Toggle theme"
+  - button "Notifications"
+  - text: T
+- complementary:
+  - link "ForgeFlow":
+    - /url: /dashboard
+  - button "E2E Test Org 4660" [expanded]
+  - navigation:
+    - link "Dashboard":
+      - /url: /dashboard
+    - link "Projects":
+      - /url: /projects
+    - link "CRM":
+      - /url: /crm
+    - link "Invoices":
+      - /url: /invoices
+    - link "Org Settings":
+      - /url: /settings/members
+  - text: T Test Admin e2e_admin_65390@forgeflow.com
+  - button "Sign Out"
+- main:
+  - text: Organization Settings
+  - navigation:
+    - link "Members":
+      - /url: /settings/members
+    - link "Roles & Perms":
+      - /url: /settings/roles
+    - link "API Keys":
+      - /url: /settings/api-keys
+    - link "Sessions":
+      - /url: /settings/sessions
+    - link "Audit Logs":
+      - /url: /settings/logs
+    - link "SSO Config":
+      - /url: /settings/sso
+  - heading "Members & Invitations" [level=2]
+  - paragraph: Manage user invitations, access levels, and active memberships for E2E Test Org 4660.
+  - text: Email Address
+  - textbox "user@example.com": invitee_user@forgeflow.com
+  - text: Role Type
+  - combobox:
+    - option "Admin"
+    - option "Manager"
+    - option "Member" [selected]
+    - option "Client"
+    - option "Viewer"
+  - button "Send Invitation"
+  - text: Network error occurred.
+  - paragraph: No members found. Send an invitation above to start building your team.
+- alert
+- button "Open Tanstack query devtools":
   - img
-  - text: Sign In with Google
-- paragraph:
-  - text: Don't have an account?
-  - link "Sign Up":
-    - /url: /register
 ```
 
 # Test source
 
 ```ts
-  128 |   });
-  129 | 
-  130 |   // Flow 2: Invoice Creation and PDF Download
-  131 |   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
-  132 |     // Bypass lockout by logging in with seed details
-  133 |     await page.goto("/login");
-  134 |     await submitLoginForm(page, adminEmail, adminPassword);
-  135 |     await expect(page).toHaveURL(/.*dashboard/);
-  136 | 
-  137 |     // Navigate to Invoices
-  138 |     await page.goto("/invoices");
-  139 | 
-  140 |     // Add Client first
-  141 |     await page.goto("/crm");
-  142 |     await page.click("text=New Client");
-  143 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
-  144 |     await page.fill('input[type="email"]', "client@invoice.com");
-  145 |     await page.click("text=Add Client");
-  146 | 
-  147 |     // Create Invoice
-  148 |     await page.goto("/invoices");
-  149 |     await page.click("text=Create Invoice");
-  150 |     
-  151 |     // Fill Invoice form
-  152 |     await page.selectOption("select", { label: "E2E Invoice Client" });
-  153 |     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
-  154 |     // Set 3 line items
-  155 |     await page.fill('input[placeholder="Item description"]', "Item 1");
-  156 |     await page.fill('input[placeholder="Qty"]', "2");
-  157 |     await page.fill('input[placeholder="Price"]', "50");
-  158 | 
   159 |     await page.click("text=Add Line Item");
   160 |     await page.fill('input[placeholder="Item description"] >> nth=1', "Item 2");
   161 |     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
@@ -153,8 +155,7 @@ Call log:
   225 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
   226 |     await page.goto("/login");
   227 |     await submitLoginForm(page, adminEmail, adminPassword);
-> 228 |     await expect(page).toHaveURL(/.*dashboard/);
-      |                        ^ Error: expect(page).toHaveURL(expected) failed
+  228 |     await expect(page).toHaveURL(/.*dashboard/);
   229 | 
   230 |     await page.goto("/crm");
   231 |     // Add Client first (required for Lead)
@@ -185,7 +186,8 @@ Call log:
   256 |     await page.click("text=Send Invitation");
   257 | 
   258 |     // Assert listed in pending
-  259 |     await expect(page.locator("text=invitee_user@forgeflow.com")).toBeVisible();
+> 259 |     await expect(page.locator("text=invitee_user@forgeflow.com")).toBeVisible();
+      |                                                                   ^ Error: expect(locator).toBeVisible() failed
   260 |   });
   261 | });
   262 | 

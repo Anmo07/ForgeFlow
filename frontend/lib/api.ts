@@ -312,11 +312,18 @@ export async function apiFetch<T = unknown>(
   fetch('http://127.0.0.1:7846/ingest/267f0349-e68d-4b55-853c-b4f3450e0194',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ea4260'},body:JSON.stringify({sessionId:'ea4260',location:'api.ts:apiFetch:entry',message:'apiFetch called',data:{path,orgId:options.orgId,mockMode:process.env.NEXT_PUBLIC_MOCK_MODE,method:options.method||'GET'},timestamp:Date.now(),hypothesisId:'A',runId:'pre-fix'})}).catch(()=>{});
   // #endregion
   const { orgId, timeout = 30000, headers: customHeaders, ...rest } = options; // Default 30s timeout
+  // Dynamically import/import useAuthStore
+  const useAuthStoreModule = require("@/store/auth");
+  const token = useAuthStoreModule.useAuthStore.getState().accessToken || (typeof window !== "undefined" ? localStorage.getItem("access_token") : null);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(customHeaders as Record<string, string>),
   };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const activeOrgId = orgId || useOrgStore.getState().currentOrg?.id;
   if (activeOrgId) {
