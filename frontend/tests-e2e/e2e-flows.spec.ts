@@ -142,6 +142,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
 
     // Navigate to Invoices
     await page.goto("/invoices");
@@ -214,6 +215,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
 
     // Create project
     await page.goto("/projects");
@@ -223,8 +225,8 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     } catch (e) {
       await page.click("text=New Project");
     }
-    await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
-    await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
+    await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
+    await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
     await page.click("text=Create Project");
 
     // Add tasks
@@ -237,7 +239,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     } catch (e) {
       await page.click("text=Add Task");
     }
-    await page.fill('input[placeholder="Task Title"]', "Task high priority");
+    await page.fill('input[placeholder*="OIDC"]', "Task high priority");
     await page.selectOption("select[name='priority']", "high");
     await page.click("text=Create Task");
 
@@ -256,6 +258,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
 
     await page.goto("/crm");
     // Add Client first (required for Lead)
@@ -291,6 +294,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.goto("/login");
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
+    await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
 
     await page.goto("/settings/members");
     await page.fill('input[placeholder="user@example.com"]', "invitee_user@forgeflow.com");

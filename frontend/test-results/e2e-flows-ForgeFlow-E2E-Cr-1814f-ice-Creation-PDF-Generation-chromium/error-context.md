@@ -34,7 +34,6 @@ Call log:
 # Test source
 
 ```ts
-  60  | }
   61  | 
   62  | async function submitLoginForm(page: any, email: string, pass: string) {
   63  |   await page.waitForSelector("form");
@@ -119,121 +118,122 @@ Call log:
   142 |     await page.goto("/login");
   143 |     await submitLoginForm(page, adminEmail, adminPassword);
   144 |     await expect(page).toHaveURL(/.*dashboard/);
-  145 | 
-  146 |     // Navigate to Invoices
-  147 |     await page.goto("/invoices");
-  148 | 
-  149 |     // Add Client first
-  150 |     await page.goto("/crm");
-  151 |     await page.click("text=New Client");
-  152 |     try {
-  153 |       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
-  154 |     } catch (e) {
-  155 |       await page.click("text=New Client");
-  156 |     }
-  157 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
-  158 |     await page.fill('input[type="email"]', "client@invoice.com");
-  159 |     await page.click("text=Add Client");
-> 160 |     await expect(page.locator('text=Add New Client')).toBeHidden();
+  145 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
+  146 | 
+  147 |     // Navigate to Invoices
+  148 |     await page.goto("/invoices");
+  149 | 
+  150 |     // Add Client first
+  151 |     await page.goto("/crm");
+  152 |     await page.click("text=New Client");
+  153 |     try {
+  154 |       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
+  155 |     } catch (e) {
+  156 |       await page.click("text=New Client");
+  157 |     }
+  158 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
+  159 |     await page.fill('input[type="email"]', "client@invoice.com");
+  160 |     await page.click("text=Add Client");
+> 161 |     await expect(page.locator('text=Add New Client')).toBeHidden();
       |                                                       ^ Error: expect(locator).toBeHidden() failed
-  161 | 
-  162 |     // Create Invoice
-  163 |     await page.goto("/invoices");
-  164 |     await page.click("text=Create Invoice");
-  165 |     try {
-  166 |       await page.waitForSelector('text=Create & Render', { timeout: 2000 });
-  167 |     } catch (e) {
-  168 |       await page.click("text=Create Invoice");
-  169 |     }
-  170 |     
-  171 |     // Fill Invoice form
-  172 |     await page.selectOption("select", { label: "E2E Invoice Client" });
-  173 |     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
-  174 |     // Set 3 line items
-  175 |     await page.fill('input[placeholder="Item description"]', "Item 1");
-  176 |     await page.fill('input[placeholder="Qty"]', "2");
-  177 |     await page.fill('input[placeholder="Price"]', "50");
-  178 | 
-  179 |     await page.click("text=Add Line Item");
-  180 |     await page.fill('input[placeholder="Item description"] >> nth=1', "Item 2");
-  181 |     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
-  182 |     await page.fill('input[placeholder="Price"] >> nth=1', "100");
-  183 | 
-  184 |     await page.click("text=Add Line Item");
-  185 |     await page.fill('input[placeholder="Item description"] >> nth=2', "Item 3");
-  186 |     await page.fill('input[placeholder="Qty"] >> nth=2', "5");
-  187 |     await page.fill('input[placeholder="Price"] >> nth=2', "10");
-  188 | 
-  189 |     await page.fill('input[placeholder="Tax rate"]', "10");
-  190 |     await page.fill('textarea[placeholder="Notes"]', "E2E Test Invoice Notes");
-  191 |     await page.click('button:has-text("Create & Render")');
-  192 | 
-  193 |     // Verify it appears in table
-  194 |     const totalCell = page.locator("text=$275.00");
-  195 |     await expect(totalCell).toBeVisible();
-  196 | 
-  197 |     // Download PDF (intercept browser download event)
-  198 |     const [download] = await Promise.all([
-  199 |       page.waitForEvent("download"),
-  200 |       page.click('button[title="Download PDF"] >> nth=0')
-  201 |     ]);
-  202 | 
-  203 |     expect(download.suggestedFilename()).toContain(".pdf");
-  204 |     const downloadPath = await download.path();
-  205 |     const fileBytes = fs.readFileSync(downloadPath!);
-  206 |     
-  207 |     // Verify magic bytes %PDF
-  208 |     const pdfMagicBytes = fileBytes.toString("utf8", 0, 4);
-  209 |     expect(pdfMagicBytes).toBe("%PDF");
-  210 |   });
-  211 | 
-  212 |   // Flow 3: Kanban Task Lifecycle
-  213 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
-  214 |     await page.goto("/login");
-  215 |     await submitLoginForm(page, adminEmail, adminPassword);
-  216 |     await expect(page).toHaveURL(/.*dashboard/);
-  217 | 
-  218 |     // Create project
-  219 |     await page.goto("/projects");
-  220 |     await page.click("text=New Project");
-  221 |     try {
-  222 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
-  223 |     } catch (e) {
-  224 |       await page.click("text=New Project");
-  225 |     }
-  226 |     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
-  227 |     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
-  228 |     await page.click("text=Create Project");
-  229 | 
-  230 |     // Add tasks
-  231 |     await page.click("text=E2E Projects Space");
-  232 |     
-  233 |     // Add Task 1
-  234 |     await page.click("text=Add Task");
-  235 |     try {
-  236 |       await page.waitForSelector('text=Create Task', { timeout: 2000 });
-  237 |     } catch (e) {
-  238 |       await page.click("text=Add Task");
-  239 |     }
-  240 |     await page.fill('input[placeholder="Task Title"]', "Task high priority");
-  241 |     await page.selectOption("select[name='priority']", "high");
-  242 |     await page.click("text=Create Task");
-  243 | 
-  244 |     // Drag-and-drop simulation & verify persisting
-  245 |     // (Playwright dragTo handles drag simulation)
-  246 |     const taskCard = page.locator("text=Task high priority");
-  247 |     const inProgressColumn = page.locator("text=In Progress");
-  248 |     await taskCard.dragTo(inProgressColumn);
-  249 | 
-  250 |     await page.reload();
-  251 |     await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
-  252 |   });
-  253 | 
-  254 |   // Flow 4: CRM Deal Pipeline
-  255 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
-  256 |     await page.goto("/login");
-  257 |     await submitLoginForm(page, adminEmail, adminPassword);
-  258 |     await expect(page).toHaveURL(/.*dashboard/);
-  259 | 
-  260 |     await page.goto("/crm");
+  162 | 
+  163 |     // Create Invoice
+  164 |     await page.goto("/invoices");
+  165 |     await page.click("text=Create Invoice");
+  166 |     try {
+  167 |       await page.waitForSelector('text=Create & Render', { timeout: 2000 });
+  168 |     } catch (e) {
+  169 |       await page.click("text=Create Invoice");
+  170 |     }
+  171 |     
+  172 |     // Fill Invoice form
+  173 |     await page.selectOption("select", { label: "E2E Invoice Client" });
+  174 |     await page.fill('input[type="date"]', new Date().toISOString().split("T")[0]);
+  175 |     // Set 3 line items
+  176 |     await page.fill('input[placeholder="Item description"]', "Item 1");
+  177 |     await page.fill('input[placeholder="Qty"]', "2");
+  178 |     await page.fill('input[placeholder="Price"]', "50");
+  179 | 
+  180 |     await page.click("text=Add Line Item");
+  181 |     await page.fill('input[placeholder="Item description"] >> nth=1', "Item 2");
+  182 |     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
+  183 |     await page.fill('input[placeholder="Price"] >> nth=1', "100");
+  184 | 
+  185 |     await page.click("text=Add Line Item");
+  186 |     await page.fill('input[placeholder="Item description"] >> nth=2', "Item 3");
+  187 |     await page.fill('input[placeholder="Qty"] >> nth=2', "5");
+  188 |     await page.fill('input[placeholder="Price"] >> nth=2', "10");
+  189 | 
+  190 |     await page.fill('input[placeholder="Tax rate"]', "10");
+  191 |     await page.fill('textarea[placeholder="Notes"]', "E2E Test Invoice Notes");
+  192 |     await page.click('button:has-text("Create & Render")');
+  193 | 
+  194 |     // Verify it appears in table
+  195 |     const totalCell = page.locator("text=$275.00");
+  196 |     await expect(totalCell).toBeVisible();
+  197 | 
+  198 |     // Download PDF (intercept browser download event)
+  199 |     const [download] = await Promise.all([
+  200 |       page.waitForEvent("download"),
+  201 |       page.click('button[title="Download PDF"] >> nth=0')
+  202 |     ]);
+  203 | 
+  204 |     expect(download.suggestedFilename()).toContain(".pdf");
+  205 |     const downloadPath = await download.path();
+  206 |     const fileBytes = fs.readFileSync(downloadPath!);
+  207 |     
+  208 |     // Verify magic bytes %PDF
+  209 |     const pdfMagicBytes = fileBytes.toString("utf8", 0, 4);
+  210 |     expect(pdfMagicBytes).toBe("%PDF");
+  211 |   });
+  212 | 
+  213 |   // Flow 3: Kanban Task Lifecycle
+  214 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
+  215 |     await page.goto("/login");
+  216 |     await submitLoginForm(page, adminEmail, adminPassword);
+  217 |     await expect(page).toHaveURL(/.*dashboard/);
+  218 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
+  219 | 
+  220 |     // Create project
+  221 |     await page.goto("/projects");
+  222 |     await page.click("text=New Project");
+  223 |     try {
+  224 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
+  225 |     } catch (e) {
+  226 |       await page.click("text=New Project");
+  227 |     }
+  228 |     await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
+  229 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
+  230 |     await page.click("text=Create Project");
+  231 | 
+  232 |     // Add tasks
+  233 |     await page.click("text=E2E Projects Space");
+  234 |     
+  235 |     // Add Task 1
+  236 |     await page.click("text=Add Task");
+  237 |     try {
+  238 |       await page.waitForSelector('text=Create Task', { timeout: 2000 });
+  239 |     } catch (e) {
+  240 |       await page.click("text=Add Task");
+  241 |     }
+  242 |     await page.fill('input[placeholder*="OIDC"]', "Task high priority");
+  243 |     await page.selectOption("select[name='priority']", "high");
+  244 |     await page.click("text=Create Task");
+  245 | 
+  246 |     // Drag-and-drop simulation & verify persisting
+  247 |     // (Playwright dragTo handles drag simulation)
+  248 |     const taskCard = page.locator("text=Task high priority");
+  249 |     const inProgressColumn = page.locator("text=In Progress");
+  250 |     await taskCard.dragTo(inProgressColumn);
+  251 | 
+  252 |     await page.reload();
+  253 |     await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
+  254 |   });
+  255 | 
+  256 |   // Flow 4: CRM Deal Pipeline
+  257 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
+  258 |     await page.goto("/login");
+  259 |     await submitLoginForm(page, adminEmail, adminPassword);
+  260 |     await expect(page).toHaveURL(/.*dashboard/);
+  261 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
 ```
