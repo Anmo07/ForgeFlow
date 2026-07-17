@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 4: CRM Leads & Deals pipeline
-- Location: tests-e2e/e2e-flows.spec.ts:253:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 3: Kanban Projects and Tasks
+- Location: tests-e2e/e2e-flows.spec.ts:211:7
 
 # Error details
 
@@ -16,15 +16,91 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
-Call log:
-  - navigating to "http://localhost:3000/login", waiting until "load"
+Error: expect(page).toHaveURL(expected) failed
 
+Expected pattern: /.*dashboard/
+Received string:  "http://localhost:3000/login"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toHaveURL" with timeout 5000ms
+    3 × unexpected value "http://localhost:3000/login?"
+    4 × unexpected value "http://localhost:3000/login"
+
+```
+
+```yaml
+- link "ForgeFlow":
+  - /url: /
+- heading "Welcome back" [level=1]
+- paragraph: Log in to your ForgeFlow account
+- text: Email Address
+- textbox "Email Address":
+  - /placeholder: name@company.com
+- text: Password
+- link "Forgot password?":
+  - /url: "#"
+- textbox "Password":
+  - /placeholder: ••••••••
+- button
+- button "Sign In"
+- text: Or continue with
+- link "Sign In with Google":
+  - /url: /api/auth/sso/google/init
+  - img
+  - text: Sign In with Google
+- paragraph:
+  - text: Don't have an account?
+  - link "Sign Up":
+    - /url: /register
+- alert
+- button "Open Tanstack query devtools":
+  - img
 ```
 
 # Test source
 
 ```ts
+  114 | 
+  115 |     // We skip actual email verify/MFA TOTP code extraction in client E2E if mock authentication modes are toggled,
+  116 |     // but we simulate the authentication flow steps.
+  117 |     await page.goto("/login");
+  118 |     await submitLoginForm(page, adminEmail, adminPassword);
+  119 | 
+  120 |     // Confirm redirected to dashboard
+  121 |     await expect(page).toHaveURL(/.*dashboard/);
+  122 | 
+  123 |     // Logout
+  124 |     await page.click('button[title="Sign Out"]', { force: true });
+  125 |     await expect(page).toHaveURL(/.*(login|\/)$/);
+  126 | 
+  127 |     // Trigger Account Lockout (5 failed attempts)
+  128 |     for (let i = 0; i < 5; i++) {
+  129 |       await submitLoginForm(page, adminEmail, "wrong-password");
+  130 |     }
+  131 | 
+  132 |     // Lockout UI/Notification validation
+  133 |     await submitLoginForm(page, adminEmail, adminPassword);
+  134 |     await expect(page.locator("text=locked").or(page.locator("text=too many attempts")).or(page.locator("text=lockout"))).toBeVisible();
+  135 |   });
+  136 | 
+  137 |   // Flow 2: Invoice Creation and PDF Download
+  138 |   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
+  139 |     // Bypass lockout by logging in with seed details
+  140 |     await page.goto("/login");
+  141 |     await submitLoginForm(page, adminEmail, adminPassword);
+  142 |     await expect(page).toHaveURL(/.*dashboard/);
+  143 | 
+  144 |     // Navigate to Invoices
+  145 |     await page.goto("/invoices");
+  146 | 
+  147 |     // Add Client first
+  148 |     await page.goto("/crm");
+  149 |     await page.click("text=New Client");
+  150 |     try {
+  151 |       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
+  152 |     } catch (e) {
+  153 |       await page.click("text=New Client");
   154 |     }
   155 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
   156 |     await page.fill('input[type="email"]', "client@invoice.com");
@@ -85,7 +161,8 @@ Call log:
   211 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
   212 |     await page.goto("/login");
   213 |     await submitLoginForm(page, adminEmail, adminPassword);
-  214 |     await expect(page).toHaveURL(/.*dashboard/);
+> 214 |     await expect(page).toHaveURL(/.*dashboard/);
+      |                        ^ Error: expect(page).toHaveURL(expected) failed
   215 | 
   216 |     // Create project
   217 |     await page.goto("/projects");
@@ -125,8 +202,7 @@ Call log:
   251 | 
   252 |   // Flow 4: CRM Deal Pipeline
   253 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
-> 254 |     await page.goto("/login");
-      |                ^ Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+  254 |     await page.goto("/login");
   255 |     await submitLoginForm(page, adminEmail, adminPassword);
   256 |     await expect(page).toHaveURL(/.*dashboard/);
   257 | 

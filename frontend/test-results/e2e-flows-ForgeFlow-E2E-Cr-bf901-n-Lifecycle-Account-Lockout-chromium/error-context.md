@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 2: Invoice Creation & PDF Generation
-- Location: tests-e2e/e2e-flows.spec.ts:138:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 1: Authentication Lifecycle & Account Lockout
+- Location: tests-e2e/e2e-flows.spec.ts:103:7
 
 # Error details
 
@@ -16,15 +16,70 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
-Call log:
-  - navigating to "http://localhost:3000/login", waiting until "load"
+Error: expect(page).toHaveURL(expected) failed
 
+Expected pattern: /.*dashboard/
+Received string:  "http://localhost:3000/login"
+
+Call log:
+  - Expect "toHaveURL" with timeout 5000ms
+    12 × unexpected value "http://localhost:3000/login"
+
+```
+
+```yaml
+- link "ForgeFlow":
+  - /url: /
+- heading "Welcome back" [level=1]
+- paragraph: Log in to your ForgeFlow account
+- text: Incorrect email or password Email Address
+- textbox "Email Address":
+  - /placeholder: name@company.com
+  - text: e2e_admin_46972@forgeflow.com
+- text: Password
+- link "Forgot password?":
+  - /url: "#"
+- textbox "Password":
+  - /placeholder: ••••••••
+  - text: SuperPassword123!
+- button
+- button "Sign In"
+- text: Or continue with
+- link "Sign In with Google":
+  - /url: /api/auth/sso/google/init
+  - img
+  - text: Sign In with Google
+- paragraph:
+  - text: Don't have an account?
+  - link "Sign Up":
+    - /url: /register
+- alert
+- button "Open Tanstack query devtools":
+  - img
 ```
 
 # Test source
 
 ```ts
+  21  |         }
+  22  |         envVars[key] = value;
+  23  |       }
+  24  |     });
+  25  |   }
+  26  |   return envVars;
+  27  | }
+  28  | 
+  29  | // Helper to run backend seeding/teardown commands
+  30  | function runSeeding(orgName: string, email: string, pass: string) {
+  31  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
+  32  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
+  33  |   const backendPath = path.resolve(__dirname, "../../backend");
+  34  |   const result = execSync(
+  35  |     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
+  36  |     { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
+  37  |   );
+  38  |   const lines = result.split("\n");
+  39  |   for (const line of lines) {
   40  |     const trimmed = line.trim();
   41  |     if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
   42  |       try {
@@ -106,7 +161,8 @@ Call log:
   118 |     await submitLoginForm(page, adminEmail, adminPassword);
   119 | 
   120 |     // Confirm redirected to dashboard
-  121 |     await expect(page).toHaveURL(/.*dashboard/);
+> 121 |     await expect(page).toHaveURL(/.*dashboard/);
+      |                        ^ Error: expect(page).toHaveURL(expected) failed
   122 | 
   123 |     // Logout
   124 |     await page.click('button[title="Sign Out"]', { force: true });
@@ -125,8 +181,7 @@ Call log:
   137 |   // Flow 2: Invoice Creation and PDF Download
   138 |   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
   139 |     // Bypass lockout by logging in with seed details
-> 140 |     await page.goto("/login");
-      |                ^ Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+  140 |     await page.goto("/login");
   141 |     await submitLoginForm(page, adminEmail, adminPassword);
   142 |     await expect(page).toHaveURL(/.*dashboard/);
   143 | 
@@ -208,23 +263,4 @@ Call log:
   219 |     try {
   220 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
   221 |     } catch (e) {
-  222 |       await page.click("text=New Project");
-  223 |     }
-  224 |     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
-  225 |     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
-  226 |     await page.click("text=Create Project");
-  227 | 
-  228 |     // Add tasks
-  229 |     await page.click("text=E2E Projects Space");
-  230 |     
-  231 |     // Add Task 1
-  232 |     await page.click("text=Add Task");
-  233 |     try {
-  234 |       await page.waitForSelector('text=Create Task', { timeout: 2000 });
-  235 |     } catch (e) {
-  236 |       await page.click("text=Add Task");
-  237 |     }
-  238 |     await page.fill('input[placeholder="Task Title"]', "Task high priority");
-  239 |     await page.selectOption("select[name='priority']", "high");
-  240 |     await page.click("text=Create Task");
 ```
