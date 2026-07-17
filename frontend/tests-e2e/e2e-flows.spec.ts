@@ -30,10 +30,10 @@ function getEnvFromRoot() {
 function runSeeding(orgName: string, email: string, pass: string) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  const rootPath = path.resolve(__dirname, "../..");
+  const backendPath = path.resolve(__dirname, "../../backend");
   const result = execSync(
     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-    { encoding: "utf8", env: getEnvFromRoot(), cwd: rootPath }
+    { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
   );
   const lines = result.split("\n");
   for (const line of lines) {
@@ -52,10 +52,10 @@ function runSeeding(orgName: string, email: string, pass: string) {
 function runTeardown(orgId: number, userId: number) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/teardown_test_org.py");
-  const rootPath = path.resolve(__dirname, "../..");
+  const backendPath = path.resolve(__dirname, "../../backend");
   execSync(
     `"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`,
-    { env: getEnvFromRoot(), cwd: rootPath }
+    { env: getEnvFromRoot(), cwd: backendPath }
   );
 }
 
