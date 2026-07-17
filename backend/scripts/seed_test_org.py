@@ -53,6 +53,23 @@ def seed_test_org(org_name, admin_email, admin_password):
             db.add(role)
             db.flush()
             
+        # Ensure permissions are seeded and linked to the role
+        admin_perm_names = [
+            "project:create", "project:update", "project:view", 
+            "client:create", "client:update", "invoice:create", "invoice:view", 
+            "user:invite", "settings:update", "analytics:view"
+        ]
+        existing_perm_names = {p.name for p in role.permissions}
+        for p_name in admin_perm_names:
+            if p_name not in existing_perm_names:
+                p = db.query(Permission).filter(Permission.name == p_name).first()
+                if not p:
+                    p = Permission(name=p_name, description=f"Allows {p_name.replace(':', ' ')}")
+                    db.add(p)
+                    db.flush()
+                role.permissions.append(p)
+        db.flush()
+            
         # Create Membership
         mem = Membership(
             user_id=user.id,
