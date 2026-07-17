@@ -13,6 +13,7 @@ from app.common.database import SessionLocal
 from app.organizations.models import Organization
 from app.auth.models import User
 from app.memberships.models import Membership
+from app.permissions.models import Permission
 from app.roles.models import Role
 from app.common.security import get_password_hash
 

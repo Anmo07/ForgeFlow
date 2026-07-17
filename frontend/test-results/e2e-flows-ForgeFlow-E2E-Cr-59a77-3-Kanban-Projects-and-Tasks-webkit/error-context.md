@@ -6,15 +6,15 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 2: Invoice Creation & PDF Generation
-- Location: tests-e2e/e2e-flows.spec.ts:130:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 3: Kanban Projects and Tasks
+- Location: tests-e2e/e2e-flows.spec.ts:194:7
 
 # Error details
 
 ```
 Error: Seeding failed: (sqlite3.OperationalError) no such table: organizations
 [SQL: INSERT INTO organizations (uuid, name, slug, logo_url, industry, company_size, website, description, is_active, sso_enabled, sso_provider, sso_client_id, sso_client_secret, sso_issuer_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at, updated_at]
-[parameters: ('a21391e6-595e-4645-bcd9-aabf2e5b90a9', 'E2E Test Org 1452', 'e2e-test-org-1452', None, None, None, None, None, 1, 0, None, None, None, None)]
+[parameters: ('eebe54f2-fb05-4d70-afa1-a25f658fec93', 'E2E Test Org 1442', 'e2e-test-org-1442', None, None, None, None, None, 1, 0, None, None, None, None)]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 ```
 

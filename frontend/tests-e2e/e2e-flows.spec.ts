@@ -30,19 +30,32 @@ function getEnvFromRoot() {
 function runSeeding(orgName: string, email: string, pass: string) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
+  const rootPath = path.resolve(__dirname, "../..");
   const result = execSync(
     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-    { encoding: "utf8", env: getEnvFromRoot() }
+    { encoding: "utf8", env: getEnvFromRoot(), cwd: rootPath }
   );
-  return JSON.parse(result);
+  const lines = result.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        return JSON.parse(trimmed);
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+  }
+  throw new Error(`Failed to find JSON output in seeding result: ${result}`);
 }
 
 function runTeardown(orgId: number, userId: number) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/teardown_test_org.py");
+  const rootPath = path.resolve(__dirname, "../..");
   execSync(
     `"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`,
-    { env: getEnvFromRoot() }
+    { env: getEnvFromRoot(), cwd: rootPath }
   );
 }
 
