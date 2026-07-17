@@ -12,10 +12,6 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
-```
-
-```
 Error: expect(page).toHaveURL(expected) failed
 
 Expected pattern: /.*dashboard/
@@ -24,8 +20,9 @@ Timeout: 5000ms
 
 Call log:
   - Expect "toHaveURL" with timeout 5000ms
-    5 × unexpected value "http://localhost:3000/login?"
-    5 × unexpected value "http://localhost:3000/login"
+    4 × unexpected value "http://localhost:3000/login"
+    - waiting for" http://localhost:3000/dashboard" navigation to finish...
+    - navigated to "http://localhost:3000/dashboard"
 
 ```
 
@@ -37,13 +34,15 @@ Call log:
 - text: Email Address
 - textbox "Email Address":
   - /placeholder: name@company.com
+  - text: e2e_admin_11853@forgeflow.com
 - text: Password
 - link "Forgot password?":
   - /url: "#"
 - textbox "Password":
   - /placeholder: ••••••••
+  - text: SuperPassword123!
 - button
-- button "Sign In"
+- button "Signing in..." [disabled]
 - text: Or continue with
 - link "Sign In with Google":
   - /url: /api/auth/sso/google/init

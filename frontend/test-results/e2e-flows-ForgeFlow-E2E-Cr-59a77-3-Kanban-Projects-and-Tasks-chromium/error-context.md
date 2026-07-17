@@ -25,46 +25,54 @@ Call log:
 # Page snapshot
 
 ```yaml
-- generic [ref=e6]:
-  - generic [ref=e7]:
-    - link "ForgeFlow" [ref=e8] [cursor=pointer]:
-      - /url: /
-      - generic [ref=e9]: ForgeFlow
-    - generic [ref=e10]:
-      - img [ref=e12]
-      - generic [ref=e15]:
-        - heading "Welcome back" [level=1] [ref=e16]
-        - paragraph [ref=e17]: Log in to your ForgeFlow account
-  - generic [ref=e18]:
-    - generic [ref=e19]:
-      - generic [ref=e20]: Email Address
-      - generic [ref=e21]:
-        - img [ref=e22]
-        - textbox "Email Address" [ref=e25]:
-          - /placeholder: name@company.com
-    - generic [ref=e26]:
-      - generic [ref=e27]:
-        - generic [ref=e28]: Password
-        - link "Forgot password?" [ref=e29] [cursor=pointer]:
-          - /url: "#"
-      - generic [ref=e30]:
-        - img [ref=e31]
-        - textbox "Password" [ref=e34]:
-          - /placeholder: ••••••••
-        - button [ref=e35]:
-          - img [ref=e36]
-    - button "Sign In" [ref=e39]:
-      - img [ref=e40]
-      - text: Sign In
-  - generic [ref=e45]: Or continue with
-  - link "Sign In with Google" [ref=e47] [cursor=pointer]:
-    - /url: /api/auth/sso/google/init
-    - img [ref=e48]
-    - generic [ref=e53]: Sign In with Google
-  - paragraph [ref=e54]:
-    - text: Don't have an account?
-    - link "Sign Up" [ref=e55] [cursor=pointer]:
-      - /url: /register
+- generic [active] [ref=e1]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - link "ForgeFlow" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e9]: ForgeFlow
+      - generic [ref=e10]:
+        - img [ref=e12]
+        - generic [ref=e15]:
+          - heading "Welcome back" [level=1] [ref=e16]
+          - paragraph [ref=e17]: Log in to your ForgeFlow account
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]: Email Address
+        - generic [ref=e21]:
+          - img [ref=e22]
+          - textbox "Email Address" [ref=e25]:
+            - /placeholder: name@company.com
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: Password
+          - link "Forgot password?" [ref=e29] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e30]:
+          - img [ref=e31]
+          - textbox "Password" [ref=e34]:
+            - /placeholder: ••••••••
+          - button [ref=e35]:
+            - img [ref=e36]
+      - button "Sign In" [ref=e41]:
+        - img [ref=e42]
+        - text: Sign In
+    - generic [ref=e47]: Or continue with
+    - link "Sign In with Google" [ref=e49] [cursor=pointer]:
+      - /url: /api/auth/sso/google/init
+      - img [ref=e50]
+      - generic [ref=e55]: Sign In with Google
+    - paragraph [ref=e56]:
+      - text: Don't have an account?
+      - link "Sign Up" [ref=e57] [cursor=pointer]:
+        - /url: /register
+  - button "Open Next.js Dev Tools" [ref=e63] [cursor=pointer]:
+    - img [ref=e64]
+  - alert [ref=e67]
+  - generic [ref=e68]:
+    - img [ref=e70]
+    - button "Open Tanstack query devtools" [ref=e118] [cursor=pointer]:
+      - img [ref=e119]
 ```
 
 # Test source

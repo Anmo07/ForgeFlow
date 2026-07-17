@@ -15,12 +15,13 @@
 Error: expect(page).toHaveURL(expected) failed
 
 Expected pattern: /.*dashboard/
-Received string:  "http://localhost:3000/login?"
+Received string:  "http://localhost:3000/login"
 Timeout: 5000ms
 
 Call log:
   - Expect "toHaveURL" with timeout 5000ms
-    14 × unexpected value "http://localhost:3000/login?"
+    6 × unexpected value "http://localhost:3000/login?"
+    3 × unexpected value "http://localhost:3000/login"
 
 ```
 
@@ -48,6 +49,9 @@ Call log:
   - text: Don't have an account?
   - link "Sign Up":
     - /url: /register
+- alert
+- button "Open Tanstack query devtools":
+  - img
 ```
 
 # Test source
