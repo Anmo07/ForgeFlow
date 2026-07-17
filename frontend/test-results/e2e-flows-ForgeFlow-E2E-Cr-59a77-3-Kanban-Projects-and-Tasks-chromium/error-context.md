@@ -6,143 +6,72 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 1: Authentication Lifecycle & Account Lockout
-- Location: tests-e2e/e2e-flows.spec.ts:96:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 3: Kanban Projects and Tasks
+- Location: tests-e2e/e2e-flows.spec.ts:193:7
 
 # Error details
 
 ```
-Error: expect(page).toHaveURL(expected) failed
+Test timeout of 30000ms exceeded.
+```
 
-Expected pattern: /.*dashboard/
-Received string:  "http://localhost:3000/login"
-Timeout: 5000ms
-
+```
+Error: page.click: Test timeout of 30000ms exceeded.
 Call log:
-  - Expect "toHaveURL" with timeout 5000ms
-    13 × unexpected value "http://localhost:3000/login"
+  - waiting for locator('text=Create Project')
+    - waiting for" http://localhost:3000/login?from=%2Fprojects" navigation to finish...
+    - navigated to "http://localhost:3000/login?from=%2Fprojects"
 
 ```
 
+# Page snapshot
+
 ```yaml
-- link "ForgeFlow":
-  - /url: /
-- heading "Welcome back" [level=1]
-- paragraph: Log in to your ForgeFlow account
-- text: "API error 422: Unprocessable Content Email Address"
-- textbox "Email Address":
-  - /placeholder: name@company.com
-  - text: e2e_admin_66820@forgeflow.local
-- text: Password
-- link "Forgot password?":
-  - /url: "#"
-- textbox "Password":
-  - /placeholder: ••••••••
-  - text: SuperPassword123!
-- button
-- button "Sign In"
-- text: Or continue with
-- link "Sign In with Google":
-  - /url: /api/auth/sso/google/init
-  - img
-  - text: Sign In with Google
-- paragraph:
-  - text: Don't have an account?
-  - link "Sign Up":
-    - /url: /register
-- alert
-- button "Open Tanstack query devtools":
-  - img
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - link "ForgeFlow" [ref=e8] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e9]: ForgeFlow
+    - generic [ref=e10]:
+      - img [ref=e12]
+      - generic [ref=e15]:
+        - heading "Welcome back" [level=1] [ref=e16]
+        - paragraph [ref=e17]: Log in to your ForgeFlow account
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: Email Address
+      - generic [ref=e21]:
+        - img [ref=e22]
+        - textbox "Email Address" [ref=e25]:
+          - /placeholder: name@company.com
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]: Password
+        - link "Forgot password?" [ref=e29] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e30]:
+        - img [ref=e31]
+        - textbox "Password" [ref=e34]:
+          - /placeholder: ••••••••
+        - button [ref=e35]:
+          - img [ref=e36]
+    - button "Sign In" [ref=e39]:
+      - img [ref=e40]
+      - text: Sign In
+  - generic [ref=e45]: Or continue with
+  - link "Sign In with Google" [ref=e47] [cursor=pointer]:
+    - /url: /api/auth/sso/google/init
+    - img [ref=e48]
+    - generic [ref=e53]: Sign In with Google
+  - paragraph [ref=e54]:
+    - text: Don't have an account?
+    - link "Sign Up" [ref=e55] [cursor=pointer]:
+      - /url: /register
 ```
 
 # Test source
 
 ```ts
-  14  |         const key = match[1];
-  15  |         let value = match[2] || "";
-  16  |         if (value.length > 0 && value.startsWith('"') && value.endsWith('"')) {
-  17  |           value = value.substring(1, value.length - 1);
-  18  |         }
-  19  |         if (value.length > 0 && value.startsWith("'") && value.endsWith("'")) {
-  20  |           value = value.substring(1, value.length - 1);
-  21  |         }
-  22  |         envVars[key] = value;
-  23  |       }
-  24  |     });
-  25  |   }
-  26  |   return envVars;
-  27  | }
-  28  | 
-  29  | // Helper to run backend seeding/teardown commands
-  30  | function runSeeding(orgName: string, email: string, pass: string) {
-  31  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
-  32  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  33  |   const backendPath = path.resolve(__dirname, "../../backend");
-  34  |   const result = execSync(
-  35  |     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-  36  |     { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
-  37  |   );
-  38  |   const lines = result.split("\n");
-  39  |   for (const line of lines) {
-  40  |     const trimmed = line.trim();
-  41  |     if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-  42  |       try {
-  43  |         return JSON.parse(trimmed);
-  44  |       } catch (e) {
-  45  |         // ignore and continue
-  46  |       }
-  47  |     }
-  48  |   }
-  49  |   throw new Error(`Failed to find JSON output in seeding result: ${result}`);
-  50  | }
-  51  | 
-  52  | function runTeardown(orgId: number, userId: number) {
-  53  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
-  54  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/teardown_test_org.py");
-  55  |   const backendPath = path.resolve(__dirname, "../../backend");
-  56  |   execSync(
-  57  |     `"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`,
-  58  |     { env: getEnvFromRoot(), cwd: backendPath }
-  59  |   );
-  60  | }
-  61  | 
-  62  | async function submitLoginForm(page: any, email: string, pass: string) {
-  63  |   await page.waitForSelector("form");
-  64  |   await page.evaluate(() => {
-  65  |     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
-  66  |   });
-  67  |   await page.fill('input[type="email"]', email);
-  68  |   await page.fill('input[type="password"]', pass);
-  69  |   await page.click('button[type="submit"]');
-  70  | }
-  71  | 
-  72  | test.describe("ForgeFlow E2E Critical Flows", () => {
-  73  |   let seededData: any = null;
-  74  |   const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.local`;
-  75  |   const adminPassword = "SuperPassword123!";
-  76  | 
-  77  |   test.beforeEach(() => {
-  78  |     // Seed an isolated organization for each test case
-  79  |     seededData = runSeeding("E2E Test Org", adminEmail, adminPassword);
-  80  |     if (seededData.error) {
-  81  |       throw new Error(`Seeding failed: ${seededData.error}`);
-  82  |     }
-  83  |   });
-  84  | 
-  85  |   test.afterEach(() => {
-  86  |     if (seededData && seededData.org_id && seededData.user_id) {
-  87  |       try {
-  88  |         runTeardown(seededData.org_id, seededData.user_id);
-  89  |       } catch (err) {
-  90  |         console.error("Cleanup failed:", err);
-  91  |       }
-  92  |     }
-  93  |   });
-  94  | 
-  95  |   // Flow 1: Full Authentication Lifecycle
-  96  |   test("Flow 1: Authentication Lifecycle & Account Lockout", async ({ page }) => {
-  97  |     // 1. Go to register page
-  98  |     await page.goto("/register");
   99  |     await page.fill('input[type="email"]', `user_${Math.floor(Math.random() * 10000)}@e2e.local`);
   100 |     await page.fill('#reg-password', "SecurePass1!");
   101 |     await page.fill('#reg-name', "E2E Registrant");
@@ -158,8 +87,7 @@ Call log:
   111 |     await submitLoginForm(page, adminEmail, adminPassword);
   112 | 
   113 |     // Confirm redirected to dashboard
-> 114 |     await expect(page).toHaveURL(/.*dashboard/);
-      |                        ^ Error: expect(page).toHaveURL(expected) failed
+  114 |     await expect(page).toHaveURL(/.*dashboard/);
   115 | 
   116 |     // Logout
   117 |     await page.click('button[title="Sign Out"]');
@@ -244,7 +172,8 @@ Call log:
   196 | 
   197 |     // Create project
   198 |     await page.goto("/projects");
-  199 |     await page.click("text=Create Project");
+> 199 |     await page.click("text=Create Project");
+      |                ^ Error: page.click: Test timeout of 30000ms exceeded.
   200 |     await page.fill('input[placeholder="Project Name"]', "E2E Projects Space");
   201 |     await page.fill('textarea[placeholder="Description"]', "E2E Kanban Lifecycle testing space");
   202 |     await page.click("text=Create");
@@ -260,4 +189,45 @@ Call log:
   212 | 
   213 |     // Drag-and-drop simulation & verify persisting
   214 |     // (Playwright dragTo handles drag simulation)
+  215 |     const taskCard = page.locator("text=Task high priority");
+  216 |     const inProgressColumn = page.locator("text=In Progress");
+  217 |     await taskCard.dragTo(inProgressColumn);
+  218 | 
+  219 |     await page.reload();
+  220 |     await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
+  221 |   });
+  222 | 
+  223 |   // Flow 4: CRM Deal Pipeline
+  224 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
+  225 |     await page.goto("/login");
+  226 |     await submitLoginForm(page, adminEmail, adminPassword);
+  227 | 
+  228 |     await page.goto("/crm");
+  229 |     // Add lead
+  230 |     await page.click("text=New Lead");
+  231 |     await page.fill('input[placeholder="Lead Title"]', "Enterprise Deal Lead");
+  232 |     await page.fill('input[placeholder="Value"]', "25000");
+  233 |     await page.click("text=Save");
+  234 | 
+  235 |     // Check pipeline dashboard update
+  236 |     await page.goto("/dashboard");
+  237 |     await expect(page.locator("text=$25,000")).toBeVisible();
+  238 |   });
+  239 | 
+  240 |   // Flow 5: Org invite and membership
+  241 |   test("Flow 5: Invite Members and Roles", async ({ page }) => {
+  242 |     await page.goto("/login");
+  243 |     await submitLoginForm(page, adminEmail, adminPassword);
+  244 | 
+  245 |     await page.goto("/settings");
+  246 |     await page.click("text=Members");
+  247 |     await page.click("text=Invite Member");
+  248 |     await page.fill('input[placeholder="Email"]', "invitee_user@forgeflow.local");
+  249 |     await page.click("text=Send Invitation");
+  250 | 
+  251 |     // Assert listed in pending
+  252 |     await expect(page.locator("text=invitee_user@forgeflow.local")).toBeVisible();
+  253 |   });
+  254 | });
+  255 | 
 ```

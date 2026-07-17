@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 1: Authentication Lifecycle & Account Lockout
-- Location: tests-e2e/e2e-flows.spec.ts:96:7
+- Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 2: Invoice Creation & PDF Generation
+- Location: tests-e2e/e2e-flows.spec.ts:131:7
 
 # Error details
 
@@ -32,7 +32,7 @@ Call log:
 - text: "API error 422: Unprocessable Content Email Address"
 - textbox "Email Address":
   - /placeholder: name@company.com
-  - text: e2e_admin_66820@forgeflow.local
+  - text: e2e_admin_84783@forgeflow.local
 - text: Password
 - link "Forgot password?":
   - /url: "#"
@@ -58,27 +58,6 @@ Call log:
 # Test source
 
 ```ts
-  14  |         const key = match[1];
-  15  |         let value = match[2] || "";
-  16  |         if (value.length > 0 && value.startsWith('"') && value.endsWith('"')) {
-  17  |           value = value.substring(1, value.length - 1);
-  18  |         }
-  19  |         if (value.length > 0 && value.startsWith("'") && value.endsWith("'")) {
-  20  |           value = value.substring(1, value.length - 1);
-  21  |         }
-  22  |         envVars[key] = value;
-  23  |       }
-  24  |     });
-  25  |   }
-  26  |   return envVars;
-  27  | }
-  28  | 
-  29  | // Helper to run backend seeding/teardown commands
-  30  | function runSeeding(orgName: string, email: string, pass: string) {
-  31  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
-  32  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  33  |   const backendPath = path.resolve(__dirname, "../../backend");
-  34  |   const result = execSync(
   35  |     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
   36  |     { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
   37  |   );
@@ -158,8 +137,7 @@ Call log:
   111 |     await submitLoginForm(page, adminEmail, adminPassword);
   112 | 
   113 |     // Confirm redirected to dashboard
-> 114 |     await expect(page).toHaveURL(/.*dashboard/);
-      |                        ^ Error: expect(page).toHaveURL(expected) failed
+  114 |     await expect(page).toHaveURL(/.*dashboard/);
   115 | 
   116 |     // Logout
   117 |     await page.click('button[title="Sign Out"]');
@@ -180,7 +158,8 @@ Call log:
   132 |     // Bypass lockout by logging in with seed details
   133 |     await page.goto("/login");
   134 |     await submitLoginForm(page, adminEmail, adminPassword);
-  135 |     await expect(page).toHaveURL(/.*dashboard/);
+> 135 |     await expect(page).toHaveURL(/.*dashboard/);
+      |                        ^ Error: expect(page).toHaveURL(expected) failed
   136 | 
   137 |     // Navigate to Invoices
   138 |     await page.goto("/invoices");
@@ -260,4 +239,25 @@ Call log:
   212 | 
   213 |     // Drag-and-drop simulation & verify persisting
   214 |     // (Playwright dragTo handles drag simulation)
+  215 |     const taskCard = page.locator("text=Task high priority");
+  216 |     const inProgressColumn = page.locator("text=In Progress");
+  217 |     await taskCard.dragTo(inProgressColumn);
+  218 | 
+  219 |     await page.reload();
+  220 |     await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
+  221 |   });
+  222 | 
+  223 |   // Flow 4: CRM Deal Pipeline
+  224 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
+  225 |     await page.goto("/login");
+  226 |     await submitLoginForm(page, adminEmail, adminPassword);
+  227 | 
+  228 |     await page.goto("/crm");
+  229 |     // Add lead
+  230 |     await page.click("text=New Lead");
+  231 |     await page.fill('input[placeholder="Lead Title"]', "Enterprise Deal Lead");
+  232 |     await page.fill('input[placeholder="Value"]', "25000");
+  233 |     await page.click("text=Save");
+  234 | 
+  235 |     // Check pipeline dashboard update
 ```

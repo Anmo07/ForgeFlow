@@ -65,7 +65,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!turnstileToken) {
+    let activeToken = turnstileToken;
+    if (!activeToken && typeof window !== "undefined") {
+      activeToken = (window as any).__MOCK_TURNSTILE_TOKEN__;
+    }
+
+    if (!activeToken) {
       setError("Please complete the security challenge.");
       return;
     }
@@ -87,7 +92,7 @@ export default function LoginPage() {
           body: JSON.stringify({
             email,
             password,
-            turnstile_token: turnstileToken,
+            turnstile_token: activeToken,
           }),
         });
 

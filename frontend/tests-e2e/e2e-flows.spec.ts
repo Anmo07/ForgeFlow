@@ -59,6 +59,16 @@ function runTeardown(orgId: number, userId: number) {
   );
 }
 
+async function submitLoginForm(page: any, email: string, pass: string) {
+  await page.waitForSelector("form");
+  await page.evaluate(() => {
+    (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
+  });
+  await page.fill('input[type="email"]', email);
+  await page.fill('input[type="password"]', pass);
+  await page.click('button[type="submit"]');
+}
+
 test.describe("ForgeFlow E2E Critical Flows", () => {
   let seededData: any = null;
   const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.local`;
@@ -92,20 +102,13 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     
     // Simulate turnstile checked
     await page.evaluate(() => {
-      // Mock turnstile token insertion if present
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = "cf-turnstile-response";
-      input.value = "mocked-turnstile-response-token";
-      document.querySelector("form")?.appendChild(input);
+      (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
     });
 
     // We skip actual email verify/MFA TOTP code extraction in client E2E if mock authentication modes are toggled,
     // but we simulate the authentication flow steps.
     await page.goto("/login");
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
 
     // Confirm redirected to dashboard
     await expect(page).toHaveURL(/.*dashboard/);
@@ -116,15 +119,11 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     // Trigger Account Lockout (5 failed attempts)
     for (let i = 0; i < 5; i++) {
-      await page.fill('input[type="email"]', adminEmail);
-      await page.fill('input[type="password"]', "wrong-password");
-      await page.click('button[type="submit"]');
+      await submitLoginForm(page, adminEmail, "wrong-password");
     }
 
     // Lockout UI/Notification validation
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page.locator("text=locked").or(page.locator("text=too many attempts")).or(page.locator("text=lockout"))).toBeVisible();
   });
 
@@ -132,9 +131,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   test("Flow 2: Invoice Creation & PDF Generation", async ({ page }) => {
     // Bypass lockout by logging in with seed details
     await page.goto("/login");
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page).toHaveURL(/.*dashboard/);
 
     // Navigate to Invoices
@@ -195,9 +192,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   // Flow 3: Kanban Task Lifecycle
   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
 
     // Create project
     await page.goto("/projects");
@@ -228,9 +223,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   // Flow 4: CRM Deal Pipeline
   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
 
     await page.goto("/crm");
     // Add lead
@@ -247,9 +240,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   // Flow 5: Org invite and membership
   test("Flow 5: Invite Members and Roles", async ({ page }) => {
     await page.goto("/login");
-    await page.fill('input[type="email"]', adminEmail);
-    await page.fill('input[type="password"]', adminPassword);
-    await page.click('button[type="submit"]');
+    await submitLoginForm(page, adminEmail, adminPassword);
 
     await page.goto("/settings");
     await page.click("text=Members");
