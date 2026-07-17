@@ -74,7 +74,14 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
   const adminEmail = `e2e_admin_${Math.floor(Math.random() * 100000)}@forgeflow.com`;
   const adminPassword = "SuperPassword123!";
 
-  test.beforeEach(() => {
+  test.beforeEach(async ({ page }) => {
+    page.on('console', msg => {
+      console.log(`BROWSER CONSOLE [${msg.type()}]: ${msg.text()}`);
+    });
+    page.on('pageerror', err => {
+      console.log(`BROWSER RUNTIME ERROR: ${err.message}`);
+    });
+
     // Seed an isolated organization for each test case
     seededData = runSeeding("E2E Test Org", adminEmail, adminPassword);
     if (seededData.error) {
