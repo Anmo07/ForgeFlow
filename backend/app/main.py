@@ -263,7 +263,7 @@ app.add_middleware(
     allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "X-CSRF-Token", "X-Organization-ID", "X-Request-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-CSRF-Token", "X-Organization-ID", "X-Request-ID"],
 )
 
 # Legacy routes

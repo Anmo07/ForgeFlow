@@ -12,95 +12,45 @@
 # Error details
 
 ```
-Error: expect(page).toHaveURL(expected) failed
+Error: expect(locator).toBeVisible() failed
 
-Expected pattern: /.*(login|\/)$/
-Received string:  "http://localhost:3000/dashboard"
+Locator: locator('text=locked').or(locator('text=too many attempts')).or(locator('text=lockout'))
+Expected: visible
 Timeout: 5000ms
+Error: element(s) not found
 
 Call log:
-  - Expect "toHaveURL" with timeout 5000ms
-    14 × unexpected value "http://localhost:3000/dashboard"
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('text=locked').or(locator('text=too many attempts')).or(locator('text=lockout'))
 
 ```
 
 ```yaml
-- banner:
-  - link "ForgeFlow":
-    - /url: /
-  - navigation:
-    - list:
-      - listitem:
-        - link "Home":
-          - /url: /
-      - listitem:
-        - link "Features":
-          - /url: /#features
-      - listitem:
-        - link "Pricing":
-          - /url: /#pricing
-      - listitem:
-        - link "About":
-          - /url: /#about
-      - listitem:
-        - link "Contact":
-          - /url: /#contact
-  - link "Sign In":
-    - /url: /login
+- link "ForgeFlow":
+  - /url: /
+- heading "Welcome back" [level=1]
+- paragraph: Log in to your ForgeFlow account
+- text: Email Address
+- textbox "Email Address":
+  - /placeholder: name@company.com
+  - text: e2e_admin_40643@forgeflow.com
+- text: Password
+- link "Forgot password?":
+  - /url: "#"
+- textbox "Password":
+  - /placeholder: ••••••••
+  - text: SuperPassword123!
+- button
+- button "Sign In"
+- text: Or continue with
+- link "Sign In with Google":
+  - /url: /api/auth/sso/google/init
+  - img
+  - text: Sign In with Google
+- paragraph:
+  - text: Don't have an account?
   - link "Sign Up":
     - /url: /register
-  - button "theme toggler":
-    - img
-- contentinfo:
-  - link "ForgeFlow":
-    - /url: /
-  - paragraph: The unified command center and billing automation engine for modern IT Managed Service Providers.
-  - link "Facebook":
-    - /url: /
-    - img
-  - link "Twitter":
-    - /url: /
-    - img
-  - link "YouTube":
-    - /url: /
-    - img
-  - link "LinkedIn":
-    - /url: /
-    - img
-  - heading "Useful Links" [level=2]
-  - list:
-    - listitem:
-      - link "Features":
-        - /url: /#features
-    - listitem:
-      - link "Pricing":
-        - /url: /#pricing
-    - listitem:
-      - link "About":
-        - /url: /#about
-  - heading "Terms" [level=2]
-  - list:
-    - listitem:
-      - link "TOS":
-        - /url: /terms
-    - listitem:
-      - link "Privacy Policy":
-        - /url: /privacy
-    - listitem:
-      - link "Refund Policy":
-        - /url: /
-  - heading "Support & Help" [level=2]
-  - list:
-    - listitem:
-      - link "Open Support Ticket":
-        - /url: /#contact
-    - listitem:
-      - link "Terms of Use":
-        - /url: /
-    - listitem:
-      - link "About":
-        - /url: /#about
-  - paragraph: © 2026 ForgeFlow. Built for IT Service Providers.
 - alert
 - button "Open Tanstack query devtools":
   - img
@@ -109,15 +59,6 @@ Call log:
 # Test source
 
 ```ts
-  25  |   }
-  26  |   return envVars;
-  27  | }
-  28  | 
-  29  | // Helper to run backend seeding/teardown commands
-  30  | function runSeeding(orgName: string, email: string, pass: string) {
-  31  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
-  32  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  33  |   const backendPath = path.resolve(__dirname, "../../backend");
   34  |   const result = execSync(
   35  |     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
   36  |     { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
@@ -209,8 +150,7 @@ Call log:
   122 | 
   123 |     // Logout
   124 |     await page.click('button[title="Sign Out"]');
-> 125 |     await expect(page).toHaveURL(/.*(login|\/)$/);
-      |                        ^ Error: expect(page).toHaveURL(expected) failed
+  125 |     await expect(page).toHaveURL(/.*(login|\/)$/);
   126 | 
   127 |     // Trigger Account Lockout (5 failed attempts)
   128 |     for (let i = 0; i < 5; i++) {
@@ -219,7 +159,8 @@ Call log:
   131 | 
   132 |     // Lockout UI/Notification validation
   133 |     await submitLoginForm(page, adminEmail, adminPassword);
-  134 |     await expect(page.locator("text=locked").or(page.locator("text=too many attempts")).or(page.locator("text=lockout"))).toBeVisible();
+> 134 |     await expect(page.locator("text=locked").or(page.locator("text=too many attempts")).or(page.locator("text=lockout"))).toBeVisible();
+      |                                                                                                                           ^ Error: expect(locator).toBeVisible() failed
   135 |   });
   136 | 
   137 |   // Flow 2: Invoice Creation and PDF Download
@@ -311,4 +252,13 @@ Call log:
   223 |     const taskCard = page.locator("text=Task high priority");
   224 |     const inProgressColumn = page.locator("text=In Progress");
   225 |     await taskCard.dragTo(inProgressColumn);
+  226 | 
+  227 |     await page.reload();
+  228 |     await expect(page.locator('[data-status="in_progress"]')).toContainText("Task high priority");
+  229 |   });
+  230 | 
+  231 |   // Flow 4: CRM Deal Pipeline
+  232 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
+  233 |     await page.goto("/login");
+  234 |     await submitLoginForm(page, adminEmail, adminPassword);
 ```
