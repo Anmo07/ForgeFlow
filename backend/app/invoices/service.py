@@ -58,8 +58,8 @@ class InvoiceService:
         
         # Check if MinIO is reachable
         minio_reachable = True
-        import os
-        is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+        from ..common.config import is_testing as _check_is_testing
+        is_testing = _check_is_testing()
         try:
             from ..common.minio import minio_client, minio_breaker
             from unittest.mock import Mock
@@ -88,8 +88,8 @@ class InvoiceService:
         from ..common.metrics import invoices_created_total
         invoices_created_total.labels(org_id=str(org_id)).inc()
 
-        import os
-        is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+        from ..common.config import is_testing as _check_is_testing
+        is_testing = _check_is_testing()
         if not is_testing:
             from ..common.celery_tasks import generate_invoice_pdf_task
             generate_invoice_pdf_task.delay(invoice.id, org_id)
@@ -115,8 +115,8 @@ class InvoiceService:
             updates['total'] = total
         invoice = self.repo.update(db, invoice, **updates)
         if line_items_data is not None:
-            import os
-            is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+            from ..common.config import is_testing as _check_is_testing
+            is_testing = _check_is_testing()
             if not is_testing:
                 from ..common.celery_tasks import generate_invoice_pdf_task
                 generate_invoice_pdf_task.delay(invoice.id, org_id)

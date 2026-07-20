@@ -23,11 +23,12 @@ from .redis import redis_client
 def _is_rate_limit_disabled() -> bool:
     """Return True when rate limiting should be bypassed."""
     if os.getenv('RATE_LIMIT_DISABLED', '').lower() in ('true', '1', 'yes'):
+        from .config import is_testing
+        if not is_testing():
+            return False  # If in production, do not allow bypass unless explicitly configured
         return True
-    if os.getenv('TESTING', '').lower() in ('true', '1', 'yes'):
-        return True
-    db_url = os.getenv('DATABASE_URL', '')
-    return 'test' in db_url or db_url.startswith('sqlite:')
+    from .config import is_testing
+    return is_testing()
 
 
 class RateLimiter:
@@ -103,13 +104,13 @@ def rate_limit_or_429(
 # SlowAPI integration
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from .config import REDIS_URL
+from .config import REDIS_URL, is_testing as _check_is_testing
 
-is_testing = os.getenv('TESTING', '').lower() in ('true', '1', 'yes')
-rate_limit_disabled = os.getenv('RATE_LIMIT_DISABLED', '').lower() in ('true', '1', 'yes') or is_testing
+is_testing_mode = _check_is_testing()
+rate_limit_disabled = os.getenv('RATE_LIMIT_DISABLED', '').lower() in ('true', '1', 'yes') or is_testing_mode
 
 limiter = Limiter(
     key_func=get_remote_address,
-    storage_uri="memory://" if is_testing else REDIS_URL,
+    storage_uri="memory://" if is_testing_mode else REDIS_URL,
     enabled=not rate_limit_disabled
 )

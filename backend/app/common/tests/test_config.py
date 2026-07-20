@@ -33,3 +33,10 @@ def test_config_loads_in_test_mode(monkeypatch):
     import app.common.config as config_module
     importlib.reload(config_module)
     assert config_module.JWT_SECRET_KEY == 'CHANGE_ME_TO_A_STRONG_RANDOM_VALUE'
+
+def test_production_environment_overrides_testing_flags(monkeypatch):
+    monkeypatch.setenv('ENVIRONMENT', 'production')
+    monkeypatch.setenv('TESTING', 'True')
+    monkeypatch.setenv('DATABASE_URL', 'sqlite:///./test.db')
+    import app.common.config as config_module
+    assert config_module.is_testing() is False

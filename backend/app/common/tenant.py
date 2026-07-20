@@ -72,8 +72,8 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
         import json as _json
         from .redis import redis_client as _redis
         cache_key = f"cache:role_permissions:{membership.role_id}"
-        import os
-        is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+        from .config import is_testing as _check_is_testing
+        is_testing = _check_is_testing()
         cached = None if is_testing else _redis.get(cache_key)
         if cached:
             try:

@@ -55,8 +55,8 @@ logger = logging.getLogger("forgeflow.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    import os
-    is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+    from .common.config import is_testing as _check_is_testing
+    is_testing = _check_is_testing()
     if is_testing:
         logger.info("Running in testing environment: skipping fail-fast dependency validation.")
         yield
