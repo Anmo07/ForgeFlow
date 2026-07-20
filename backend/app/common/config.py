@@ -3,11 +3,21 @@ import sys
 _PLACEHOLDER_JWT = 'CHANGE_ME_TO_A_STRONG_RANDOM_VALUE'
 _PLACEHOLDER_MINIO = 'CHANGE_ME_TO_A_STRONG_MINIO_PASSWORD'
 
-def _is_testing() -> bool:
+def is_testing() -> bool:
+    """Return True if running in test environment.
+    
+    Safety guard: In production (ENVIRONMENT=production or prod),
+    testing bypasses are structurally disabled regardless of any env flags.
+    """
+    env = os.getenv('ENVIRONMENT', '').lower()
+    if env in ('production', 'prod'):
+        return False
     if os.getenv('TESTING', '').lower() in ('true', '1', 'yes'):
         return True
     db_url = os.getenv('DATABASE_URL', '')
     return 'test' in db_url or db_url.startswith('sqlite:')
+
+_is_testing = is_testing
 
 def _require(name: str, *, default: str=None, allow_placeholder: bool=False) -> str:
     value = os.getenv(name, default)

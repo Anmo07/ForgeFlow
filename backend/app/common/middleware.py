@@ -127,8 +127,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
-            import os
-            is_testing = os.getenv('TESTING') == 'True' or 'test' in os.getenv('DATABASE_URL', 'sqlite')
+            from .config import is_testing as _check_is_testing
+            is_testing = _check_is_testing()
             force_test_validation = request.headers.get('X-Test-CSRF-Validation') == 'true'
             path = request.url.path
             is_auth_route = any((x in path for x in ('/api/auth/login', '/api/auth/register', '/api/auth/refresh')))
