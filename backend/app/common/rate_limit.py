@@ -13,7 +13,7 @@ limiting is bypassed so automated test suites are not affected.
 
 import os
 import time
-from typing import Tuple
+from typing import Any, Tuple, cast
 
 from fastapi import HTTPException, status
 
@@ -55,11 +55,13 @@ class RateLimiter:
             pipe.execute()
 
             # Re-read count after pruning
-            current_count = redis_client.client.zcard(key)
+            current_count_res = redis_client.client.zcard(key)
+            current_count = int(cast(Any, current_count_res))
 
             if current_count >= max_requests:
                 # Calculate retry-after from the oldest entry still in the window
-                oldest = redis_client.client.zrange(key, 0, 0, withscores=True)
+                oldest_res = redis_client.client.zrange(key, 0, 0, withscores=True)
+                oldest = cast(Any, oldest_res)
                 if oldest:
                     retry_after = int(window_seconds - (now - oldest[0][1])) + 1
                     retry_after = max(retry_after, 1)

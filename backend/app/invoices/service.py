@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from typing import List
+from typing import List, Optional, Any, cast
 from .repository import InvoiceRepository
 from .schema import InvoiceCreate, InvoiceUpdate, InvoiceResponse, InvoiceListResponse, LineItemCreate, LineItemResponse, InvoiceMetrics
 from .pdf_generator import generate_invoice_pdf
@@ -49,9 +49,9 @@ class InvoiceService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Invoice not found')
         return InvoiceResponse(**self._enrich_invoice(invoice, db))
 
-    def create_invoice(self, db: Session, org_id: int, data: InvoiceCreate, user_id: int=None) -> InvoiceResponse:
+    def create_invoice(self, db: Session, org_id: int, data: InvoiceCreate, user_id: Optional[int]=None) -> InvoiceResponse:
         subtotal, tax_amount, total = self._compute_totals(data.line_items, data.tax_rate)
-        if db.bind.dialect.name == 'postgresql':
+        if db.bind is not None and db.bind.dialect.name == 'postgresql':
             from ..organizations.models import Organization
             db.query(Organization).filter(Organization.id == org_id).with_for_update().first()
         invoice_number = self.repo.get_next_invoice_number(db, org_id)
@@ -82,7 +82,7 @@ class InvoiceService:
         
         invoice = self.repo.create(db, org_id, invoice_number=invoice_number, issue_date=data.issue_date, due_date=data.due_date, status='draft', subtotal=subtotal, tax_rate=data.tax_rate, tax_amount=tax_amount, total=total, notes=data.notes, client_id=data.client_id, created_by=user_id, pdf_status=pdf_status)
         for item in data.line_items:
-            self.repo.add_line_item(db, invoice.id, description=item.description, quantity=item.quantity, unit_price=item.unit_price)
+            self.repo.add_line_item(db, int(cast(Any, invoice.id)), description=item.description, quantity=item.quantity, unit_price=item.unit_price)
             
         # Prometheus: invoice created
         from ..common.metrics import invoices_created_total
@@ -104,9 +104,9 @@ class InvoiceService:
         updates = data.model_dump(exclude_unset=True)
         line_items_data = updates.pop('line_items', None)
         if line_items_data is not None:
-            self.repo.clear_line_items(db, invoice.id)
+            self.repo.clear_line_items(db, int(cast(Any, invoice.id)))
             for item_data in line_items_data:
-                self.repo.add_line_item(db, invoice.id, description=item_data['description'], quantity=item_data.get('quantity', 1.0), unit_price=item_data.get('unit_price', 0.0))
+                self.repo.add_line_item(db, int(cast(Any, invoice.id)), description=item_data['description'], quantity=item_data.get('quantity', 1.0), unit_price=item_data.get('unit_price', 0.0))
             tax_rate = updates.get('tax_rate', invoice.tax_rate)
             line_item_objects = [LineItemCreate(**d) for d in line_items_data]
             subtotal, tax_amount, total = self._compute_totals(line_item_objects, tax_rate)
@@ -163,15 +163,28 @@ class InvoiceService:
         org = db.query(Organization).filter(Organization.id == org_id).first()
         org_name = org.name if org else 'ForgeFlow'
         line_items = [{'description': item.description, 'quantity': item.quantity, 'unit_price': item.unit_price, 'amount': item.amount} for item in invoice.line_items]
-        pdf_bytes = generate_invoice_pdf(invoice_number=invoice.invoice_number, issue_date=str(invoice.issue_date), due_date=str(invoice.due_date), client_name=client_name, org_name=org_name, line_items=line_items, subtotal=invoice.subtotal, tax_rate=invoice.tax_rate, tax_amount=invoice.tax_amount, total=invoice.total, notes=invoice.notes, status=invoice.status)
+        pdf_bytes = generate_invoice_pdf(
+            invoice_number=str(invoice.invoice_number),
+            issue_date=str(invoice.issue_date),
+            due_date=str(invoice.due_date),
+            client_name=str(client_name),
+            org_name=str(org_name),
+            line_items=line_items,
+            subtotal=float(cast(Any, invoice.subtotal) or 0.0),
+            tax_rate=float(cast(Any, invoice.tax_rate) or 0.0),
+            tax_amount=float(cast(Any, invoice.tax_amount) or 0.0),
+            total=float(cast(Any, invoice.total) or 0.0),
+            notes=str(invoice.notes or ''),
+            status=str(invoice.status)
+        )
         return (pdf_bytes, filename)
 
     def get_metrics(self, db: Session, org_id: int) -> InvoiceMetrics:
         invoices = self.repo.list_by_org(db, org_id)
-        total_billed = sum((inv.total for inv in invoices))
-        total_collected = sum((inv.total for inv in invoices if inv.status == 'paid'))
-        total_outstanding = sum((inv.total for inv in invoices if inv.status in ('sent', 'draft')))
-        total_overdue = sum((inv.total for inv in invoices if inv.status == 'overdue'))
+        total_billed = float(sum((float(cast(Any, inv.total)) for inv in invoices))) if invoices else 0.0
+        total_collected = float(sum((float(cast(Any, inv.total)) for inv in invoices if inv.status == 'paid'))) if invoices else 0.0
+        total_outstanding = float(sum((float(cast(Any, inv.total)) for inv in invoices if inv.status in ('sent', 'draft')))) if invoices else 0.0
+        total_overdue = float(sum((float(cast(Any, inv.total)) for inv in invoices if inv.status == 'overdue'))) if invoices else 0.0
         return InvoiceMetrics(total_billed=total_billed, total_collected=total_collected, total_outstanding=total_outstanding, total_overdue=total_overdue, invoice_count=len(invoices))
 
     def generate_and_store_pdf_sync(self, db: Session, invoice_id: int, org_id: int) -> None:
@@ -192,7 +205,20 @@ class InvoiceService:
         org_name = org.name if org else 'ForgeFlow'
         line_items = [{'description': item.description, 'quantity': item.quantity, 'unit_price': item.unit_price, 'amount': item.amount} for item in invoice.line_items]
         try:
-            pdf_bytes = generate_invoice_pdf(invoice_number=invoice.invoice_number, issue_date=str(invoice.issue_date), due_date=str(invoice.due_date), client_name=client_name, org_name=org_name, line_items=line_items, subtotal=invoice.subtotal, tax_rate=invoice.tax_rate, tax_amount=invoice.tax_amount, total=invoice.total, notes=invoice.notes, status=invoice.status)
+            pdf_bytes = generate_invoice_pdf(
+                invoice_number=str(invoice.invoice_number),
+                issue_date=str(invoice.issue_date),
+                due_date=str(invoice.due_date),
+                client_name=str(client_name),
+                org_name=str(org_name),
+                line_items=line_items,
+                subtotal=float(cast(Any, invoice.subtotal) or 0.0),
+                tax_rate=float(cast(Any, invoice.tax_rate) or 0.0),
+                tax_amount=float(cast(Any, invoice.tax_amount) or 0.0),
+                total=float(cast(Any, invoice.total) or 0.0),
+                notes=str(invoice.notes or ''),
+                status=str(invoice.status)
+            )
             from ..common.minio import minio_client
             pdf_path = f'invoices/{org_id}/{invoice.invoice_number}.pdf'
             uploaded = minio_client.upload_bytes(bucket_name='forgeflow-invoices', object_name=pdf_path, data=pdf_bytes, content_type='application/pdf')

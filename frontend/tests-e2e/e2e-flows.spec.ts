@@ -3,9 +3,14 @@ import { execSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 
-function getEnvFromRoot() {
+function getEnvFromRoot(): Record<string, string> {
   const envPath = path.resolve(__dirname, "../../.env");
-  const envVars: Record<string, string> = { ...process.env };
+  const envVars: Record<string, string> = {};
+  for (const [key, val] of Object.entries(process.env)) {
+    if (val !== undefined) {
+      envVars[key] = val;
+    }
+  }
   if (fs.existsSync(envPath)) {
     const content = fs.readFileSync(envPath, "utf8");
     content.split("\n").forEach(line => {
@@ -33,7 +38,7 @@ function runSeeding(orgName: string, email: string, pass: string) {
   const backendPath = path.resolve(__dirname, "../../backend");
   const result = execSync(
     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-    { encoding: "utf8", env: getEnvFromRoot(), cwd: backendPath }
+    { encoding: "utf8", env: getEnvFromRoot() as NodeJS.ProcessEnv, cwd: backendPath }
   );
   const lines = result.split("\n");
   for (const line of lines) {
@@ -55,7 +60,7 @@ function runTeardown(orgId: number, userId: number) {
   const backendPath = path.resolve(__dirname, "../../backend");
   execSync(
     `"${pythonPath}" "${scriptPath}" ${orgId} ${userId}`,
-    { env: getEnvFromRoot(), cwd: backendPath }
+    { env: getEnvFromRoot() as NodeJS.ProcessEnv, cwd: backendPath }
   );
 }
 
