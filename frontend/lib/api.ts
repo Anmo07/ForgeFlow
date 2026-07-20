@@ -537,63 +537,7 @@ if (typeof window !== "undefined" && !(window as any).__fetchPatched) {
       }
     }
 
-    // 6. Projects Endpoints
-    if (pathname.includes("/api/projects")) {
-      const customProjects = localStorage.getItem(`forgeflow_custom_projects_${orgId}`);
-      if (method === "GET") {
-        if (customProjects) return JSON.parse(customProjects);
-        const defaultProjects = [
-          {
-            id: 1,
-            organization_id: Number(orgId),
-            name: "NovaTech Cloud Migration",
-            description: "Migrating 45 virtual servers to AWS/Azure with zero-downtime clustering.",
-            status: "in_progress",
-            priority: "high",
-            due_date: "2026-08-15",
-            tasks_completed: 12,
-            total_tasks: 18,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            id: 2,
-            organization_id: Number(orgId),
-            name: "Managed Security Onboarding",
-            description: "Enforcing Zero-Trust edge rules and MFA policies for NovaTech staff.",
-            status: "planning",
-            priority: "medium",
-            due_date: "2026-07-31",
-            tasks_completed: 2,
-            total_tasks: 10,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ];
-        localStorage.setItem(`forgeflow_custom_projects_${orgId}`, JSON.stringify(defaultProjects));
-        return defaultProjects;
-      }
-      if (method === "POST") {
-        const body = bodyString ? JSON.parse(bodyString) : {};
-        const newProj = {
-          id: Date.now(),
-          organization_id: Number(orgId),
-          name: body.name,
-          description: body.description || null,
-          status: body.status || "planning",
-          priority: body.priority || "medium",
-          due_date: body.due_date || null,
-          tasks_completed: 0,
-          total_tasks: 5,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        const list = JSON.parse(customProjects || "[]");
-        list.push(newProj);
-        localStorage.setItem(`forgeflow_custom_projects_${orgId}`, JSON.stringify(list));
-        return newProj;
-      }
-    }
+
 
     return null;
   };
@@ -750,22 +694,7 @@ function getMockDataForPath(path: string): any {
   const url = path.split("?")[0];
   const orgId = typeof localStorage !== "undefined" ? localStorage.getItem("forgeflow-organization") : "1";
   
-  if (url.includes("/api/projects")) {
-    if (typeof localStorage !== "undefined") {
-      const stored = localStorage.getItem(`forgeflow_custom_projects_1`);
-      if (stored) return JSON.parse(stored);
-    }
-    return [
-      {
-        id: 1,
-        name: "NovaTech Cloud Migration",
-        status: "in_progress",
-        priority: "high",
-        description: "Migrating 45 virtual servers to AWS/Azure with zero-downtime clustering.",
-        created_at: "2026-07-01T10:00:00Z"
-      }
-    ];
-  }
+
   
   if (url.includes("/api/crm/metrics")) {
     return { active_leads: 48, pipeline_value: 125000, deals_won_value: 45000, conversion_rate: 24.5 };

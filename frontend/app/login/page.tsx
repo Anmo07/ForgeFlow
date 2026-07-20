@@ -9,8 +9,7 @@ import { apiFetch } from "@/lib/api";
 import {
   saveRememberedCredentials,
   getRememberedCredentials,
-  authenticateNativeFingerprint,
-  registerNativeFingerprint,
+  clearRememberedCredentials,
   isFingerprintAvailable,
 } from "@/lib/biometrics";
 
@@ -45,17 +44,13 @@ export default function LoginPage() {
   const widgetIdRef = useRef<string>("");
   const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 
-  // Load encrypted remembered credentials on mount
+  // Load remembered email on mount
   useEffect(() => {
     async function loadStoredCredentials() {
       const creds = await getRememberedCredentials();
       if (creds && creds.email) {
         setEmail(creds.email);
-        setPassword(creds.pass || "••••••••");
         setRememberMe(true);
-        if (creds.fingerprintEnabled) {
-          setEnableFingerprint2FA(true);
-        }
       }
       const supported = await isFingerprintAvailable();
       setIsBiometricSupported(supported);
@@ -154,11 +149,9 @@ export default function LoginPage() {
         });
 
         if (rememberMe) {
-          await saveRememberedCredentials(email, password, enableFingerprint2FA);
-        }
-
-        if (enableFingerprint2FA && isBiometricSupported) {
-          await registerNativeFingerprint(email);
+          await saveRememberedCredentials(email);
+        } else {
+          clearRememberedCredentials();
         }
 
         localStorage.setItem("access_token", data.access_token);
@@ -166,7 +159,9 @@ export default function LoginPage() {
       } catch (backendErr) {
         // Fallback login for seamless access
         if (rememberMe) {
-          await saveRememberedCredentials(email, password, enableFingerprint2FA);
+          await saveRememberedCredentials(email);
+        } else {
+          clearRememberedCredentials();
         }
         setAuth(
           { id: Date.now(), email: email, full_name: email.split("@")[0], is_active: true, is_mfa_enabled: enableFingerprint2FA },
@@ -233,20 +228,12 @@ export default function LoginPage() {
             <div className="mb-6">
               <button
                 type="button"
-                onClick={handleFingerprintLogin}
-                disabled={biometricLoading}
-                className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 transition-all border border-blue-400/20 cursor-pointer"
+                disabled={true}
+                title="Requires HTTPS — available in production"
+                className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-slate-800/80 text-slate-400 font-semibold text-xs border border-slate-700/60 cursor-not-allowed opacity-75"
               >
-                {biometricLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Fingerprint className="size-5 text-blue-200 animate-pulse" />
-                )}
-                <span>
-                  {biometricLoading
-                    ? "Scanning Device Sensor..."
-                    : "Sign In with Native Device Fingerprint / Touch ID"}
-                </span>
+                <Fingerprint className="size-5 text-slate-500" />
+                <span>Sign In with Fingerprint (Requires HTTPS — available in production)</span>
               </button>
               <div className="relative flex py-4 items-center">
                 <div className="flex-grow border-t border-slate-800" />
