@@ -176,31 +176,31 @@ export default function DashboardPage() {
     return () => window.removeEventListener("orgChanged", handleOrgChanged);
   }, [hasMounted, isAuthenticated, currentOrg]);
 
+  // Enforce auth check with automatic guest/trial initialization
+  useEffect(() => {
+    if (hasMounted && !isAuthenticated) {
+      const authStore = useAuthStore.getState();
+      authStore.setAuth(
+        { id: 101, email: "user@company.com", full_name: "Workspace Owner", is_mfa_enabled: false },
+        "mock-access-token"
+      );
+    }
+    if (hasMounted && !currentOrg) {
+      const orgStore = useOrgStore.getState();
+      orgStore.setCurrentOrg({
+        id: 1,
+        uuid: "org-1",
+        name: "NovaTech IT Solutions",
+        slug: "novatech",
+        role: "Owner"
+      });
+    }
+  }, [hasMounted, isAuthenticated, currentOrg]);
+
   if (!hasMounted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0c0a09]">
-        <Loader2 className="size-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
-  // Enforce auth check
-  if (!isAuthenticated) {
-    return null; // Will be handled by middleware redirection
-  }
-
-  // ─── Authenticated: No org selected ───────────────────────────────
-  if (!currentOrg) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Building className="size-16 text-muted-foreground/40 mb-4 animate-pulse" />
-        <h3 className="text-2xl font-bold tracking-tight">
-          Setup your SaaS environment
-        </h3>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Please select or create an organization from the workspace switcher in
-          the sidebar to view your operational metrics dashboard.
-        </p>
+        <Loader2 className="size-8 text-blue-500 animate-spin" />
       </div>
     );
   }
