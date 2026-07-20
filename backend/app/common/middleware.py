@@ -2,7 +2,7 @@ import time
 import asyncio
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
@@ -65,7 +65,7 @@ class RequestTimeoutMiddleware(BaseHTTPMiddleware):
                 error_code=ErrorCode.TIMEOUT_ERROR,
                 message=msg,
                 request_id=req_id,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 detail=msg
             ).model_dump(mode="json")
             

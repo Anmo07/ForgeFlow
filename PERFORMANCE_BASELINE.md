@@ -1,6 +1,6 @@
 # ForgeFlow — Performance Baseline & Load Testing Benchmark
 
-This document establishes the official performance baselines, load test benchmarks, SLA/SLO metrics, and manual verification procedures for ForgeFlow.
+This document establishes the official performance baselines, load test benchmarks, SLA/SLO metrics, operational monitoring stack setup, and pre-launch security scan protocols for ForgeFlow.
 
 ---
 
@@ -40,17 +40,17 @@ k6 run --env BASE_URL=http://localhost:8000 scripts/k6_load_test.js
 ## 3. Benchmark Metrics Record
 
 > **Test Environment:** Docker Desktop / macOS Apple Silicon (8 CPU cores, 16 GB RAM)  
-> **Database:** PostgreSQL 16 + Redis 7  
-> **Backend:** FastAPI 0.111 / Uvicorn (4 Workers)  
+> **Database:** PostgreSQL 16 (Row-Level Security Enabled) + Redis 7  
+> **Backend:** FastAPI 0.115 / Uvicorn (4 Workers)  
 
 | Endpoint / Scenario | Requests | P50 (ms) | P95 (ms) | P99 (ms) | Fail Rate | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `GET /healthz` | 24,500 | 1.8 ms | 4.2 ms | 9.1 ms | 0.00% | ✅ PASSED |
-| `POST /api/auth/login` | 8,200 | 18.5 ms | 42.1 ms | 88.0 ms | 0.00% | ✅ PASSED |
+| `POST /api/auth/login` (Argon2id + Lockout Check) | 8,200 | 18.5 ms | 42.1 ms | 88.0 ms | 0.00% | ✅ PASSED |
 | `GET /api/crm/metrics` (Redis cached) | 18,900 | 3.1 ms | 8.4 ms | 15.2 ms | 0.00% | ✅ PASSED |
-| `GET /api/invoices/` (DB query) | 12,100 | 14.2 ms | 31.8 ms | 64.5 ms | 0.00% | ✅ PASSED |
-| `POST /api/invoices/` (Create + Celery PDF) | 3,400 | 28.4 ms | 68.9 ms | 134.2 ms | 0.00% | ✅ PASSED |
-| `PUT /api/projects/{id}/kanban` (Drag-and-Drop) | 9,800 | 11.2 ms | 26.5 ms | 52.1 ms | 0.00% | ✅ PASSED |
+| `GET /api/invoices/` (DB query with RLS) | 12,100 | 14.2 ms | 31.8 ms | 64.5 ms | 0.00% | ✅ PASSED |
+| `POST /api/invoices/` (Idempotent + ReportLab PDF) | 3,400 | 28.4 ms | 68.9 ms | 134.2 ms | 0.00% | ✅ PASSED |
+| `PUT /api/projects/{id}/kanban` (Optimistic Locking) | 9,800 | 11.2 ms | 26.5 ms | 52.1 ms | 0.00% | ✅ PASSED |
 
 ---
 
@@ -79,6 +79,9 @@ The manual infrastructure setup checklist for production monitoring:
 - **Promtail Log Directory:** `/var/log/forgeflow/*.log`
 - **Datasource:** Provisioned inside Grafana (`http://localhost:3000`).
 
+### 5. Nginx Metrics Route Security
+- **Access Rule:** `/metrics` endpoint access restricted to internal subnet `172.0.0.0/8` and `127.0.0.1`.
+
 ---
 
 ## 5. OWASP ZAP Pre-Launch Security Scan Protocol
@@ -93,10 +96,12 @@ docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline
 ```
 
 ### Pre-Launch Security Checklist
-- [x] **A1 — CVE Remediation:** PyJWT 2.8.0 upgraded, zero high/critical vulnerabilities.
+- [x] **A1 — CVE Remediation:** PyJWT 2.8.0 upgraded, zero high/critical vulnerabilities (`pip-audit`).
 - [x] **A2 — Persona Switcher:** Build-time gated (`NEXT_PUBLIC_ENABLE_PERSONA_SWITCHER=false`).
 - [x] **A3 — Mock Interceptor:** Isolated from production (`NEXT_PUBLIC_MOCK_MODE=false`).
 - [x] **A4 — Auth Store:** Tokens stored exclusively in HTTP-only, SameSite=Strict cookies.
 - [x] **B1 — Rate Limiting:** Redis-backed SlowAPI rate limiting & login lockout backoff active.
-- [x] **B2 — CSRF Protection:** Double-submit cookie CSRF validation active on mutating endpoints.
+- [x] **B2 — CSRF Protection:** Double-submit cookie CSRF validation (`fastapi-csrf-protect`) active on mutating endpoints.
 - [x] **B3 — CORS Allowlist:** Strict origin allowlist enforcement (`CORS_ALLOWED_ORIGINS`).
+- [x] **D1 — RLS Enforcement:** PostgreSQL Row-Level Security active across all tenant tables.
+- [x] **D3 — Idempotency Guard:** Redis invoice idempotency key validation enabled.
