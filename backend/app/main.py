@@ -306,6 +306,7 @@ def metrics(db: Session = Depends(get_db)):
 # Health & Resilience routes
 @app.get('/api/health/live')
 @app.get('/health')
+@app.get('/healthz')
 async def health_check_live():
     """Liveness check: process is alive."""
     return {'status': 'ok'}

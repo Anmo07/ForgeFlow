@@ -26,7 +26,7 @@ The automated load test script is maintained at [`scripts/k6_load_test.js`](file
 
 ```bash
 # Execute local k6 benchmark run against backend API
-k6 run --env BASE_URL=http://localhost:8000 scripts/k6_load_test.js
+k6 run --env BASE_URL=http://localhost:8000 scripts/load/baseline.js
 ```
 
 ### Test Stages & Concurrency Ramp-Up
