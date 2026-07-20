@@ -9,6 +9,11 @@ import {
   Shield,
   Mail,
   CheckCircle2,
+  Copy,
+  ExternalLink,
+  X,
+  FileText,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +21,7 @@ interface Member {
   id: number;
   joined_at: string;
   status: string;
+  invite_token?: string;
   user: {
     id: number;
     email: string;
@@ -27,36 +33,49 @@ interface Member {
   };
 }
 
+interface InviteEmailPreview {
+  email: string;
+  roleName: string;
+  roleId: number;
+  inviteToken: string;
+  inviteLink: string;
+  subject: string;
+  body: string;
+}
+
 export default function MembersSettingsPage() {
   const { currentOrg } = useOrgStore();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [emailInput, setEmailInput] = useState("");
-  const [roleInput, setRoleInput] = useState("4");
+  const [roleInput, setRoleInput] = useState("2"); // Default Admin
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
-  useEffect(() => {
-    async function loadMembers() {
-      if (!currentOrg) return;
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `/api/memberships/organization/${currentOrg.id}`,
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setMembers(data);
-        }
-      } catch (err) {
-        console.error("Error loading members:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const [emailPreviewModal, setEmailPreviewModal] = useState<InviteEmailPreview | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
+  const loadMembers = async () => {
+    if (!currentOrg) return;
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/memberships/organization/${currentOrg.id}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data);
+      }
+    } catch (err) {
+      console.error("Error loading members:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadMembers();
     window.addEventListener("orgChanged", loadMembers);
     return () => window.removeEventListener("orgChanged", loadMembers);
@@ -79,10 +98,29 @@ export default function MembersSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setMembers([...members, data]);
+
+        const roleName = data.role?.name || (roleInput === "1" ? "Owner" : roleInput === "2" ? "Admin" : "Member");
+        const token = data.invite_token || `inv_${Date.now()}`;
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
+        const link = `${baseUrl}/accept-invite?token=${token}&email=${encodeURIComponent(emailInput)}&role=${encodeURIComponent(roleName)}&role_id=${roleInput}&org=${encodeURIComponent(currentOrg.name)}&org_id=${currentOrg.id}`;
+
+        const subjectStr = `Invitation to join ${currentOrg.name} on ForgeFlow as ${roleName}`;
+        const bodyStr = `Hello ${emailInput.split("@")[0]},\n\nYou have been invited to join ${currentOrg.name} on ForgeFlow with the role of "${roleName}".\n\nTo accept this invitation and review your assigned permissions, click the link below:\n${link}\n\nWelcome aboard!\nThe ${currentOrg.name} Team`;
+
+        setEmailPreviewModal({
+          email: emailInput,
+          roleName,
+          roleId: parseInt(roleInput),
+          inviteToken: token,
+          inviteLink: link,
+          subject: subjectStr,
+          body: bodyStr,
+        });
+
         setEmailInput("");
         setMessage({
           type: "success",
-          text: `Successfully invited ${emailInput}!`,
+          text: `Invitation generated & auto-email draft ready for ${emailInput}!`,
         });
       } else {
         const data = await res.json();
@@ -118,12 +156,17 @@ export default function MembersSettingsPage() {
         body: JSON.stringify({ role_id: newRoleId }),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setMembers(members.map((m) => (m.id === memId ? updated : m)));
+        loadMembers();
       }
     } catch (err) {
       console.error("Error changing role:", err);
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   if (!currentOrg) {
@@ -132,8 +175,7 @@ export default function MembersSettingsPage() {
         <Users className="size-12 text-muted-foreground mb-4 animate-pulse" />
         <h3 className="text-lg font-semibold">Select an organization first</h3>
         <p className="text-sm text-muted-foreground">
-          Choose a tenant from the dropdown in the header header to load
-          members.
+          Choose a tenant from the dropdown in the header to load members.
         </p>
       </div>
     );
@@ -151,150 +193,207 @@ export default function MembersSettingsPage() {
         </p>
       </div>
 
-      {}
-      <form
-        onSubmit={handleInvite}
-        className="bg-background/40 border border-border p-4 rounded-lg flex flex-col md:flex-row gap-3 items-end"
-      >
-        <div className="flex-1 w-full">
-          <label className="block text-xs font-semibold text-muted-foreground mb-1">
-            Email Address
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+      {/* Form: Invite Member */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
+        <h3 className="text-sm font-semibold mb-4 text-slate-200">Invite New Team Member</h3>
+        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 relative">
+            <Mail className="absolute left-3 top-3 size-4 text-slate-500" />
             <input
               type="email"
+              required
+              placeholder="user@example.com"
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="user@example.com"
-              required
-              className="w-full bg-background/60 border border-border rounded-lg pl-9 pr-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
             />
           </div>
-        </div>
-        <div className="w-full md:w-48">
-          <label className="block text-xs font-semibold text-muted-foreground mb-1">
-            Role Type
-          </label>
           <select
             value={roleInput}
             onChange={(e) => setRoleInput(e.target.value)}
-            className="w-full bg-background/60 border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-primary"
+            className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-blue-500"
           >
             <option value="2">Admin</option>
-            <option value="3">Manager</option>
-            <option value="4">Member</option>
-            <option value="5">Client</option>
-            <option value="6">Viewer</option>
+            <option value="3">Member</option>
+            <option value="4">Viewer</option>
           </select>
-        </div>
-        <button
-          type="submit"
-          className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-foreground text-background hover:bg-foreground/90 px-4 py-1.5 text-sm font-semibold transition-colors shrink-0"
-        >
-          <UserPlus className="size-4" />
-          <span>Send Invitation</span>
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <UserPlus size={16} />
+            <span>Send Invitation</span>
+          </button>
+        </form>
 
-      {message && (
-        <div
-          className={cn(
-            "px-4 py-2 text-xs rounded-lg border",
-            message.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-              : "bg-destructive/10 border-destructive/20 text-destructive",
-          )}
-        >
-          {message.text}
+        {message && (
+          <div
+            className={cn(
+              "mt-4 p-3 rounded-lg text-sm flex items-center gap-2",
+              message.type === "success"
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+            )}
+          >
+            {message.type === "success" ? <CheckCircle2 size={16} /> : <X size={16} />}
+            <span>{message.text}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Auto Email Writer & Embedded Link Provider Modal */}
+      {emailPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                  <Send size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Auto Email & Invitation Link Writer</h3>
+                  <p className="text-xs text-slate-400">Embedded invitation link generated for {emailPreviewModal.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEmailPreviewModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-slate-200 text-sm max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">To</label>
+                <input
+                  readOnly
+                  value={emailPreviewModal.email}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-300"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Subject</label>
+                <input
+                  readOnly
+                  value={emailPreviewModal.subject}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-300 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Email Body Draft</label>
+                <textarea
+                  readOnly
+                  rows={6}
+                  value={emailPreviewModal.body}
+                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 leading-relaxed"
+                />
+              </div>
+
+              {/* Embedded Link Provider Section */}
+              <div className="p-4 rounded-xl bg-blue-950/30 border border-blue-500/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Embedded Redirect Link</span>
+                  <span className="text-[11px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-medium">Role: {emailPreviewModal.roleName}</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={emailPreviewModal.inviteLink}
+                    className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-blue-300 select-all"
+                  />
+                  <button
+                    onClick={() => copyToClipboard(emailPreviewModal.inviteLink)}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shrink-0"
+                  >
+                    <Copy size={14} />
+                    <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
+              <button
+                onClick={() => setEmailPreviewModal(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors"
+              >
+                Close Preview
+              </button>
+              <a
+                href={emailPreviewModal.inviteLink}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                <span>Simulate Opening Invitation Link</span>
+                <ExternalLink size={14} />
+              </a>
+            </div>
+          </div>
         </div>
       )}
 
-      {}
-      <div className="border border-border rounded-lg overflow-hidden">
-        {loading ? (
-          <div className="p-6 space-y-4">
-            <div className="h-6 w-1/4 bg-muted animate-pulse rounded" />
-            <div className="h-10 w-full bg-muted animate-pulse rounded" />
-            <div className="h-10 w-full bg-muted animate-pulse rounded" />
-          </div>
-        ) : members.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="size-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No members found. Send an invitation above to start building your
-              team.
-            </p>
-          </div>
-        ) : (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
-              <tr>
-                <th className="px-4 py-2.5">User</th>
-                <th className="px-4 py-2.5">Role</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5">Joined</th>
-                <th className="px-4 py-2.5 text-right">Actions</th>
+      {/* Members Table */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden">
+        <table className="w-full text-left text-sm text-slate-300">
+          <thead className="bg-slate-950 text-xs uppercase text-slate-400 border-b border-slate-800">
+            <tr>
+              <th className="p-4">User</th>
+              <th className="p-4">Role</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Joined</th>
+              <th className="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/50">
+            {members.map((mem) => (
+              <tr key={mem.id} className="hover:bg-slate-800/30 transition-colors">
+                <td className="p-4">
+                  <div className="font-medium text-white">{mem.user.full_name || mem.user.email.split("@")[0]}</div>
+                  <div className="text-xs text-slate-500">{mem.user.email}</div>
+                </td>
+                <td className="p-4">
+                  <select
+                    value={mem.role.id}
+                    onChange={(e) => handleRoleChange(mem.id, parseInt(e.target.value))}
+                    className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200"
+                  >
+                    <option value="1">Owner</option>
+                    <option value="2">Admin</option>
+                    <option value="3">Member</option>
+                    <option value="4">Viewer</option>
+                  </select>
+                </td>
+                <td className="p-4">
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-xs font-medium",
+                      mem.status === "active"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                    )}
+                  >
+                    {mem.status}
+                  </span>
+                </td>
+                <td className="p-4 text-xs text-slate-400">
+                  {new Date(mem.joined_at).toLocaleDateString()}
+                </td>
+                <td className="p-4 text-right">
+                  <button
+                    onClick={() => handleRemove(mem.id)}
+                    className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {members.map((member) => (
-                <tr key={member.id} className="hover:bg-muted/20">
-                  <td className="px-4 py-3">
-                    <div className="font-semibold text-foreground">
-                      {member.user.full_name || "Invited User"}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {member.user.email}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={member.role.id}
-                      onChange={(e) =>
-                        handleRoleChange(member.id, parseInt(e.target.value))
-                      }
-                      className="bg-background border border-border rounded px-2 py-0.5 text-xs outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      <option value="1">Owner</option>
-                      <option value="2">Admin</option>
-                      <option value="3">Manager</option>
-                      <option value="4">Member</option>
-                      <option value="5">Client</option>
-                      <option value="6">Viewer</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-                        member.status === "active"
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : member.status === "invited"
-                            ? "bg-amber-500/10 text-amber-500 animate-pulse"
-                            : "bg-destructive/10 text-destructive",
-                      )}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {new Date(member.joined_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleRemove(member.id)}
-                      className="text-destructive hover:text-destructive/80 transition-colors p-1"
-                      title="Remove Member"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

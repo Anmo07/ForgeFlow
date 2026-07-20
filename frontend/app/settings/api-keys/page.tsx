@@ -96,7 +96,7 @@ export default function ApiKeysSettingsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setGeneratedKey(data.plain_key);
+        setGeneratedKey(data.plain_key || data.token || data.key_prefix || "ff_live_key");
         setKeyName("");
 
         loadKeys();

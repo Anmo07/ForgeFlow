@@ -199,7 +199,7 @@ export default function InvoicesPage() {
     setErrorMsg("");
 
     try {
-      await apiFetch("/api/invoices", {
+      const createdInvoice = await apiFetch<any>("/api/invoices", {
         orgId: currentOrg.id,
         method: "POST",
         body: JSON.stringify({
@@ -221,6 +221,10 @@ export default function InvoicesPage() {
       setLineItems([{ description: "", quantity: 1, unit_price: 0 }]);
 
       await loadInvoiceData();
+
+      if (createdInvoice && createdInvoice.id) {
+        window.open(`/api/invoices/${createdInvoice.id}/pdf`, "_blank");
+      }
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to create invoice");
     } finally {
@@ -249,28 +253,13 @@ export default function InvoicesPage() {
   ) => {
     if (!currentOrg) return;
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/invoices/${invoiceId}/pdf`,
-        {
-          credentials: "include",
-          headers: {
-            "X-Organization-ID": String(currentOrg.id),
-          },
-        },
-      );
-      if (!response.ok) throw new Error("Failed to download PDF");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${invoiceNumber}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const pdfWindow = window.open(`/api/invoices/${invoiceId}/pdf`, "_blank");
+      if (!pdfWindow) {
+        window.location.href = `/api/invoices/${invoiceId}/pdf`;
+      }
     } catch (err) {
-      console.error("PDF download failed", err);
-      alert("Could not download PDF invoice.");
+      console.error("PDF open failed", err);
+      alert("Could not open PDF invoice window.");
     }
   };
 

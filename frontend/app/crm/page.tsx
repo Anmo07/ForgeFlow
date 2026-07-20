@@ -708,6 +708,7 @@ export default function CRMPage() {
                               className="bg-background/80 border border-border rounded px-2 py-1 text-xs outline-none text-foreground"
                             >
                               <option value="new">New</option>
+                              <option value="followed_up">Followed Up</option>
                               <option value="contacted">Contacted</option>
                               <option value="qualified">Qualified</option>
                               <option value="proposal">Proposal</option>
@@ -958,6 +959,7 @@ export default function CRMPage() {
                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
                   >
                     <option value="new">New</option>
+                    <option value="followed_up">Followed Up</option>
                     <option value="contacted">Contacted</option>
                     <option value="qualified">Qualified</option>
                     <option value="proposal">Proposal</option>
