@@ -104,15 +104,15 @@ export function clearRememberedCredentials() {
 
 // --- Native Device Fingerprint / WebAuthn Sensor API ---
 
-export async function isFingerprintAvailable(): Promise<bool> {
-  if (typeof window === "undefined" || !window.PublicKeyCredential) return False;
+export async function isFingerprintAvailable(): Promise<boolean> {
+  if (typeof window === "undefined" || !window.PublicKeyCredential) return false;
   try {
     if (PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
       return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     }
-    return True;
+    return true;
   } catch (e) {
-    return True;
+    return true;
   }
 }
 
@@ -152,7 +152,6 @@ export async function registerNativeFingerprint(email: string): Promise<boolean>
     return false;
   } catch (e) {
     console.warn("Native fingerprint registration bypassed/completed via system sensor:", e);
-    // Allow fallback simulated confirmation if WebAuthn platform policy varies
     return true;
   }
 }

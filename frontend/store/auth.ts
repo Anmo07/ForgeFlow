@@ -6,6 +6,7 @@ export interface AuthUser {
   email: string;
   full_name: string | null;
   is_active: boolean;
+  is_mfa_enabled?: boolean;
 }
 
 interface AuthState {

@@ -104,10 +104,10 @@ export default function LoginPage() {
             id: Date.now(),
             email: email,
             full_name: email.split("@")[0],
+            is_active: true,
             is_mfa_enabled: true,
           },
-          "mock-biometric-jwt-token",
-          "mock-refresh-token"
+          "mock-biometric-jwt-token"
         );
         if (rememberMe) {
           await saveRememberedCredentials(email, password || "••••••••", true);
@@ -169,7 +169,7 @@ export default function LoginPage() {
           await saveRememberedCredentials(email, password, enableFingerprint2FA);
         }
         setAuth(
-          { id: Date.now(), email: email, full_name: email.split("@")[0], is_mfa_enabled: enableFingerprint2FA },
+          { id: Date.now(), email: email, full_name: email.split("@")[0], is_active: true, is_mfa_enabled: enableFingerprint2FA },
           "mock-access-token"
         );
       }

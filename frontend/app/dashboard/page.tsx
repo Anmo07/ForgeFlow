@@ -181,7 +181,7 @@ export default function DashboardPage() {
     if (hasMounted && !isAuthenticated) {
       const authStore = useAuthStore.getState();
       authStore.setAuth(
-        { id: 101, email: "user@company.com", full_name: "Workspace Owner", is_mfa_enabled: false },
+        { id: 101, email: "user@company.com", full_name: "Workspace Owner", is_active: true, is_mfa_enabled: false },
         "mock-access-token"
       );
     }
@@ -263,7 +263,7 @@ export default function DashboardPage() {
           <p className="text-sm text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] mt-1">
             Here is a summary of what&apos;s happening at{" "}
             <span className="font-semibold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
-              {currentOrg.name}
+              {currentOrg?.name || "NovaTech IT Solutions"}
             </span>{" "}
             today.
           </p>

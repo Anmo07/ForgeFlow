@@ -11,6 +11,7 @@ export interface Organization {
   company_size?: string;
   website?: string;
   description?: string;
+  role?: string;
 }
 
 interface OrganizationState {

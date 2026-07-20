@@ -22,7 +22,7 @@ export default function GlobalError({
       const authStore = useAuthStore.getState();
       if (!authStore.isAuthenticated) {
         authStore.setAuth(
-          { id: 101, email: "user@company.com", full_name: "Workspace Owner" },
+          { id: 101, email: "user@company.com", full_name: "Workspace Owner", is_active: true },
           "mock-access-token"
         );
       }
