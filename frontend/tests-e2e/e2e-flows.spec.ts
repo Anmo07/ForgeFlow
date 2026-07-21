@@ -104,6 +104,7 @@ async function submitLoginForm(page: any, email: string, pass: string) {
     },
     { email, pass }
   );
+  console.log("SUBMIT_LOGIN_RESULT:", email, pass, JSON.stringify(result));
 
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
