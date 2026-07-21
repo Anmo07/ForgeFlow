@@ -127,6 +127,7 @@ export default function LoginPage() {
     if (!activeToken && typeof window !== "undefined") {
       activeToken = (window as any).__MOCK_TURNSTILE_TOKEN__ || "mock-turnstile-token";
     }
+    console.log("LOGIN_SUBMIT_START", email, password ? "[SET]" : "[EMPTY]", activeToken);
 
     setLoading(true);
     try {
@@ -250,7 +251,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form action="#" onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                 Email Address

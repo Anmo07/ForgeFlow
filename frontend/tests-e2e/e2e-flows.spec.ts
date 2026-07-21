@@ -68,13 +68,14 @@ function runTeardown(orgId: number, userId: number) {
 
 async function submitLoginForm(page: any, email: string, pass: string) {
   await page.waitForLoadState("domcontentloaded");
-  await page.waitForSelector("button[type='submit']:not([disabled])");
+  await page.waitForSelector("#login-email");
+  await page.waitForTimeout(500);
   await page.evaluate(() => {
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', pass);
-  await page.click('button[type="submit"]', { force: true });
+  await page.fill('#login-email', email);
+  await page.fill('#login-password', pass);
+  await page.locator('#login-password').press('Enter');
 
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
