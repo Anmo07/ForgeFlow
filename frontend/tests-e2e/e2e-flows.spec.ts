@@ -84,6 +84,18 @@ async function submitLoginForm(page: any, email: string, pass: string) {
         if (res.ok && data.access_token) {
           document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
           localStorage.setItem("access_token", data.access_token);
+
+          let org = null;
+          try {
+            const orgRes = await fetch("/api/organizations/", {
+              headers: { "Authorization": `Bearer ${data.access_token}` },
+            });
+            const orgs = await orgRes.json();
+            if (Array.isArray(orgs) && orgs.length > 0) {
+              org = orgs[0];
+            }
+          } catch (e) {}
+
           const authState = {
             state: {
               user: data.user,
@@ -93,6 +105,15 @@ async function submitLoginForm(page: any, email: string, pass: string) {
             version: 0,
           };
           localStorage.setItem("forgeflow-auth", JSON.stringify(authState));
+
+          if (org) {
+            const orgState = {
+              state: { currentOrg: org },
+              version: 0,
+            };
+            localStorage.setItem("forgeflow-organization", JSON.stringify(orgState));
+          }
+
           window.location.href = "/dashboard";
           return { success: true };
         } else {
