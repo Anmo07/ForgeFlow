@@ -250,7 +250,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} action="javascript:void(0);" className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                 Email Address

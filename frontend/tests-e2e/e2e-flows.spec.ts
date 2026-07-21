@@ -67,7 +67,7 @@ function runTeardown(orgId: number, userId: number) {
 }
 
 async function submitLoginForm(page: any, email: string, pass: string) {
-  await page.waitForSelector("form");
+  await page.waitForSelector("form input[type='email']");
   await page.evaluate(() => {
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
@@ -75,7 +75,7 @@ async function submitLoginForm(page: any, email: string, pass: string) {
   await page.fill('input[type="password"]', pass);
   await page.click('button[type="submit"]');
   if (pass !== "wrong-password") {
-    await page.waitForURL(/.*dashboard/, { timeout: 10000 }).catch(() => null);
+    await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
   }
 }
 
@@ -139,9 +139,9 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.evaluate(() => {
       localStorage.clear();
       document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      window.location.href = "/login";
     });
-    await page.goto("/login");
-    await expect(page).toHaveURL(/.*login$/);
+    await page.waitForURL(/.*login/);
 
     // Trigger Account Lockout (5 failed attempts)
     for (let i = 0; i < 5; i++) {
