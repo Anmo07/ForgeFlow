@@ -33,7 +33,7 @@ Call log:
 - text: Or Use Credentials Email Address
 - textbox "Email Address":
   - /placeholder: name@company.com
-  - text: e2e_admin_22866@forgeflow.com
+  - text: e2e_admin_67975@forgeflow.com
 - text: Password
 - link "Forgot password?":
   - /url: "#"
