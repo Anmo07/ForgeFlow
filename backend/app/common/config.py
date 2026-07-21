@@ -30,7 +30,7 @@ def _require(name: str, *, default: str=None, allow_placeholder: bool=False) -> 
     return value
 _testing = _is_testing()
 JWT_SECRET_KEY = _require('JWT_SECRET_KEY', default=_PLACEHOLDER_JWT if _testing else None, allow_placeholder=_testing)
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql+psycopg2://postgres:postgres@postgres:5432/forgeflow')
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql+psycopg2://postgres:postgres@localhost:5432/forgeflow')
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'localhost:9000')
 MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', 'minioadmin')

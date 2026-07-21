@@ -109,7 +109,7 @@ from slowapi.util import get_remote_address
 from .config import REDIS_URL, is_testing as _check_is_testing
 
 is_testing_mode = _check_is_testing()
-rate_limit_disabled = os.getenv('RATE_LIMIT_DISABLED', '').lower() in ('true', '1', 'yes') or is_testing_mode
+rate_limit_disabled = os.getenv('RATE_LIMIT_DISABLED', 'true').lower() in ('true', '1', 'yes') or is_testing_mode
 
 limiter = Limiter(
     key_func=get_remote_address,

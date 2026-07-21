@@ -75,10 +75,10 @@ async function submitLoginForm(page: any, email: string, pass: string) {
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', pass);
   await page.click('button[type="submit"]', { force: true });
+
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
   } else {
-    // Small delay to allow state & API response to settle after failed login
     await page.waitForTimeout(600);
   }
 }

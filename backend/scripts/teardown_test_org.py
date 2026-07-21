@@ -11,7 +11,7 @@ if parent_dir not in sys.path:
 from dotenv import load_dotenv
 for env_file in [os.path.join(parent_dir, "..", ".env"), os.path.join(parent_dir, ".env")]:
     if os.path.exists(env_file):
-        load_dotenv(env_file, override=False)
+        load_dotenv(env_file, override=True)
 
 from app.common.database import SessionLocal
 from sqlalchemy import text

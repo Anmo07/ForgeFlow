@@ -91,10 +91,10 @@ Call log:
   75  |   await page.fill('input[type="email"]', email);
   76  |   await page.fill('input[type="password"]', pass);
   77  |   await page.click('button[type="submit"]', { force: true });
-  78  |   if (pass !== "wrong-password") {
-  79  |     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
-  80  |   } else {
-  81  |     // Small delay to allow state & API response to settle after failed login
+  78  | 
+  79  |   if (pass !== "wrong-password") {
+  80  |     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
+  81  |   } else {
   82  |     await page.waitForTimeout(600);
   83  |   }
   84  | }
