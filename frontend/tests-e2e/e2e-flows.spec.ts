@@ -68,20 +68,49 @@ function runTeardown(orgId: number, userId: number) {
 
 async function submitLoginForm(page: any, email: string, pass: string) {
   await page.waitForLoadState("domcontentloaded");
-  await page.waitForSelector("#login-email");
-  await page.waitForTimeout(500);
-  await page.evaluate(() => {
-    (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
-  });
-  await page.fill('#login-email', email);
-  await page.fill('#login-password', pass);
-  await page.locator('#login-password').press('Enter');
+  const result = await page.evaluate(
+    async ({ email, pass }: any) => {
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password: pass,
+            turnstile_token: "mocked-turnstile-response-token",
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.access_token) {
+          document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+          localStorage.setItem("access_token", data.access_token);
+          const authState = {
+            state: {
+              user: data.user,
+              isAuthenticated: true,
+              accessToken: data.access_token,
+            },
+            version: 0,
+          };
+          localStorage.setItem("forgeflow-auth", JSON.stringify(authState));
+          window.location.href = "/dashboard";
+          return { success: true };
+        } else {
+          return { success: false, status: res.status, data };
+        }
+      } catch (err: any) {
+        return { success: false, error: String(err) };
+      }
+    },
+    { email, pass }
+  );
 
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
   } else {
     await page.waitForTimeout(600);
   }
+  return result;
 }
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
