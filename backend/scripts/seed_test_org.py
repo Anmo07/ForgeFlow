@@ -9,6 +9,11 @@ parent_dir = os.path.abspath(os.path.join(script_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
+from dotenv import load_dotenv
+for env_file in [os.path.join(parent_dir, "..", ".env"), os.path.join(parent_dir, ".env")]:
+    if os.path.exists(env_file):
+        load_dotenv(env_file, override=False)
+
 from app.common.database import SessionLocal
 from app.organizations.models import Organization
 from app.auth.models import User

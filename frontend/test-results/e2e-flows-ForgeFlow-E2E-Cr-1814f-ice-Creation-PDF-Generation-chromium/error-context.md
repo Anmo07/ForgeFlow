@@ -7,75 +7,56 @@
 # Test info
 
 - Name: e2e-flows.spec.ts >> ForgeFlow E2E Critical Flows >> Flow 2: Invoice Creation & PDF Generation
-- Location: ForgeFlow/frontend/tests-e2e/e2e-flows.spec.ts:149:7
+- Location: tests-e2e/e2e-flows.spec.ts:149:7
 
 # Error details
 
 ```
-Error: Seeding failed: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
-	Is the server running on that host and accepting TCP/IP connections?
-connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
-	Is the server running on that host and accepting TCP/IP connections?
+Error: expect(locator).toBeVisible() failed
 
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Locator: locator('button').filter({ hasText: 'E2E Test Org' })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('button').filter({ hasText: 'E2E Test Org' })
+
+```
+
+```yaml
+- link "ForgeFlow":
+  - /url: /
+- heading "Welcome back" [level=1]
+- paragraph: Sign in to your encrypted MSP Command Center
+- text: Email Address
+- textbox "Email Address":
+  - /placeholder: name@company.com
+  - text: e2e_admin_38701@forgeflow.com
+- text: Password
+- link "Forgot password?":
+  - /url: "#"
+- textbox "Password":
+  - /placeholder: ••••••••
+- button
+- checkbox "Remember me on this machine (Encrypted Cookie)" [checked]
+- text: Remember me on this machine (Encrypted Cookie)
+- checkbox "Enable Fingerprint Sensor 2-Step Verification for easy login" [checked]
+- text: Enable Fingerprint Sensor 2-Step Verification for easy login
+- button "Sign In with Credentials"
+- paragraph:
+  - text: Don't have an account?
+  - link "Sign Up":
+    - /url: /register
+- alert
+- button "Open Tanstack query devtools":
+  - img
 ```
 
 # Test source
 
 ```ts
-  1   | import { test, expect } from "@playwright/test";
-  2   | import { execSync } from "child_process";
-  3   | import * as path from "path";
-  4   | import * as fs from "fs";
-  5   | 
-  6   | function getEnvFromRoot(): Record<string, string> {
-  7   |   const envPath = path.resolve(__dirname, "../../.env");
-  8   |   const envVars: Record<string, string> = {};
-  9   |   for (const [key, val] of Object.entries(process.env)) {
-  10  |     if (val !== undefined) {
-  11  |       envVars[key] = val;
-  12  |     }
-  13  |   }
-  14  |   if (fs.existsSync(envPath)) {
-  15  |     const content = fs.readFileSync(envPath, "utf8");
-  16  |     content.split("\n").forEach(line => {
-  17  |       const match = line.trim().match(/^([\w.\-]+)\s*=\s*(.*)?\s*$/);
-  18  |       if (match) {
-  19  |         const key = match[1];
-  20  |         let value = match[2] || "";
-  21  |         if (value.length > 0 && value.startsWith('"') && value.endsWith('"')) {
-  22  |           value = value.substring(1, value.length - 1);
-  23  |         }
-  24  |         if (value.length > 0 && value.startsWith("'") && value.endsWith("'")) {
-  25  |           value = value.substring(1, value.length - 1);
-  26  |         }
-  27  |         envVars[key] = value;
-  28  |       }
-  29  |     });
-  30  |   }
-  31  |   return envVars;
-  32  | }
-  33  | 
-  34  | // Helper to run backend seeding/teardown commands
-  35  | function runSeeding(orgName: string, email: string, pass: string) {
-  36  |   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
-  37  |   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
-  38  |   const backendPath = path.resolve(__dirname, "../../backend");
-  39  |   const result = execSync(
-  40  |     `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-  41  |     { encoding: "utf8", env: getEnvFromRoot() as NodeJS.ProcessEnv, cwd: backendPath }
-  42  |   );
-  43  |   const lines = result.split("\n");
-  44  |   for (const line of lines) {
-  45  |     const trimmed = line.trim();
-  46  |     if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-  47  |       try {
-  48  |         return JSON.parse(trimmed);
-  49  |       } catch (e) {
-  50  |         // ignore and continue
-  51  |       }
-  52  |     }
-  53  |   }
   54  |   throw new Error(`Failed to find JSON output in seeding result: ${result}`);
   55  | }
   56  | 
@@ -118,8 +99,7 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
   93  |     // Seed an isolated organization for each test case
   94  |     seededData = runSeeding("E2E Test Org", adminEmail, adminPassword);
   95  |     if (seededData.error) {
-> 96  |       throw new Error(`Seeding failed: ${seededData.error}`);
-      |             ^ Error: Seeding failed: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
+  96  |       throw new Error(`Seeding failed: ${seededData.error}`);
   97  |     }
   98  |   });
   99  | 
@@ -177,7 +157,8 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
   151 |     await page.goto("/login");
   152 |     await submitLoginForm(page, adminEmail, adminPassword);
   153 |     await expect(page).toHaveURL(/.*dashboard/);
-  154 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
+> 154 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
+      |                                                                              ^ Error: expect(locator).toBeVisible() failed
   155 | 
   156 |     // Navigate to Invoices
   157 |     await page.goto("/invoices");
@@ -220,4 +201,62 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
   194 |     await page.click("text=Add Item");
   195 |     await page.fill('input[placeholder*="product or service"] >> nth=1', "Item 2");
   196 |     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
+  197 |     await page.fill('input[placeholder="Price"] >> nth=1', "100");
+  198 | 
+  199 |     await page.click("text=Add Item");
+  200 |     await page.fill('input[placeholder*="product or service"] >> nth=2', "Item 3");
+  201 |     await page.fill('input[placeholder="Qty"] >> nth=2', "5");
+  202 |     await page.fill('input[placeholder="Price"] >> nth=2', "10");
+  203 | 
+  204 |     await page.fill('label:has-text("Tax Rate") + input', "10");
+  205 |     await page.fill('textarea[placeholder*="Notes"]', "E2E Test Invoice Notes");
+  206 |     await page.click('button:has-text("Create & Render")');
+  207 | 
+  208 |     // Verify it appears in table
+  209 |     const totalCell = page.locator("table tbody td:has-text('$275.00')");
+  210 |     await expect(totalCell).toBeVisible();
+  211 | 
+  212 |     // Download PDF (intercept browser download event)
+  213 |     const [download] = await Promise.all([
+  214 |       page.waitForEvent("download"),
+  215 |       page.click('button[title="Download PDF"] >> nth=0')
+  216 |     ]);
+  217 | 
+  218 |     expect(download.suggestedFilename()).toContain(".pdf");
+  219 |     const downloadPath = await download.path();
+  220 |     const fileBytes = fs.readFileSync(downloadPath!);
+  221 |     
+  222 |     // Verify magic bytes %PDF
+  223 |     const pdfMagicBytes = fileBytes.toString("utf8", 0, 4);
+  224 |     expect(pdfMagicBytes).toBe("%PDF");
+  225 |   });
+  226 | 
+  227 |   // Flow 3: Kanban Task Lifecycle
+  228 |   test("Flow 3: Kanban Projects and Tasks", async ({ page }) => {
+  229 |     await page.goto("/login");
+  230 |     await submitLoginForm(page, adminEmail, adminPassword);
+  231 |     await expect(page).toHaveURL(/.*dashboard/);
+  232 |     await expect(page.locator("button").filter({ hasText: "E2E Test Org" })).toBeVisible();
+  233 | 
+  234 |     // Create project
+  235 |     await page.goto("/projects");
+  236 |     await page.click("text=New Project");
+  237 |     try {
+  238 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
+  239 |     } catch (e) {
+  240 |       await page.click("text=New Project");
+  241 |     }
+  242 |     await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
+  243 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
+  244 |     await page.click("text=Create Project");
+  245 | 
+  246 |     // Add tasks
+  247 |     await page.click("text=E2E Projects Space");
+  248 |     
+  249 |     // Add Task 1
+  250 |     await page.click("text=Add Task");
+  251 |     try {
+  252 |       await page.waitForSelector('text=Create Task', { timeout: 2000 });
+  253 |     } catch (e) {
+  254 |       await page.click("text=Add Task");
 ```
