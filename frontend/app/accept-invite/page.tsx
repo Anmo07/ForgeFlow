@@ -71,11 +71,10 @@ function AcceptInviteContent() {
             id: Date.now(),
             email: email,
             full_name: email.split("@")[0],
-            role: roleName,
+            is_active: true,
             is_mfa_enabled: false,
           },
-          "mock-invited-jwt-token",
-          "mock-refresh-token"
+          "mock-invited-jwt-token"
         );
       }
 

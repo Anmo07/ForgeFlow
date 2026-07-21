@@ -8,8 +8,8 @@ import { type HTMLAttributes, forwardRef } from 'react';
 interface GlassPanelProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'regular' | 'clear' | 'heavy';
   withDistortion?: boolean;   // Enable SVG distortion (Chromium only)
-  accentGradient?: 'blue' | 'purple' | 'emerald' | 'amber' | 'none';
-  radius?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  accentGradient?: 'blue' | 'purple' | 'emerald' | 'amber' | 'red' | 'none';
+  radius?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'pill';
 }
 
 export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
@@ -28,6 +28,7 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
       lg: 'rounded-[var(--radius-glass-lg)]',
       xl: 'rounded-[var(--radius-glass-xl)]',
       '2xl': 'rounded-[var(--radius-glass-2xl)]',
+      pill: 'rounded-[var(--radius-glass-pill)]',
     };
 
     const variantMap = {
@@ -41,6 +42,7 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
       purple: 'before:bg-[var(--gradient-accent-purple)]',
       emerald: 'before:bg-[var(--gradient-accent-emerald)]',
       amber: 'before:bg-[var(--gradient-accent-amber)]',
+      red: 'before:bg-[var(--gradient-accent-red)]',
       none: '',
     };
 

@@ -15,7 +15,7 @@ import { LiquidGlassFilter } from "@/components/glass/LiquidGlassFilter";
 const ReactQueryDevtools = dynamic(
   () =>
     import("@tanstack/react-query-devtools").then(
-      (df) => df.ReactQueryDevtools
+      (df) => ({ default: df.ReactQueryDevtools })
     ),
   { ssr: false }
 );

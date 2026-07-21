@@ -11,6 +11,7 @@ import {
   getRememberedCredentials,
   clearRememberedCredentials,
   isFingerprintAvailable,
+  authenticateNativeFingerprint,
 } from "@/lib/biometrics";
 
 declare global {
@@ -105,7 +106,7 @@ export default function LoginPage() {
           "mock-biometric-jwt-token"
         );
         if (rememberMe) {
-          await saveRememberedCredentials(email, password || "••••••••", true);
+          await saveRememberedCredentials(email);
         }
         window.location.href = "/dashboard";
       } else {

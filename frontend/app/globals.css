@@ -470,6 +470,11 @@
       rgba(245, 158, 11, 0.15) 0%,
       rgba(253, 230, 138, 0.08) 100%);
 
+  --gradient-accent-red:
+    linear-gradient(135deg,
+      rgba(239, 68, 68, 0.15) 0%,
+      rgba(254, 202, 202, 0.08) 100%);
+
   /* ----------------------------------------------------------
      BORDER RADIUS SYSTEM
      iOS 26 uses larger, more organic radii than typical web UI.

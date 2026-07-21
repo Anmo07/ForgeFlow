@@ -45,7 +45,7 @@ export default function PersonaSwitcher() {
       email: selectedUser.email,
       full_name: selectedUser.full_name,
       is_active: true
-    }, "mock-access-token", "mock-refresh-token");
+    }, "mock-access-token");
     
     setUserDropdownOpen(false);
     window.location.reload();
