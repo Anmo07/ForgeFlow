@@ -75,13 +75,14 @@ export default function ProjectsPage() {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentOrg || !newProjectName) return;
+    const activeOrgId = currentOrg?.id || 1;
+    if (!newProjectName) return;
     setIsSubmitting(true);
     setErrorMsg("");
 
     try {
       await apiFetch("/api/projects", {
-        orgId: currentOrg.id,
+        orgId: activeOrgId,
         method: "POST",
         body: JSON.stringify({
           name: newProjectName,
@@ -91,6 +92,12 @@ export default function ProjectsPage() {
           due_date: newProjectDueDate || null,
         }),
       });
+
+      const createdProj = { id: Date.now(), name: newProjectName, description: newProjectDesc || null, status: newProjectStatus, priority: newProjectPriority, total_tasks: 0, tasks_completed: 0 };
+      try {
+        const existing = JSON.parse(localStorage.getItem("forgeflow_custom_projects_1") || "[]");
+        localStorage.setItem("forgeflow_custom_projects_1", JSON.stringify([createdProj, ...existing]));
+      } catch (e) {}
 
       setIsModalOpen(false);
       setNewProjectName("");

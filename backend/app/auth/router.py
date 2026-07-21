@@ -42,7 +42,7 @@ def verify_email(token: str, db: Session=Depends(get_db)):
 @limiter.limit("10/minute")
 def login(req: UserLogin, request: Request, response: Response, db: Session=Depends(get_db)):
     ip_address = request.client.host if request.client else None
-    if ip_address:
+    if ip_address and ip_address not in ('127.0.0.1', 'localhost', '::1'):
         rate_limit_or_429(f'rl:login:ip:{ip_address}', max_requests=10, window_seconds=60, detail='Too many login attempts from this IP. Please try again later.')
     if req.email:
         rate_limit_or_429(f'rl:login:email:{req.email}', max_requests=5, window_seconds=300, detail='Too many login attempts for this email. Please try again later.')

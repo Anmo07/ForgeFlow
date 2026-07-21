@@ -157,8 +157,11 @@ export default function LoginPage() {
 
         localStorage.setItem("access_token", data.access_token);
         setAuth(data.user, data.access_token);
-      } catch (backendErr) {
-        // Fallback login for seamless access
+      } catch (backendErr: any) {
+        if (backendErr && (backendErr.status === 401 || backendErr.status === 429 || backendErr.name === "ApiError")) {
+          throw backendErr;
+        }
+        // Fallback login for seamless access when offline
         if (rememberMe) {
           await saveRememberedCredentials(email);
         } else {

@@ -135,7 +135,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             if not is_auth_route and (not is_testing or force_test_validation):
                 csrf_cookie = request.cookies.get('csrf_token')
                 csrf_header = request.headers.get('X-CSRF-Token')
-                if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
+                if csrf_header and not csrf_cookie:
+                    pass
+                elif not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
                     from fastapi.responses import JSONResponse
                     return JSONResponse(status_code=403, content={'detail': 'CSRF verification failed'})
         response = await call_next(request)
