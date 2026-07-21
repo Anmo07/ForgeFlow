@@ -12,7 +12,7 @@ if parent_dir not in sys.path:
 from dotenv import load_dotenv
 for env_file in [os.path.join(parent_dir, "..", ".env"), os.path.join(parent_dir, ".env")]:
     if os.path.exists(env_file):
-        load_dotenv(env_file, override=False)
+        load_dotenv(env_file, override=True)
 
 from app.common.database import SessionLocal
 from app.organizations.models import Organization
@@ -24,6 +24,9 @@ from app.common.security import get_password_hash
 
 
 def seed_test_org(org_name, admin_email, admin_password):
+    org_name = org_name.strip('"\' ')
+    admin_email = admin_email.strip('"\' ')
+    admin_password = admin_password.strip('"\' ')
     db = SessionLocal()
     try:
         # Create Org

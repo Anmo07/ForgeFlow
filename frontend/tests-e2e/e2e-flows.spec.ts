@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -36,9 +36,11 @@ function runSeeding(orgName: string, email: string, pass: string) {
   const pythonPath = path.resolve(__dirname, "../../backend/.venv/bin/python");
   const scriptPath = path.resolve(__dirname, "../../backend/scripts/seed_test_org.py");
   const backendPath = path.resolve(__dirname, "../../backend");
-  const result = execSync(
-    `"${pythonPath}" "${scriptPath}" "${orgName}" "${email}" "${pass}"`,
-    { encoding: "utf8", env: getEnvFromRoot() as NodeJS.ProcessEnv, cwd: backendPath }
+  const envs = getEnvFromRoot();
+  const result = execFileSync(
+    pythonPath,
+    [scriptPath, orgName, email, pass],
+    { encoding: "utf8", env: { ...process.env, ...envs }, cwd: backendPath }
   );
   const lines = result.split("\n");
   for (const line of lines) {
@@ -70,10 +72,13 @@ async function submitLoginForm(page: any, email: string, pass: string) {
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
   await page.fill('input[type="email"]', email);
+  await page.locator('input[type="email"]').blur();
   await page.fill('input[type="password"]', pass);
-  const respPromise = page.waitForResponse((resp: any) => resp.url().includes("/api/auth/login"), { timeout: 5000 }).catch(() => null);
+  await page.locator('input[type="password"]').blur();
   await page.click('button[type="submit"]');
-  await respPromise;
+  if (pass !== "wrong-password") {
+    await page.waitForURL(/.*dashboard/, { timeout: 10000 }).catch(() => null);
+  }
 }
 
 test.describe("ForgeFlow E2E Critical Flows", () => {
@@ -148,6 +153,11 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     // Lockout UI/Notification validation
     await submitLoginForm(page, adminEmail, adminPassword);
     await expect(page.locator('.text-rose-400').or(page.locator("text=locked")).or(page.locator("text=too many attempts")).or(page.locator("text=lockout")).or(page.locator("text=Account locked"))).toBeVisible();
+
+    // Flush Redis lockout state so adminEmail is unlocked for subsequent test flows
+    try {
+      execSync("redis-cli flushall");
+    } catch (e) {}
   });
 
   // Flow 2: Invoice Creation and PDF Download

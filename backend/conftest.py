@@ -1,6 +1,23 @@
+import os
 import pytest
 import redis
 import time
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+
+# Ensure all SQLAlchemy models are imported for metadata registration
+try:
+    import app.auth.models
+    import app.organizations.models
+    import app.projects.models
+    import app.crm.models
+    import app.invoices.models
+    import app.memberships.models
+    import app.roles.models
+    import app.sessions.models
+    import app.api_keys.models
+except Exception as e:
+    pass
 
 @pytest.fixture(autouse=True)
 def mock_redis_globally(monkeypatch):

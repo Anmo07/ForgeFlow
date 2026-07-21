@@ -64,8 +64,10 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
             
     membership = db.query(Membership).filter(Membership.user_id == current_user.id, Membership.organization_id == org_id, Membership.status == 'active').first()
     if not membership:
-        membership = db.query(Membership).filter(Membership.user_id == current_user.id, Membership.status == 'active').first()
-    if membership:
+        first_mem = db.query(Membership).filter(Membership.user_id == current_user.id, Membership.status == 'active').first()
+        if not first_mem:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an active member of this organization")
+        membership = first_mem
         org_id = membership.organization_id
 
     # Resolve role permissions — prefer Redis cache, fall back to DB
@@ -108,8 +110,7 @@ def get_current_tenant(request: Request, db: Session=Depends(get_db)) -> TenantC
 def require_permission(permission_name: str):
     def dependency(tenant_ctx: TenantContext=Depends(get_current_tenant)):
         if tenant_ctx.permissions and permission_name not in tenant_ctx.permissions and "*" not in tenant_ctx.permissions:
-            # Grant access if user is admin/owner or testing
-            pass
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Permission '{permission_name}' required")
         return tenant_ctx
     return dependency
 
