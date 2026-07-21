@@ -676,9 +676,6 @@ export async function apiFetch<T = unknown>(
     if (response.status === 401) {
       if (typeof window !== "undefined" && !path.includes("/api/auth/login")) {
         useAuthStore.getState().clearAuth();
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
       }
       throw new ApiError(response.status, errorMessage || "Session expired. Redirecting to login...");
     }

@@ -12,9 +12,13 @@
 # Error details
 
 ```
-Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Test timeout of 30000ms exceeded.
 Call log:
-  - navigating to "http://localhost:3000/crm", waiting until "load"
+  - waiting for locator('button[type="submit"]:has-text("Add Client")')
 
 ```
 
@@ -24,126 +28,79 @@ Call log:
 - generic [active] [ref=e1]:
   - generic [ref=e2]:
     - banner [ref=e3]:
-      - generic [ref=e5]:
-        - link "ForgeFlow" [ref=e7] [cursor=pointer]:
-          - /url: /
-          - generic [ref=e8]: ForgeFlow
-        - generic [ref=e9]:
-          - navigation [ref=e11]:
-            - list [ref=e12]:
-              - listitem [ref=e13]:
-                - link "Home" [ref=e14] [cursor=pointer]:
-                  - /url: /
-              - listitem [ref=e15]:
-                - link "Features" [ref=e16] [cursor=pointer]:
-                  - /url: /#features
-              - listitem [ref=e17]:
-                - link "Pricing" [ref=e18] [cursor=pointer]:
-                  - /url: /#pricing
-              - listitem [ref=e19]:
-                - link "About" [ref=e20] [cursor=pointer]:
-                  - /url: /#about
-              - listitem [ref=e21]:
-                - link "Contact" [ref=e22] [cursor=pointer]:
-                  - /url: /#contact
-          - generic [ref=e23]:
-            - link "Sign In" [ref=e24] [cursor=pointer]:
-              - /url: /login
-            - link "Sign Up" [ref=e25] [cursor=pointer]:
-              - /url: /register
-            - button "theme toggler" [ref=e27] [cursor=pointer]:
-              - img [ref=e28]
-    - img [ref=e32]
-    - contentinfo [ref=e34]:
-      - generic [ref=e36]:
-        - generic [ref=e37]:
-          - generic [ref=e39]:
-            - link "ForgeFlow" [ref=e40] [cursor=pointer]:
-              - /url: /
-              - generic [ref=e41]: ForgeFlow
-            - paragraph [ref=e42]: The unified command center and billing automation engine for modern IT Managed Service Providers.
-            - generic [ref=e43]:
-              - link "Facebook" [ref=e44] [cursor=pointer]:
-                - /url: /
-                - img [ref=e45]
-              - link "Twitter" [ref=e47] [cursor=pointer]:
-                - /url: /
-                - img [ref=e48]
-              - link "YouTube" [ref=e50] [cursor=pointer]:
-                - /url: /
-                - img [ref=e51]
-              - link "LinkedIn" [ref=e53] [cursor=pointer]:
-                - /url: /
-                - img [ref=e54]
-          - generic [ref=e57]:
-            - heading "Useful Links" [level=2] [ref=e58]
-            - list [ref=e59]:
-              - listitem [ref=e60]:
-                - link "Features" [ref=e61] [cursor=pointer]:
-                  - /url: /#features
-              - listitem [ref=e62]:
-                - link "Pricing" [ref=e63] [cursor=pointer]:
-                  - /url: /#pricing
-              - listitem [ref=e64]:
-                - link "About" [ref=e65] [cursor=pointer]:
-                  - /url: /#about
-          - generic [ref=e67]:
-            - heading "Terms" [level=2] [ref=e68]
-            - list [ref=e69]:
-              - listitem [ref=e70]:
-                - link "TOS" [ref=e71] [cursor=pointer]:
-                  - /url: /terms
-              - listitem [ref=e72]:
-                - link "Privacy Policy" [ref=e73] [cursor=pointer]:
-                  - /url: /privacy
-              - listitem [ref=e74]:
-                - link "Refund Policy" [ref=e75] [cursor=pointer]:
-                  - /url: /
-          - generic [ref=e77]:
-            - heading "Support & Help" [level=2] [ref=e78]
-            - list [ref=e79]:
-              - listitem [ref=e80]:
-                - link "Open Support Ticket" [ref=e81] [cursor=pointer]:
-                  - /url: /#contact
-              - listitem [ref=e82]:
-                - link "Terms of Use" [ref=e83] [cursor=pointer]:
-                  - /url: /
-              - listitem [ref=e84]:
-                - link "About" [ref=e85] [cursor=pointer]:
-                  - /url: /#about
-        - paragraph [ref=e88]: © 2026 ForgeFlow. Built for IT Service Providers.
-  - generic [ref=e93] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e94]:
-      - img [ref=e95]
-    - generic [ref=e98]:
-      - button "Open issues overlay" [ref=e99]:
-        - generic [ref=e100]:
-          - generic [ref=e101]: "1"
-          - generic [ref=e102]: "2"
-        - generic [ref=e103]:
-          - text: Issue
-          - generic [ref=e104]: s
-      - button "Collapse issues badge" [ref=e105]:
-        - img [ref=e106]
-  - alert [ref=e108]
-  - generic [ref=e109]:
-    - img [ref=e111]
-    - button "Open Tanstack query devtools" [ref=e159] [cursor=pointer]:
-      - img [ref=e160]
+      - generic [ref=e5]: CRM
+      - generic [ref=e6]:
+        - button "Search... ⌘K" [ref=e7]:
+          - generic [ref=e8]:
+            - img [ref=e9]
+            - generic [ref=e12]: Search...
+          - generic [ref=e13]: ⌘K
+        - button "Toggle theme" [ref=e14]:
+          - img [ref=e15]
+        - button "Notifications" [ref=e17]:
+          - img [ref=e18]
+        - button "User profile menu" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: W
+          - img [ref=e25]
+    - complementary [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - link "ForgeFlow" [ref=e30] [cursor=pointer]:
+            - /url: /dashboard
+          - button "Select Tenant" [expanded] [ref=e33]:
+            - generic [ref=e34]: Select Tenant
+            - img [ref=e35]
+        - navigation [ref=e37]:
+          - link "Dashboard" [ref=e38] [cursor=pointer]:
+            - /url: /dashboard
+            - generic [ref=e39]:
+              - img [ref=e40]
+              - generic [ref=e45]: Dashboard
+          - link "Projects" [ref=e46] [cursor=pointer]:
+            - /url: /projects
+            - generic [ref=e47]:
+              - img [ref=e48]
+              - generic [ref=e50]: Projects
+          - link "CRM" [ref=e51] [cursor=pointer]:
+            - /url: /crm
+            - generic [ref=e53]:
+              - img [ref=e54]
+              - generic [ref=e59]: CRM
+          - link "Invoices" [ref=e60] [cursor=pointer]:
+            - /url: /invoices
+            - generic [ref=e61]:
+              - img [ref=e62]
+              - generic [ref=e65]: Invoices
+          - link "Org Settings" [ref=e66] [cursor=pointer]:
+            - /url: /settings/members
+            - generic [ref=e67]:
+              - img [ref=e68]
+              - generic [ref=e69]: Org Settings
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: W
+            - generic [ref=e73]:
+              - generic [ref=e74]: Workspace Owner
+              - generic [ref=e75]: user@company.com
+          - button "Sign Out" [ref=e76]:
+            - img [ref=e77]
+    - main [ref=e80]:
+      - generic [ref=e82]:
+        - img [ref=e83]
+        - heading "Select an organization" [level=3] [ref=e88]
+        - paragraph [ref=e89]: Please select or create an organization from the workspace switcher in the header to view and manage CRM entries.
+  - button "Open Next.js Dev Tools" [ref=e95] [cursor=pointer]:
+    - img [ref=e96]
+  - alert [ref=e99]
+  - generic [ref=e100]:
+    - img [ref=e102]
+    - button "Open Tanstack query devtools" [ref=e150] [cursor=pointer]:
+      - img [ref=e151]
 ```
 
 # Test source
 
 ```ts
-  70  |   await page.waitForLoadState("domcontentloaded");
-  71  |   await page.waitForSelector("form input[type='email']");
-  72  |   await page.evaluate(() => {
-  73  |     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
-  74  |   });
-  75  |   await page.fill('input[type="email"]', email);
-  76  |   await page.fill('input[type="password"]', pass);
-  77  |   await page.click('button[type="submit"]');
-  78  |   if (pass !== "wrong-password") {
   79  |     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
   80  |   }
   81  | }
@@ -235,8 +192,7 @@ Call log:
   167 |     await expect(page).toHaveURL(/.*dashboard/);
   168 | 
   169 |     // Add Client first in CRM
-> 170 |     await page.goto("/crm");
-      |                ^ Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+  170 |     await page.goto("/crm");
   171 |     await page.locator('button:has-text("New Client")').first().click();
   172 |     try {
   173 |       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
@@ -245,7 +201,8 @@ Call log:
   176 |     }
   177 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
   178 |     await page.fill('input[type="email"]', "client@invoice.com");
-  179 |     await page.locator('button[type="submit"]:has-text("Add Client")').click();
+> 179 |     await page.locator('button[type="submit"]:has-text("Add Client")').click();
+      |                                                                        ^ Error: locator.click: Test timeout of 30000ms exceeded.
   180 |     await expect(page.locator('text=Add New Client')).toBeHidden();
   181 | 
   182 |     // Create Invoice
@@ -337,4 +294,13 @@ Call log:
   268 |     const inProgressColumn = page.locator("text=In Progress");
   269 |     await taskCard.dragTo(inProgressColumn);
   270 | 
+  271 |     await page.reload();
+  272 |     await expect(page.locator('div[class*="w-[280px]"], div[class*="w-[320px]"]').filter({ hasText: "In Progress" })).toContainText("Task high priority");
+  273 |   });
+  274 | 
+  275 |   // Flow 4: CRM Deal Pipeline
+  276 |   test("Flow 4: CRM Leads & Deals pipeline", async ({ page }) => {
+  277 |     await page.goto("/login");
+  278 |     await submitLoginForm(page, adminEmail, adminPassword);
+  279 |     await expect(page).toHaveURL(/.*dashboard/);
 ```

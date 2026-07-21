@@ -12,9 +12,36 @@
 # Error details
 
 ```
-Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Test timeout of 30000ms exceeded.
 Call log:
-  - navigating to "http://localhost:3000/crm", waiting until "load"
+  - waiting for locator('button:has-text("New Client")').first()
+    - locator resolved to <button class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground px-4 py-2.5 text-sm font-semibold transition-colors duration-200">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="flex items-center justify-end gap-3 pr-16 lg:pr-0">…</div> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="flex items-center justify-end gap-3 pr-16 lg:pr-0">…</div> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    7 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="flex items-center justify-end gap-3 pr-16 lg:pr-0">…</div> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
 
 ```
 
@@ -53,90 +80,142 @@ Call log:
               - /url: /register
             - button "theme toggler" [ref=e27] [cursor=pointer]:
               - img [ref=e28]
-    - img [ref=e32]
-    - contentinfo [ref=e34]:
-      - generic [ref=e36]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - heading "CRM Hub" [level=1] [ref=e34]
+          - paragraph [ref=e36]: Track clients, incoming leads, and pipeline deals.
         - generic [ref=e37]:
-          - generic [ref=e39]:
-            - link "ForgeFlow" [ref=e40] [cursor=pointer]:
+          - button "New Client" [ref=e38]:
+            - img [ref=e39]
+            - text: New Client
+          - button "New Lead" [ref=e40]:
+            - img [ref=e41]
+            - text: New Lead
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: Active Leads
+            - img [ref=e46]
+          - generic [ref=e51]: "2"
+          - paragraph [ref=e52]: Currently being qualified
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: Pipeline Value
+            - img [ref=e56]
+          - generic [ref=e58]: $110,000
+          - paragraph [ref=e59]: Open deals expectation
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e62]: Closed Won
+            - img [ref=e63]
+          - generic [ref=e66]: $45,000
+          - paragraph [ref=e67]: Converted contract value
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: Conversion Rate
+            - img [ref=e71]
+          - generic [ref=e75]: 28.4%
+          - paragraph [ref=e76]: Lead won conversion ratio
+      - generic [ref=e77]:
+        - button "Leads Pipeline (2)" [ref=e78]
+        - button "Deals Hub (2)" [ref=e79]
+        - button "Clients (2)" [ref=e80]
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - img [ref=e83]
+          - textbox "Search leads..." [ref=e86]
+        - combobox [ref=e88]:
+          - option "All Stages" [selected]
+          - option "New"
+          - option "Contacted"
+          - option "Qualified"
+          - option "Proposal"
+          - option "Won"
+          - option "Lost"
+      - table [ref=e91]:
+        - rowgroup [ref=e92]:
+          - row "Lead Owner/Client Company Contact Detail Lead Stage Value Source Move Stage" [ref=e93]:
+            - columnheader "Lead Owner/Client" [ref=e94]
+            - columnheader "Company" [ref=e95]
+            - columnheader "Contact Detail" [ref=e96]
+            - columnheader "Lead Stage" [ref=e97]
+            - columnheader "Value" [ref=e98]
+            - columnheader "Source" [ref=e99]
+            - columnheader "Move Stage" [ref=e100]
+        - rowgroup [ref=e101]:
+          - row "No leads matching your search criteria." [ref=e102]:
+            - cell "No leads matching your search criteria." [ref=e103]
+    - contentinfo [ref=e104]:
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e109]:
+            - link "ForgeFlow" [ref=e110] [cursor=pointer]:
               - /url: /
-              - generic [ref=e41]: ForgeFlow
-            - paragraph [ref=e42]: The unified command center and billing automation engine for modern IT Managed Service Providers.
-            - generic [ref=e43]:
-              - link "Facebook" [ref=e44] [cursor=pointer]:
+              - generic [ref=e111]: ForgeFlow
+            - paragraph [ref=e112]: The unified command center and billing automation engine for modern IT Managed Service Providers.
+            - generic [ref=e113]:
+              - link "Facebook" [ref=e114] [cursor=pointer]:
                 - /url: /
-                - img [ref=e45]
-              - link "Twitter" [ref=e47] [cursor=pointer]:
+                - img [ref=e115]
+              - link "Twitter" [ref=e117] [cursor=pointer]:
                 - /url: /
-                - img [ref=e48]
-              - link "YouTube" [ref=e50] [cursor=pointer]:
+                - img [ref=e118]
+              - link "YouTube" [ref=e120] [cursor=pointer]:
                 - /url: /
-                - img [ref=e51]
-              - link "LinkedIn" [ref=e53] [cursor=pointer]:
+                - img [ref=e121]
+              - link "LinkedIn" [ref=e123] [cursor=pointer]:
                 - /url: /
-                - img [ref=e54]
-          - generic [ref=e57]:
-            - heading "Useful Links" [level=2] [ref=e58]
-            - list [ref=e59]:
-              - listitem [ref=e60]:
-                - link "Features" [ref=e61] [cursor=pointer]:
+                - img [ref=e124]
+          - generic [ref=e127]:
+            - heading "Useful Links" [level=2] [ref=e128]
+            - list [ref=e129]:
+              - listitem [ref=e130]:
+                - link "Features" [ref=e131] [cursor=pointer]:
                   - /url: /#features
-              - listitem [ref=e62]:
-                - link "Pricing" [ref=e63] [cursor=pointer]:
+              - listitem [ref=e132]:
+                - link "Pricing" [ref=e133] [cursor=pointer]:
                   - /url: /#pricing
-              - listitem [ref=e64]:
-                - link "About" [ref=e65] [cursor=pointer]:
+              - listitem [ref=e134]:
+                - link "About" [ref=e135] [cursor=pointer]:
                   - /url: /#about
-          - generic [ref=e67]:
-            - heading "Terms" [level=2] [ref=e68]
-            - list [ref=e69]:
-              - listitem [ref=e70]:
-                - link "TOS" [ref=e71] [cursor=pointer]:
+          - generic [ref=e137]:
+            - heading "Terms" [level=2] [ref=e138]
+            - list [ref=e139]:
+              - listitem [ref=e140]:
+                - link "TOS" [ref=e141] [cursor=pointer]:
                   - /url: /terms
-              - listitem [ref=e72]:
-                - link "Privacy Policy" [ref=e73] [cursor=pointer]:
+              - listitem [ref=e142]:
+                - link "Privacy Policy" [ref=e143] [cursor=pointer]:
                   - /url: /privacy
-              - listitem [ref=e74]:
-                - link "Refund Policy" [ref=e75] [cursor=pointer]:
+              - listitem [ref=e144]:
+                - link "Refund Policy" [ref=e145] [cursor=pointer]:
                   - /url: /
-          - generic [ref=e77]:
-            - heading "Support & Help" [level=2] [ref=e78]
-            - list [ref=e79]:
-              - listitem [ref=e80]:
-                - link "Open Support Ticket" [ref=e81] [cursor=pointer]:
+          - generic [ref=e147]:
+            - heading "Support & Help" [level=2] [ref=e148]
+            - list [ref=e149]:
+              - listitem [ref=e150]:
+                - link "Open Support Ticket" [ref=e151] [cursor=pointer]:
                   - /url: /#contact
-              - listitem [ref=e82]:
-                - link "Terms of Use" [ref=e83] [cursor=pointer]:
+              - listitem [ref=e152]:
+                - link "Terms of Use" [ref=e153] [cursor=pointer]:
                   - /url: /
-              - listitem [ref=e84]:
-                - link "About" [ref=e85] [cursor=pointer]:
+              - listitem [ref=e154]:
+                - link "About" [ref=e155] [cursor=pointer]:
                   - /url: /#about
-        - paragraph [ref=e88]: © 2026 ForgeFlow. Built for IT Service Providers.
-  - generic [ref=e93] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e94]:
-      - img [ref=e95]
-    - generic [ref=e98]:
-      - button "Open issues overlay" [ref=e99]:
-        - generic [ref=e100]:
-          - generic [ref=e101]: "1"
-          - generic [ref=e102]: "2"
-        - generic [ref=e103]:
-          - text: Issue
-          - generic [ref=e104]: s
-      - button "Collapse issues badge" [ref=e105]:
-        - img [ref=e106]
-  - alert [ref=e108]
-  - generic [ref=e109]:
-    - img [ref=e111]
-    - button "Open Tanstack query devtools" [ref=e159] [cursor=pointer]:
-      - img [ref=e160]
+        - paragraph [ref=e158]: © 2026 ForgeFlow. Built for IT Service Providers.
+  - button "Open Next.js Dev Tools" [ref=e164] [cursor=pointer]:
+    - img [ref=e165]
+  - alert [ref=e168]
+  - generic [ref=e169]:
+    - img [ref=e171]
+    - button "Open Tanstack query devtools" [ref=e219] [cursor=pointer]:
+      - img [ref=e220]
 ```
 
 # Test source
 
 ```ts
-  181 | 
-  182 |     // Create Invoice
   183 |     await page.goto("/invoices");
   184 |     await page.locator('button:has-text("Create Invoice")').first().click();
   185 |     try {
@@ -235,10 +314,10 @@ Call log:
   278 |     await submitLoginForm(page, adminEmail, adminPassword);
   279 |     await expect(page).toHaveURL(/.*dashboard/);
   280 | 
-> 281 |     await page.goto("/crm");
-      |                ^ Error: page.goto: net::ERR_ABORTED at http://localhost:3000/crm
+  281 |     await page.goto("/crm");
   282 |     // Add Client first (required for Lead)
-  283 |     await page.locator('button:has-text("New Client")').first().click();
+> 283 |     await page.locator('button:has-text("New Client")').first().click();
+      |                                                                 ^ Error: locator.click: Test timeout of 30000ms exceeded.
   284 |     try {
   285 |       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
   286 |     } catch (e) {

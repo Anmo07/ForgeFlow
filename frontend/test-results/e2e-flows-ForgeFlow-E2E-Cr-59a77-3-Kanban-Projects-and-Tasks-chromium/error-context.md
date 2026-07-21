@@ -12,9 +12,13 @@
 # Error details
 
 ```
-Error: page.goto: net::ERR_ABORTED at http://localhost:3000/projects
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: page.fill: Test timeout of 30000ms exceeded.
 Call log:
-  - navigating to "http://localhost:3000/projects", waiting until "load"
+  - waiting for locator('textarea[placeholder*="Describe"]')
 
 ```
 
@@ -53,96 +57,91 @@ Call log:
               - /url: /register
             - button "theme toggler" [ref=e27] [cursor=pointer]:
               - img [ref=e28]
-    - img [ref=e32]
-    - contentinfo [ref=e34]:
-      - generic [ref=e36]:
-        - generic [ref=e37]:
-          - generic [ref=e39]:
-            - link "ForgeFlow" [ref=e40] [cursor=pointer]:
+    - generic [ref=e31]:
+      - img [ref=e32]
+      - heading "Select an organization" [level=3] [ref=e34]
+      - paragraph [ref=e35]: Please select or create an organization from the workspace switcher in the header to view and manage projects.
+    - contentinfo [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e41]:
+            - link "ForgeFlow" [ref=e42] [cursor=pointer]:
               - /url: /
-              - generic [ref=e41]: ForgeFlow
-            - paragraph [ref=e42]: The unified command center and billing automation engine for modern IT Managed Service Providers.
-            - generic [ref=e43]:
-              - link "Facebook" [ref=e44] [cursor=pointer]:
+              - generic [ref=e43]: ForgeFlow
+            - paragraph [ref=e44]: The unified command center and billing automation engine for modern IT Managed Service Providers.
+            - generic [ref=e45]:
+              - link "Facebook" [ref=e46] [cursor=pointer]:
                 - /url: /
-                - img [ref=e45]
-              - link "Twitter" [ref=e47] [cursor=pointer]:
+                - img [ref=e47]
+              - link "Twitter" [ref=e49] [cursor=pointer]:
                 - /url: /
-                - img [ref=e48]
-              - link "YouTube" [ref=e50] [cursor=pointer]:
+                - img [ref=e50]
+              - link "YouTube" [ref=e52] [cursor=pointer]:
                 - /url: /
-                - img [ref=e51]
-              - link "LinkedIn" [ref=e53] [cursor=pointer]:
+                - img [ref=e53]
+              - link "LinkedIn" [ref=e55] [cursor=pointer]:
                 - /url: /
-                - img [ref=e54]
-          - generic [ref=e57]:
-            - heading "Useful Links" [level=2] [ref=e58]
-            - list [ref=e59]:
-              - listitem [ref=e60]:
-                - link "Features" [ref=e61] [cursor=pointer]:
-                  - /url: /#features
+                - img [ref=e56]
+          - generic [ref=e59]:
+            - heading "Useful Links" [level=2] [ref=e60]
+            - list [ref=e61]:
               - listitem [ref=e62]:
-                - link "Pricing" [ref=e63] [cursor=pointer]:
-                  - /url: /#pricing
+                - link "Features" [ref=e63] [cursor=pointer]:
+                  - /url: /#features
               - listitem [ref=e64]:
-                - link "About" [ref=e65] [cursor=pointer]:
+                - link "Pricing" [ref=e65] [cursor=pointer]:
+                  - /url: /#pricing
+              - listitem [ref=e66]:
+                - link "About" [ref=e67] [cursor=pointer]:
                   - /url: /#about
-          - generic [ref=e67]:
-            - heading "Terms" [level=2] [ref=e68]
-            - list [ref=e69]:
-              - listitem [ref=e70]:
-                - link "TOS" [ref=e71] [cursor=pointer]:
-                  - /url: /terms
+          - generic [ref=e69]:
+            - heading "Terms" [level=2] [ref=e70]
+            - list [ref=e71]:
               - listitem [ref=e72]:
-                - link "Privacy Policy" [ref=e73] [cursor=pointer]:
-                  - /url: /privacy
+                - link "TOS" [ref=e73] [cursor=pointer]:
+                  - /url: /terms
               - listitem [ref=e74]:
-                - link "Refund Policy" [ref=e75] [cursor=pointer]:
+                - link "Privacy Policy" [ref=e75] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e76]:
+                - link "Refund Policy" [ref=e77] [cursor=pointer]:
                   - /url: /
-          - generic [ref=e77]:
-            - heading "Support & Help" [level=2] [ref=e78]
-            - list [ref=e79]:
-              - listitem [ref=e80]:
-                - link "Open Support Ticket" [ref=e81] [cursor=pointer]:
-                  - /url: /#contact
+          - generic [ref=e79]:
+            - heading "Support & Help" [level=2] [ref=e80]
+            - list [ref=e81]:
               - listitem [ref=e82]:
-                - link "Terms of Use" [ref=e83] [cursor=pointer]:
-                  - /url: /
+                - link "Open Support Ticket" [ref=e83] [cursor=pointer]:
+                  - /url: /#contact
               - listitem [ref=e84]:
-                - link "About" [ref=e85] [cursor=pointer]:
+                - link "Terms of Use" [ref=e85] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e86]:
+                - link "About" [ref=e87] [cursor=pointer]:
                   - /url: /#about
-        - paragraph [ref=e88]: © 2026 ForgeFlow. Built for IT Service Providers.
-  - generic [ref=e93] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e94]:
-      - img [ref=e95]
-    - generic [ref=e98]:
-      - button "Open issues overlay" [ref=e99]:
-        - generic [ref=e100]:
-          - generic [ref=e101]: "1"
-          - generic [ref=e102]: "2"
-        - generic [ref=e103]:
+        - paragraph [ref=e90]: © 2026 ForgeFlow. Built for IT Service Providers.
+  - generic [ref=e95] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e96]:
+      - img [ref=e97]
+    - generic [ref=e100]:
+      - button "Open issues overlay" [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: "1"
+          - generic [ref=e104]: "2"
+        - generic [ref=e105]:
           - text: Issue
-          - generic [ref=e104]: s
-      - button "Collapse issues badge" [ref=e105]:
-        - img [ref=e106]
-  - alert [ref=e108]
-  - generic [ref=e109]:
-    - img [ref=e111]
-    - button "Open Tanstack query devtools" [ref=e159] [cursor=pointer]:
-      - img [ref=e160]
+          - generic [ref=e106]: s
+      - button "Collapse issues badge" [ref=e107]:
+        - img [ref=e108]
+  - alert [ref=e110]
+  - generic [ref=e111]:
+    - img [ref=e113]
+    - button "Open Tanstack query devtools" [ref=e161] [cursor=pointer]:
+      - img [ref=e162]
 ```
 
 # Test source
 
 ```ts
-  136 |     // Confirm redirected to dashboard
-  137 |     await expect(page).toHaveURL(/.*dashboard/);
-  138 | 
-  139 |     // Logout
-  140 |     await page.evaluate(() => {
-  141 |       localStorage.clear();
-  142 |       document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  143 |       window.location.href = "/login";
   144 |     });
   145 |     await page.waitForURL(/.*login/);
   146 | 
@@ -235,8 +234,7 @@ Call log:
   233 |     await expect(page).toHaveURL(/.*dashboard/);
   234 | 
   235 |     // Create project
-> 236 |     await page.goto("/projects");
-      |                ^ Error: page.goto: net::ERR_ABORTED at http://localhost:3000/projects
+  236 |     await page.goto("/projects");
   237 |     await page.locator('button:has-text("New Project")').first().click();
   238 |     try {
   239 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
@@ -244,7 +242,8 @@ Call log:
   241 |       await page.locator('button:has-text("New Project")').first().click();
   242 |     }
   243 |     await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
-  244 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
+> 244 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
+      |                ^ Error: page.fill: Test timeout of 30000ms exceeded.
   245 |     await page.locator('button[type="submit"]:has-text("Create Project")').click();
   246 |     await expect(page.locator('text=Create New Project')).toBeHidden();
   247 | 
