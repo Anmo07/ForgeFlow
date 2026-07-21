@@ -159,8 +159,7 @@ export default function LoginPage() {
         localStorage.setItem("access_token", data.access_token);
         setAuth(data.user, data.access_token);
       } catch (backendErr: any) {
-        const msg = String(backendErr?.message || backendErr?.detail || "").toLowerCase();
-        if (backendErr && (backendErr.status === 429 || msg.includes("locked") || msg.includes("lockout") || msg.includes("too many attempts"))) {
+        if (backendErr && typeof backendErr.status === "number") {
           throw backendErr;
         }
         // Fallback login for seamless access when offline
