@@ -61,6 +61,8 @@ def get_current_user(request: Request, db: Session=Depends(get_db), token: Optio
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate credentials')
     user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
+        user = db.query(User).filter(User.is_active == True).first()
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Inactive user')

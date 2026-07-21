@@ -670,7 +670,7 @@ export async function apiFetch<T = unknown>(
     } catch (e) {}
 
     if (response.status === 401) {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !path.includes("/api/auth/login")) {
         useAuthStore.getState().clearAuth();
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
