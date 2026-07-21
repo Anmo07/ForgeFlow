@@ -16,9 +16,32 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: page.fill: Test timeout of 30000ms exceeded.
+Error: locator.click: Test timeout of 30000ms exceeded.
 Call log:
-  - waiting for locator('textarea[placeholder*="Describe"]')
+  - waiting for locator('button:has-text("New Project")').first()
+    - locator resolved to <button class="inline-flex items-center gap-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow transition-colors duration-200">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <button aria-label="theme toggler" class="flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14">…</button> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <button aria-label="theme toggler" class="flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14">…</button> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    29 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <button aria-label="theme toggler" class="flex items-center justify-center text-black rounded-full cursor-pointer bg-gray-2 dark:bg-dark-bg h-9 w-9 dark:text-white md:h-14 md:w-14">…</button> from <header class="header left-0 top-0 z-40 flex w-full items-center transition-all duration-500 absolute bg-transparent py-4">…</header> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
 
 ```
 
@@ -58,90 +81,134 @@ Call log:
             - button "theme toggler" [ref=e27] [cursor=pointer]:
               - img [ref=e28]
     - generic [ref=e31]:
-      - img [ref=e32]
-      - heading "Select an organization" [level=3] [ref=e34]
-      - paragraph [ref=e35]: Please select or create an organization from the workspace switcher in the header to view and manage projects.
-    - contentinfo [ref=e36]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - heading "Projects" [level=1] [ref=e34]
+          - paragraph [ref=e35]: Manage workspaces, tasks, and delivery schedules.
+        - button "New Project" [ref=e36]:
+          - img [ref=e37]
+          - text: New Project
       - generic [ref=e38]:
         - generic [ref=e39]:
-          - generic [ref=e41]:
-            - link "ForgeFlow" [ref=e42] [cursor=pointer]:
+          - generic [ref=e40]:
+            - generic [ref=e41]: Total Projects
+            - img [ref=e42]
+          - generic [ref=e44]: "0"
+          - paragraph [ref=e45]: Across this workspace
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - generic [ref=e48]: In Progress
+            - img [ref=e49]
+          - generic [ref=e52]: "0"
+          - paragraph [ref=e53]: Active execution phase
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - generic [ref=e56]: Completed
+            - img [ref=e57]
+          - generic [ref=e60]: "0"
+          - paragraph [ref=e61]: Delivered successfully
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: Delayed
+            - img [ref=e65]
+          - generic [ref=e67]: "0"
+          - paragraph [ref=e68]: Requires focus
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - img [ref=e71]
+          - textbox "Search projects..." [ref=e74]
+        - generic [ref=e75]:
+          - img [ref=e76]
+          - combobox [ref=e77]:
+            - option "All Statuses" [selected]
+            - option "Planning"
+            - option "In Progress"
+            - option "Completed"
+            - option "Delayed"
+            - option "Archived"
+      - generic [ref=e78]:
+        - img [ref=e79]
+        - generic [ref=e81]: Not authenticated
+      - generic [ref=e82]:
+        - img [ref=e83]
+        - paragraph [ref=e85]: No projects found. Create a project to start tracking work.
+    - contentinfo [ref=e86]:
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e91]:
+            - link "ForgeFlow" [ref=e92] [cursor=pointer]:
               - /url: /
-              - generic [ref=e43]: ForgeFlow
-            - paragraph [ref=e44]: The unified command center and billing automation engine for modern IT Managed Service Providers.
-            - generic [ref=e45]:
-              - link "Facebook" [ref=e46] [cursor=pointer]:
+              - generic [ref=e93]: ForgeFlow
+            - paragraph [ref=e94]: The unified command center and billing automation engine for modern IT Managed Service Providers.
+            - generic [ref=e95]:
+              - link "Facebook" [ref=e96] [cursor=pointer]:
                 - /url: /
-                - img [ref=e47]
-              - link "Twitter" [ref=e49] [cursor=pointer]:
+                - img [ref=e97]
+              - link "Twitter" [ref=e99] [cursor=pointer]:
                 - /url: /
-                - img [ref=e50]
-              - link "YouTube" [ref=e52] [cursor=pointer]:
+                - img [ref=e100]
+              - link "YouTube" [ref=e102] [cursor=pointer]:
                 - /url: /
-                - img [ref=e53]
-              - link "LinkedIn" [ref=e55] [cursor=pointer]:
+                - img [ref=e103]
+              - link "LinkedIn" [ref=e105] [cursor=pointer]:
                 - /url: /
-                - img [ref=e56]
-          - generic [ref=e59]:
-            - heading "Useful Links" [level=2] [ref=e60]
-            - list [ref=e61]:
-              - listitem [ref=e62]:
-                - link "Features" [ref=e63] [cursor=pointer]:
+                - img [ref=e106]
+          - generic [ref=e109]:
+            - heading "Useful Links" [level=2] [ref=e110]
+            - list [ref=e111]:
+              - listitem [ref=e112]:
+                - link "Features" [ref=e113] [cursor=pointer]:
                   - /url: /#features
-              - listitem [ref=e64]:
-                - link "Pricing" [ref=e65] [cursor=pointer]:
+              - listitem [ref=e114]:
+                - link "Pricing" [ref=e115] [cursor=pointer]:
                   - /url: /#pricing
-              - listitem [ref=e66]:
-                - link "About" [ref=e67] [cursor=pointer]:
+              - listitem [ref=e116]:
+                - link "About" [ref=e117] [cursor=pointer]:
                   - /url: /#about
-          - generic [ref=e69]:
-            - heading "Terms" [level=2] [ref=e70]
-            - list [ref=e71]:
-              - listitem [ref=e72]:
-                - link "TOS" [ref=e73] [cursor=pointer]:
+          - generic [ref=e119]:
+            - heading "Terms" [level=2] [ref=e120]
+            - list [ref=e121]:
+              - listitem [ref=e122]:
+                - link "TOS" [ref=e123] [cursor=pointer]:
                   - /url: /terms
-              - listitem [ref=e74]:
-                - link "Privacy Policy" [ref=e75] [cursor=pointer]:
+              - listitem [ref=e124]:
+                - link "Privacy Policy" [ref=e125] [cursor=pointer]:
                   - /url: /privacy
-              - listitem [ref=e76]:
-                - link "Refund Policy" [ref=e77] [cursor=pointer]:
+              - listitem [ref=e126]:
+                - link "Refund Policy" [ref=e127] [cursor=pointer]:
                   - /url: /
-          - generic [ref=e79]:
-            - heading "Support & Help" [level=2] [ref=e80]
-            - list [ref=e81]:
-              - listitem [ref=e82]:
-                - link "Open Support Ticket" [ref=e83] [cursor=pointer]:
+          - generic [ref=e129]:
+            - heading "Support & Help" [level=2] [ref=e130]
+            - list [ref=e131]:
+              - listitem [ref=e132]:
+                - link "Open Support Ticket" [ref=e133] [cursor=pointer]:
                   - /url: /#contact
-              - listitem [ref=e84]:
-                - link "Terms of Use" [ref=e85] [cursor=pointer]:
+              - listitem [ref=e134]:
+                - link "Terms of Use" [ref=e135] [cursor=pointer]:
                   - /url: /
-              - listitem [ref=e86]:
-                - link "About" [ref=e87] [cursor=pointer]:
+              - listitem [ref=e136]:
+                - link "About" [ref=e137] [cursor=pointer]:
                   - /url: /#about
-        - paragraph [ref=e90]: © 2026 ForgeFlow. Built for IT Service Providers.
-  - generic [ref=e95] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e96]:
-      - img [ref=e97]
-    - generic [ref=e100]:
-      - button "Open issues overlay" [ref=e101]:
-        - generic [ref=e102]:
-          - generic [ref=e103]: "1"
-          - generic [ref=e104]: "2"
-        - generic [ref=e105]:
-          - text: Issue
-          - generic [ref=e106]: s
-      - button "Collapse issues badge" [ref=e107]:
-        - img [ref=e108]
-  - alert [ref=e110]
-  - generic [ref=e111]:
-    - img [ref=e113]
-    - button "Open Tanstack query devtools" [ref=e161] [cursor=pointer]:
-      - img [ref=e162]
+        - paragraph [ref=e140]: © 2026 ForgeFlow. Built for IT Service Providers.
+  - button "Open Next.js Dev Tools" [ref=e146] [cursor=pointer]:
+    - img [ref=e147]
+  - alert [ref=e150]
+  - generic [ref=e151]:
+    - img [ref=e153]
+    - button "Open Tanstack query devtools" [ref=e201] [cursor=pointer]:
+      - img [ref=e202]
 ```
 
 # Test source
 
 ```ts
+  137 |     await expect(page).toHaveURL(/.*dashboard/);
+  138 | 
+  139 |     // Logout
+  140 |     await page.evaluate(() => {
+  141 |       localStorage.clear();
+  142 |       document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  143 |       window.location.href = "/login";
   144 |     });
   145 |     await page.waitForURL(/.*login/);
   146 | 
@@ -235,15 +302,15 @@ Call log:
   234 | 
   235 |     // Create project
   236 |     await page.goto("/projects");
-  237 |     await page.locator('button:has-text("New Project")').first().click();
+> 237 |     await page.locator('button:has-text("New Project")').first().click();
+      |                                                                  ^ Error: locator.click: Test timeout of 30000ms exceeded.
   238 |     try {
   239 |       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
   240 |     } catch (e) {
   241 |       await page.locator('button:has-text("New Project")').first().click();
   242 |     }
   243 |     await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
-> 244 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
-      |                ^ Error: page.fill: Test timeout of 30000ms exceeded.
+  244 |     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
   245 |     await page.locator('button[type="submit"]:has-text("Create Project")').click();
   246 |     await expect(page.locator('text=Create New Project')).toBeHidden();
   247 | 

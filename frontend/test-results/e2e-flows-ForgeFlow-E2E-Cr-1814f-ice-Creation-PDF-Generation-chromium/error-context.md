@@ -18,7 +18,7 @@ Test timeout of 30000ms exceeded.
 ```
 Error: locator.click: Test timeout of 30000ms exceeded.
 Call log:
-  - waiting for locator('button[type="submit"]:has-text("Add Client")')
+  - waiting for locator('button:has-text("Create Invoice")').first()
 
 ```
 
@@ -28,7 +28,7 @@ Call log:
 - generic [active] [ref=e1]:
   - generic [ref=e2]:
     - banner [ref=e3]:
-      - generic [ref=e5]: CRM
+      - generic [ref=e5]: Invoices
       - generic [ref=e6]:
         - button "Search... ⌘K" [ref=e7]:
           - generic [ref=e8]:
@@ -63,10 +63,10 @@ Call log:
               - generic [ref=e50]: Projects
           - link "CRM" [ref=e51] [cursor=pointer]:
             - /url: /crm
-            - generic [ref=e53]:
-              - img [ref=e54]
-              - generic [ref=e59]: CRM
-          - link "Invoices" [ref=e60] [cursor=pointer]:
+            - generic [ref=e52]:
+              - img [ref=e53]
+              - generic [ref=e58]: CRM
+          - link "Invoices" [ref=e59] [cursor=pointer]:
             - /url: /invoices
             - generic [ref=e61]:
               - img [ref=e62]
@@ -87,25 +87,20 @@ Call log:
     - main [ref=e80]:
       - generic [ref=e82]:
         - img [ref=e83]
-        - heading "Select an organization" [level=3] [ref=e88]
-        - paragraph [ref=e89]: Please select or create an organization from the workspace switcher in the header to view and manage CRM entries.
-  - button "Open Next.js Dev Tools" [ref=e95] [cursor=pointer]:
-    - img [ref=e96]
-  - alert [ref=e99]
-  - generic [ref=e100]:
-    - img [ref=e102]
-    - button "Open Tanstack query devtools" [ref=e150] [cursor=pointer]:
-      - img [ref=e151]
+        - heading "Select an organization" [level=3] [ref=e86]
+        - paragraph [ref=e87]: Please select or create an organization from the workspace switcher in the header to view invoices.
+  - button "Open Next.js Dev Tools" [ref=e93] [cursor=pointer]:
+    - img [ref=e94]
+  - alert [ref=e97]
+  - generic [ref=e98]:
+    - img [ref=e100]
+    - button "Open Tanstack query devtools" [ref=e148] [cursor=pointer]:
+      - img [ref=e149]
 ```
 
 # Test source
 
 ```ts
-  79  |     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
-  80  |   }
-  81  | }
-  82  | 
-  83  | test.describe("ForgeFlow E2E Critical Flows", () => {
   84  |   let seededData: any = null;
   85  |   let adminEmail = "";
   86  |   const adminPassword = "SuperPassword123!";
@@ -201,13 +196,13 @@ Call log:
   176 |     }
   177 |     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
   178 |     await page.fill('input[type="email"]', "client@invoice.com");
-> 179 |     await page.locator('button[type="submit"]:has-text("Add Client")').click();
-      |                                                                        ^ Error: locator.click: Test timeout of 30000ms exceeded.
+  179 |     await page.locator('button[type="submit"]:has-text("Add Client")').click();
   180 |     await expect(page.locator('text=Add New Client')).toBeHidden();
   181 | 
   182 |     // Create Invoice
   183 |     await page.goto("/invoices");
-  184 |     await page.locator('button:has-text("Create Invoice")').first().click();
+> 184 |     await page.locator('button:has-text("Create Invoice")').first().click();
+      |                                                                     ^ Error: locator.click: Test timeout of 30000ms exceeded.
   185 |     try {
   186 |       await page.waitForSelector('text=Create & Render', { timeout: 2000 });
   187 |     } catch (e) {
@@ -303,4 +298,9 @@ Call log:
   277 |     await page.goto("/login");
   278 |     await submitLoginForm(page, adminEmail, adminPassword);
   279 |     await expect(page).toHaveURL(/.*dashboard/);
+  280 | 
+  281 |     await page.goto("/crm");
+  282 |     // Add Client first (required for Lead)
+  283 |     await page.locator('button:has-text("New Client")').first().click();
+  284 |     try {
 ```

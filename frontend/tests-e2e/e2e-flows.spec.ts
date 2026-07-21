@@ -68,7 +68,7 @@ function runTeardown(orgId: number, userId: number) {
 
 async function submitLoginForm(page: any, email: string, pass: string) {
   await page.waitForLoadState("domcontentloaded");
-  await page.waitForSelector("form input[type='email']");
+  await page.waitForSelector("button[type='submit']:not([disabled])");
   await page.evaluate(() => {
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
