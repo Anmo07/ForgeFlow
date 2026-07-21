@@ -72,9 +72,7 @@ async function submitLoginForm(page: any, email: string, pass: string) {
     (window as any).__MOCK_TURNSTILE_TOKEN__ = "mocked-turnstile-response-token";
   });
   await page.fill('input[type="email"]', email);
-  await page.locator('input[type="email"]').blur();
   await page.fill('input[type="password"]', pass);
-  await page.locator('input[type="password"]').blur();
   await page.click('button[type="submit"]');
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 10000 }).catch(() => null);
