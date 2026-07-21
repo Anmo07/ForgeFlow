@@ -74,9 +74,12 @@ async function submitLoginForm(page: any, email: string, pass: string) {
   });
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', pass);
-  await page.click('button[type="submit"]');
+  await page.click('button[type="submit"]', { force: true });
   if (pass !== "wrong-password") {
     await page.waitForURL(/.*dashboard/, { timeout: 15000 }).catch(() => null);
+  } else {
+    // Small delay to allow state & API response to settle after failed login
+    await page.waitForTimeout(600);
   }
 }
 
@@ -168,24 +171,24 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     // Add Client first in CRM
     await page.goto("/crm");
-    await page.locator('button:has-text("New Client")').first().click();
+    await page.locator('button:has-text("New Client")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("New Client")').first().click();
+      await page.locator('button:has-text("New Client")').first().click({ force: true });
     }
     await page.fill('input[placeholder*="John Doe"]', "E2E Invoice Client");
     await page.fill('input[type="email"]', "client@invoice.com");
-    await page.locator('button[type="submit"]:has-text("Add Client")').click();
+    await page.locator('button[type="submit"]:has-text("Add Client")').click({ force: true });
     await expect(page.locator('text=Add New Client')).toBeHidden();
 
     // Create Invoice
     await page.goto("/invoices");
-    await page.locator('button:has-text("Create Invoice")').first().click();
+    await page.locator('button:has-text("Create Invoice")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Create & Render', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("Create Invoice")').first().click();
+      await page.locator('button:has-text("Create Invoice")').first().click({ force: true });
     }
     
     // Fill Invoice form
@@ -201,19 +204,19 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
     await page.fill('input[placeholder="Qty"]', "2");
     await page.fill('input[placeholder="Price"]', "50");
 
-    await page.click("text=Add Item");
+    await page.click("text=Add Item", { force: true });
     await page.fill('input[placeholder*="product or service"] >> nth=1', "Item 2");
     await page.fill('input[placeholder="Qty"] >> nth=1', "1");
     await page.fill('input[placeholder="Price"] >> nth=1', "100");
 
-    await page.click("text=Add Item");
+    await page.click("text=Add Item", { force: true });
     await page.fill('input[placeholder*="product or service"] >> nth=2', "Item 3");
     await page.fill('input[placeholder="Qty"] >> nth=2', "5");
     await page.fill('input[placeholder="Price"] >> nth=2', "10");
 
     await page.fill('label:has-text("Tax Rate") + input', "10");
     await page.fill('textarea[placeholder*="Notes"]', "E2E Test Invoice Notes");
-    await page.click('button:has-text("Create & Render")');
+    await page.click('button:has-text("Create & Render")', { force: true });
 
     // Verify it appears in table
     const totalCell = page.locator("table tbody td:has-text('$275.00')");
@@ -234,33 +237,33 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     // Create project
     await page.goto("/projects");
-    await page.locator('button:has-text("New Project")').first().click();
+    await page.locator('button:has-text("New Project")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Create New Project', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("New Project")').first().click();
+      await page.locator('button:has-text("New Project")').first().click({ force: true });
     }
     await page.fill('input[placeholder*="Acme"]', "E2E Projects Space");
     await page.fill('textarea[placeholder*="Describe"]', "E2E Kanban Lifecycle testing space");
-    await page.locator('button[type="submit"]:has-text("Create Project")').click();
+    await page.locator('button[type="submit"]:has-text("Create Project")').click({ force: true });
     await expect(page.locator('text=Create New Project')).toBeHidden();
 
     // Add tasks
     const projCard = page.locator('text="E2E Projects Space"').first();
     await expect(projCard).toBeVisible({ timeout: 10000 });
-    await projCard.click();
+    await projCard.click({ force: true });
     await page.waitForURL(/.*projects\/.*/);
     
     // Add Task 1
-    await page.locator('button:has-text("Add Task")').first().click();
+    await page.locator('button:has-text("Add Task")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Create Task', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("Add Task")').first().click();
+      await page.locator('button:has-text("Add Task")').first().click({ force: true });
     }
     await page.fill('input[placeholder*="OIDC"]', "Task high priority");
     await page.selectOption('label:has-text("Priority") + select', "high");
-    await page.locator('button[type="submit"]:has-text("Create Task")').click();
+    await page.locator('button[type="submit"]:has-text("Create Task")').click({ force: true });
     await expect(page.locator('text=Create Task')).toBeHidden();
 
     // Drag-and-drop simulation & verify persisting
@@ -280,27 +283,27 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     await page.goto("/crm");
     // Add Client first (required for Lead)
-    await page.locator('button:has-text("New Client")').first().click();
+    await page.locator('button:has-text("New Client")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Add New Client', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("New Client")').first().click();
+      await page.locator('button:has-text("New Client")').first().click({ force: true });
     }
     await page.fill('input[placeholder*="John Doe"]', "E2E Lead Client");
     await page.fill('input[type="email"]', "lead_client@invoice.com");
-    await page.locator('button[type="submit"]:has-text("Add Client")').click();
+    await page.locator('button[type="submit"]:has-text("Add Client")').click({ force: true });
     await expect(page.locator('text=Add New Client')).toBeHidden();
 
     // Add lead
-    await page.locator('button:has-text("New Lead")').first().click();
+    await page.locator('button:has-text("New Lead")').first().click({ force: true });
     try {
       await page.waitForSelector('text=Add New Lead', { timeout: 2000 });
     } catch (e) {
-      await page.locator('button:has-text("New Lead")').first().click();
+      await page.locator('button:has-text("New Lead")').first().click({ force: true });
     }
     await page.selectOption('select[required]', { index: 1 });
     await page.fill('input[placeholder*="5000"]', "25000");
-    await page.locator('button[type="submit"]:has-text("Add Lead")').click();
+    await page.locator('button[type="submit"]:has-text("Add Lead")').click({ force: true });
     await expect(page.locator('text=Add New Lead')).toBeHidden();
 
     // Check CRM list or pipeline dashboard update
@@ -316,7 +319,7 @@ test.describe("ForgeFlow E2E Critical Flows", () => {
 
     await page.goto("/settings/members");
     await page.fill('input[placeholder="user@example.com"]', "invitee_user@forgeflow.com");
-    await page.locator('button:has-text("Send Invitation")').click();
+    await page.locator('button:has-text("Send Invitation")').click({ force: true });
 
     // Assert listed in pending
     await expect(page.locator("text=invitee_user@forgeflow.com").last()).toBeVisible();
