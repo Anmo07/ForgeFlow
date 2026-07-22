@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   FileText,
   Plus,
@@ -16,12 +17,14 @@ import {
   AlertCircle,
   X,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { apiFetch } from "@/lib/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlassPanel } from "@/components/glass/GlassPanel";
+import { InvoiceDocument } from "@/components/invoice/InvoiceDocument";
 
 interface LineItem {
   description: string;
@@ -824,136 +827,75 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {}
+      {/* Selected Invoice Details Modal */}
       {selectedInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             onClick={() => setSelectedInvoice(null)}
-            className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px] cursor-pointer"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
           />
           <GlassPanel
             variant="heavy"
             radius="xl"
-            className="w-full max-w-xl shadow-[var(--shadow-glass-lg)] dark:shadow-[var(--shadow-glass-dark-lg)] border border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex flex-col max-h-[85vh] z-10 animate-in fade-in zoom-in duration-200"
+            className="w-full max-w-4xl shadow-2xl border border-border flex flex-col max-h-[90vh] z-10 animate-in fade-in zoom-in duration-200 overflow-hidden"
           >
-            <div className="p-5 border-b border-[var(--color-glass-regular-border)] dark:border-[var(--color-glass-dark-regular-border)] flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)]">
-                Invoice Details: {selectedInvoice.invoice_number}
-              </h2>
-              <button
-                onClick={() => setSelectedInvoice(null)}
-                className="text-[var(--color-glass-text-secondary)] dark:text-[var(--color-glass-dark-text-secondary)] hover:bg-[var(--color-glass-hover)] dark:hover:bg-[var(--color-glass-dark-hover)] p-1 rounded-lg transition-colors border border-[var(--color-glass-clear-border)] dark:border-[var(--color-glass-dark-clear-border)]"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4 overflow-y-auto flex-1 text-sm">
-              <div className="grid grid-cols-2 gap-4 border-b border-border/40 pb-4">
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                    Client
-                  </span>
-                  <p className="font-bold text-base text-foreground mt-0.5">
-                    {selectedInvoice.client_name || "Direct Customer"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                    Status
-                  </span>
-                  <p className="font-bold capitalize text-primary mt-0.5">
-                    {selectedInvoice.status}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 border-b border-border/40 pb-4">
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                    Issue Date
-                  </span>
-                  <p className="font-semibold text-foreground mt-0.5">
-                    {new Date(selectedInvoice.issue_date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                    Due Date
-                  </span>
-                  <p className="font-semibold text-foreground mt-0.5">
-                    {new Date(selectedInvoice.due_date).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {}
-              <div className="space-y-2">
-                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                  Items Breakdown
+            <div className="p-4 border-b border-border flex items-center justify-between bg-card/80">
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-bold text-foreground">
+                  Tax Invoice Document: {selectedInvoice.invoice_number}
+                </h2>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold uppercase">
+                  {selectedInvoice.status}
                 </span>
-                <div className="border border-border/40 rounded-lg overflow-hidden">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-muted/40 font-semibold border-b border-border/40">
-                      <tr>
-                        <th className="px-4 py-2">Description</th>
-                        <th className="px-4 py-2 text-right">Qty</th>
-                        <th className="px-4 py-2 text-right">Unit Price</th>
-                        <th className="px-4 py-2 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/20 text-foreground">
-                      {selectedInvoice.line_items?.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-4 py-2">{item.description}</td>
-                          <td className="px-4 py-2 text-right">
-                            {item.quantity}
-                          </td>
-                          <td className="px-4 py-2 text-right">
-                            ${item.unit_price.toFixed(2)}
-                          </td>
-                          <td className="px-4 py-2 text-right font-bold">
-                            ${item.amount.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </div>
-
-              {}
-              <div className="bg-muted/10 border border-border/40 rounded-lg p-4 space-y-2 text-xs font-semibold">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal:</span>
-                  <span>${selectedInvoice.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Tax ({selectedInvoice.tax_rate}%):
-                  </span>
-                  <span>${selectedInvoice.tax_amount.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-primary font-bold border-t border-border/40 pt-2">
-                  <span>Grand Total:</span>
-                  <span>${selectedInvoice.total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {selectedInvoice.notes && (
-                <div className="space-y-1 bg-muted/5 p-3 rounded-lg border border-border/20">
-                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider block">
-                    Notes
-                  </span>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedInvoice.notes}
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-border flex justify-end gap-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/invoices/viewer?num=${encodeURIComponent(selectedInvoice.invoice_number)}&issue=${encodeURIComponent(selectedInvoice.issue_date)}&due=${encodeURIComponent(selectedInvoice.due_date)}&status=${encodeURIComponent(selectedInvoice.status)}&client=${encodeURIComponent(selectedInvoice.client_name || "Acme Digital")}&total=${selectedInvoice.total}`}
+                  target="_blank"
+                  className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors border border-primary/20"
+                >
+                  <ExternalLink className="size-3.5" />
+                  <span>Open PDF Viewer</span>
+                </Link>
                 <button
                   onClick={() => setSelectedInvoice(null)}
-                  className="px-4 py-2 border border-border hover:bg-muted text-xs font-semibold rounded-lg"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted p-1.5 rounded-lg transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-100 dark:bg-slate-900 flex justify-center items-start">
+              <InvoiceDocument
+                invoiceNumber={selectedInvoice.invoice_number}
+                issueDate={selectedInvoice.issue_date}
+                dueDate={selectedInvoice.due_date}
+                status={selectedInvoice.status}
+                clientName={selectedInvoice.client_name || "Acme Digital"}
+                orgName={currentOrg?.name || "Acme Digital Agency"}
+                lineItems={selectedInvoice.line_items || []}
+                subtotal={selectedInvoice.subtotal}
+                taxRate={selectedInvoice.tax_rate}
+                taxAmount={selectedInvoice.tax_amount}
+                total={selectedInvoice.total}
+                notes={selectedInvoice.notes || undefined}
+              />
+            </div>
+
+            <div className="p-4 border-t border-border bg-card/80 flex justify-between items-center">
+              <Link
+                href={`/invoices/viewer?num=${encodeURIComponent(selectedInvoice.invoice_number)}&issue=${encodeURIComponent(selectedInvoice.issue_date)}&due=${encodeURIComponent(selectedInvoice.due_date)}&status=${encodeURIComponent(selectedInvoice.status)}&client=${encodeURIComponent(selectedInvoice.client_name || "Acme Digital")}&total=${selectedInvoice.total}`}
+                target="_blank"
+                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
+              >
+                <span>View in full PDF Viewer tab (forgeflow.com/invoices/viewer)</span>
+                <ExternalLink className="size-3" />
+              </Link>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedInvoice(null)}
+                  className="px-4 py-2 border border-border hover:bg-muted text-xs font-semibold rounded-lg transition-colors"
                 >
                   Close
                 </button>
@@ -964,7 +906,7 @@ export default function InvoicesPage() {
                       selectedInvoice.invoice_number,
                     )
                   }
-                  className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground text-xs font-semibold rounded-lg flex items-center gap-1.5"
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
                 >
                   <Download className="size-3.5" /> Download PDF
                 </button>

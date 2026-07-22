@@ -36,25 +36,39 @@ def generate_invoice_pdf(
     styles = getSampleStyleSheet()
     elements = []
 
-    # Color Palette
-    PRIMARY = colors.HexColor("#0f172a")     # Slate 900
-    ACCENT = colors.HexColor("#0284c7")      # Cyan 600
-    ACCENT_LIGHT = colors.HexColor("#f0f9ff")# Cyan 50
-    TEXT_DARK = colors.HexColor("#1e293b")   # Slate 800
-    TEXT_MUTED = colors.HexColor("#64748b")  # Slate 500
-    BORDER_COLOR = colors.HexColor("#e2e8f0")# Slate 200
-    GOLD = colors.HexColor("#d97706")        # Amber 600
+    # Color Palette matching ForgeFlow Daylight Theme
+    PRIMARY_DARK = colors.HexColor("#0f172a")    # Dark text / headers
+    TEXT_MUTED = colors.HexColor("#475569")      # Muted text
+    BORDER_COLOR = colors.HexColor("#cbd5e1")    # Border slate-300
+    BG_LIGHT_CARD = colors.HexColor("#ffffff")   # Card background
+    BG_TABLE_HDR = colors.HexColor("#f1f5f9")    # Table header gray background
+    HIGHLIGHT_BG = colors.HexColor("#dbe2fe")    # Soft indigo highlight box for Total Amount Due
+    HIGHLIGHT_TEXT = colors.HexColor("#1e1b4b")  # Dark indigo text
+    LOGO_BLUE = colors.HexColor("#4f46e5")       # Brand purple/blue accent
 
     # Typography Styles
-    style_org_title = ParagraphStyle('OrgTitle', fontName='Helvetica-Bold', fontSize=16, leading=20, textColor=PRIMARY)
-    style_org_sub = ParagraphStyle('OrgSub', fontName='Helvetica', fontSize=9, leading=12, textColor=TEXT_MUTED)
-    style_inv_header = ParagraphStyle('InvHeader', fontName='Helvetica-Bold', fontSize=22, leading=26, alignment=TA_RIGHT, textColor=ACCENT)
-    style_meta_label = ParagraphStyle('MetaLabel', fontName='Helvetica-Bold', fontSize=9, leading=12, textColor=TEXT_MUTED)
-    style_meta_val = ParagraphStyle('MetaVal', fontName='Helvetica', fontSize=9, leading=12, textColor=TEXT_DARK)
-    style_section_title = ParagraphStyle('SecTitle', fontName='Helvetica-Bold', fontSize=10, leading=13, textColor=PRIMARY)
-    style_body = ParagraphStyle('BodyTextCustom', fontName='Helvetica', fontSize=9, leading=12, textColor=TEXT_DARK)
-    style_small = ParagraphStyle('SmallCustom', fontName='Helvetica', fontSize=8, leading=10, textColor=TEXT_MUTED)
-    style_right = ParagraphStyle('RightCustom', parent=style_body, alignment=TA_RIGHT)
+    style_logo_text = ParagraphStyle('LogoText', fontName='Helvetica-Bold', fontSize=20, leading=24, textColor=LOGO_BLUE)
+    style_org_name = ParagraphStyle('OrgName', fontName='Helvetica-Bold', fontSize=10, leading=14, textColor=PRIMARY_DARK)
+    style_org_info = ParagraphStyle('OrgInfo', fontName='Helvetica', fontSize=8.5, leading=12, textColor=PRIMARY_DARK)
+
+    style_tax_inv = ParagraphStyle('TaxInvoiceTitle', fontName='Helvetica-Bold', fontSize=18, leading=22, alignment=TA_RIGHT, textColor=PRIMARY_DARK)
+    style_meta_right = ParagraphStyle('MetaRight', fontName='Helvetica', fontSize=8.5, leading=13, alignment=TA_RIGHT, textColor=PRIMARY_DARK)
+    style_meta_bold = ParagraphStyle('MetaRightBold', fontName='Helvetica-Bold', fontSize=8.5, leading=13, alignment=TA_RIGHT, textColor=PRIMARY_DARK)
+
+    style_card_hdr = ParagraphStyle('CardHdr', fontName='Helvetica-Bold', fontSize=8.5, leading=11, textColor=PRIMARY_DARK)
+    style_card_body = ParagraphStyle('CardBody', fontName='Helvetica', fontSize=8.5, leading=12, textColor=PRIMARY_DARK)
+
+    style_th_left = ParagraphStyle('THL', fontName='Helvetica-Bold', fontSize=8.5, leading=11, textColor=PRIMARY_DARK)
+    style_th_center = ParagraphStyle('THC', fontName='Helvetica-Bold', fontSize=8.5, leading=11, alignment=TA_CENTER, textColor=PRIMARY_DARK)
+    style_th_right = ParagraphStyle('THR', fontName='Helvetica-Bold', fontSize=8.5, leading=11, alignment=TA_RIGHT, textColor=PRIMARY_DARK)
+
+    style_td_left = ParagraphStyle('TDL', fontName='Helvetica', fontSize=8.5, leading=12, textColor=PRIMARY_DARK)
+    style_td_center = ParagraphStyle('TDC', fontName='Helvetica', fontSize=8.5, leading=12, alignment=TA_CENTER, textColor=PRIMARY_DARK)
+    style_td_right = ParagraphStyle('TDR', fontName='Helvetica', fontSize=8.5, leading=12, alignment=TA_RIGHT, textColor=PRIMARY_DARK)
+
+    style_notes_hdr = ParagraphStyle('NotesHdr', fontName='Helvetica-Bold', fontSize=9, leading=13, textColor=PRIMARY_DARK)
+    style_notes_body = ParagraphStyle('NotesBody', fontName='Helvetica', fontSize=8, leading=11, textColor=PRIMARY_DARK)
+    style_footer = ParagraphStyle('FooterText', fontName='Helvetica', fontSize=7.5, leading=10, alignment=TA_CENTER, textColor=TEXT_MUTED)
 
     # Assets Path
     assets_dir = Path(__file__).parent / "assets"
@@ -62,48 +76,40 @@ def generate_invoice_pdf(
     stamp_path = assets_dir / "approval_stamp.png"
     sig_path = assets_dir / "executive_signature.png"
 
-    # --- 1. HEADER SECTION (Logo/Org on Left, Invoice Details on Right) ---
-    escaped_org = html.escape(org_name or "ForgeFlow Enterprise Technologies")
+    # --- 1. HEADER SECTION ---
+    escaped_org = html.escape(org_name or "Acme Digital Agency")
     escaped_inv_num = html.escape(invoice_number)
-    
-    org_cell_contents = []
+
+    left_header = []
     if logo_path.exists():
         try:
-            logo_img = Image(str(logo_path), width=45 * mm, height=18 * mm)
+            logo_img = Image(str(logo_path), width=38 * mm, height=12 * mm)
             logo_img.hAlign = 'LEFT'
-            org_cell_contents.append(logo_img)
-            org_cell_contents.append(Spacer(1, 2 * mm))
+            left_header.append(logo_img)
+            left_header.append(Spacer(1, 1.5 * mm))
         except Exception:
-            pass
+            left_header.append(Paragraph("<b>FORGEFLOW</b>", style_logo_text))
+    else:
+        left_header.append(Paragraph("<b>FORGEFLOW</b>", style_logo_text))
 
-    org_cell_contents.extend([
-        Paragraph(f"<b>{escaped_org}</b>", style_org_title),
-        Paragraph("Enterprise IT & Managed Services Division", style_org_sub),
-        Paragraph("100 Innovation Parkway, Suite 400 • San Francisco, CA 94105", style_org_sub),
-        Paragraph("Tax ID / EIN: 94-3829104 • billing@forgeflow.com", style_org_sub)
+    left_header.extend([
+        Paragraph(f"<b>{escaped_org}</b>", style_org_name),
+        Paragraph("ForgeFlow.com", style_org_info),
+        Paragraph("kenw.digitalagency.com", style_org_info),
+        Paragraph("info@resflow.com", style_org_info)
     ])
 
-    status_str = status.upper()
-    status_colors_map = {
-        'DRAFT': '#64748b',
-        'SENT': '#0284c7',
-        'PAID': '#16a34a',
-        'OVERDUE': '#dc2626',
-        'CANCELLED': '#94a3b8'
-    }
-    status_hex = status_colors_map.get(status_str, '#64748b')
-
-    meta_cell_contents = [
-        Paragraph("TAX INVOICE", style_inv_header),
-        Spacer(1, 2 * mm),
-        Paragraph(f"Invoice No: <b>{escaped_inv_num}</b>", ParagraphStyle('R1', parent=style_right, fontSize=10)),
-        Paragraph(f"Issue Date: <b>{html.escape(issue_date)}</b>", style_right),
-        Paragraph(f"Due Date: <b>{html.escape(due_date)}</b>", style_right),
-        Spacer(1, 1 * mm),
-        Paragraph(f"Status: <font color=\"{status_hex}\"><b>{status_str}</b></font>", style_right)
+    status_upper = (status or "DRAFT").upper()
+    right_header = [
+        Paragraph("TAX INVOICE", style_tax_inv),
+        Spacer(1, 1.5 * mm),
+        Paragraph(f"Invoice No: <b>{escaped_inv_num}</b>", style_meta_right),
+        Paragraph(f"Issue Date: <b>{html.escape(issue_date)}</b>", style_meta_right),
+        Paragraph(f"Due Date: <b>{html.escape(due_date)}</b>", style_meta_right),
+        Paragraph(f"Status: <b>{status_upper}</b>", style_meta_right)
     ]
 
-    header_table = Table([[org_cell_contents, meta_cell_contents]], colWidths=[doc.width * 0.55, doc.width * 0.45])
+    header_table = Table([[left_header, right_header]], colWidths=[doc.width * 0.55, doc.width * 0.45])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
@@ -112,159 +118,142 @@ def generate_invoice_pdf(
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 4 * mm))
+    elements.append(Spacer(1, 5 * mm))
 
-    # Gradient Accented Divider Line
-    elements.append(HRFlowable(width="100%", thickness=2, color=ACCENT, spaceBefore=2*mm, spaceAfter=5*mm))
+    # --- 2. ISSUED BY / BILLED TO CARDS ---
+    escaped_client = html.escape(client_name or "Acme Digital")
 
-    # --- 2. BILLING PARTY INFORMATION (Vendor vs Client) ---
-    escaped_client = html.escape(client_name or "Direct Client")
-    
-    bill_by_cell = [
-        Paragraph("<b>ISSUED BY:</b>", style_section_title),
+    issued_by_content = [
+        Paragraph("<b>ISSUED BY</b>", style_card_hdr),
         Spacer(1, 1 * mm),
-        Paragraph(f"<b>{escaped_org}</b>", style_body),
-        Paragraph("Global Accounts Department", style_small),
-        Paragraph("contact@forgeflow.com | +1 (800) 555-FORGE", style_small)
+        Paragraph("<b>ForgeFlow</b>", style_card_body),
+        Paragraph(f"{escaped_org}", style_card_body),
+        Paragraph("Forgeflow.com", style_card_body)
     ]
 
-    bill_to_cell = [
-        Paragraph("<b>BILLED TO (CLIENT):</b>", style_section_title),
+    billed_to_content = [
+        Paragraph("<b>BILLED TO (CLIENT)</b>", style_card_hdr),
         Spacer(1, 1 * mm),
-        Paragraph(f"<b>{escaped_client}</b>", style_body),
-        Paragraph("Corporate Client Account", style_small),
-        Paragraph("Payment Terms: Net 30 Days", style_small)
+        Paragraph(f"<b>{escaped_client}</b>", style_card_body),
+        Paragraph("Acme Digital Agency", style_card_body),
+        Paragraph("Etrent incontined", style_card_body)
     ]
 
-    party_table = Table([[bill_by_cell, bill_to_cell]], colWidths=[doc.width * 0.5, doc.width * 0.5])
+    party_table = Table([[issued_by_content, billed_to_content]], colWidths=[doc.width * 0.48, doc.width * 0.48])
     party_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, 0), ACCENT_LIGHT),
-        ('BACKGROUND', (1, 0), (1, 0), colors.HexColor("#f8fafc")),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#ffffff")),
         ('BOX', (0, 0), (0, 0), 0.5, BORDER_COLOR),
         ('BOX', (1, 0), (1, 0), 0.5, BORDER_COLOR),
-        ('PADDING', (0, 0), (-1, -1), 8),
+        ('ROUNDEDCORNERS', [4, 4, 4, 4]),
+        ('PADDING', (0, 0), (-1, -1), 10),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
     ]))
     elements.append(party_table)
     elements.append(Spacer(1, 6 * mm))
 
     # --- 3. LINE ITEMS TABLE ---
-    table_header = [
-        Paragraph("<b>#</b>", ParagraphStyle('THC', parent=style_body, textColor=colors.white, alignment=TA_CENTER)),
-        Paragraph("<b>Description & Services</b>", ParagraphStyle('THL', parent=style_body, textColor=colors.white)),
-        Paragraph("<b>Qty</b>", ParagraphStyle('THC2', parent=style_body, textColor=colors.white, alignment=TA_CENTER)),
-        Paragraph("<b>Unit Price</b>", ParagraphStyle('THR', parent=style_body, textColor=colors.white, alignment=TA_RIGHT)),
-        Paragraph("<b>Amount</b>", ParagraphStyle('THR2', parent=style_body, textColor=colors.white, alignment=TA_RIGHT))
+    headers = [
+        Paragraph("<b>Line Item</b>", style_th_left),
+        Paragraph("<b>Qty</b>", style_th_center),
+        Paragraph("<b>Price</b>", style_th_right),
+        Paragraph("<b>Amount</b>", style_th_right)
     ]
+    items_data = [headers]
 
-    items_data = [table_header]
-    for idx, item in enumerate(line_items, 1):
+    for item in line_items:
         desc = html.escape(str(item.get('description', 'Service Item')))
         qty = item.get('quantity', 1)
         price = item.get('unit_price', 0)
         amt = item.get('amount', qty * price)
         items_data.append([
-            Paragraph(str(idx), ParagraphStyle('TDC', parent=style_body, alignment=TA_CENTER)),
-            Paragraph(desc, style_body),
-            Paragraph(f"{qty:.1f}", ParagraphStyle('TDC2', parent=style_body, alignment=TA_CENTER)),
-            Paragraph(f"${price:,.2f}", style_right),
-            Paragraph(f"<b>${amt:,.2f}</b>", style_right)
+            Paragraph(desc, style_td_left),
+            Paragraph(f"{qty:.1f}", style_td_center),
+            Paragraph(f"${price:,.2f}", style_td_right),
+            Paragraph(f"${amt:,.2f}", style_td_right)
         ])
 
-    col_widths = [doc.width * 0.06, doc.width * 0.50, doc.width * 0.10, doc.width * 0.17, doc.width * 0.17]
+    col_widths = [doc.width * 0.52, doc.width * 0.14, doc.width * 0.17, doc.width * 0.17]
     items_table = Table(items_data, colWidths=col_widths)
-    
-    t_style = [
-        ('BACKGROUND', (0, 0), (-1, 0), PRIMARY),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), BG_TABLE_HDR),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('GRID', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
-    ]
-
-    # Zebra striping for alternating rows
-    for i in range(1, len(items_data)):
-        if i % 2 == 0:
-            t_style.append(('BACKGROUND', (0, i), (-1, i), colors.HexColor("#f8fafc")))
-
-    items_table.setStyle(TableStyle(t_style))
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LINEBELOW', (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+    ]))
     elements.append(items_table)
     elements.append(Spacer(1, 4 * mm))
 
-    # --- 4. TOTALS & SUMMARY BLOCK ---
+    # --- 4. TOTALS SECTION ---
     totals_data = [
-        ["", Paragraph("Subtotal:", style_right), Paragraph(f"${subtotal:,.2f}", style_right)],
-        ["", Paragraph(f"Tax ({tax_rate}%):", style_right), Paragraph(f"${tax_amount:,.2f}", style_right)],
-        ["", Paragraph("<b>Total Amount Due:</b>", ParagraphStyle('TotLbl', parent=style_right, fontSize=11, textColor=PRIMARY)), Paragraph(f"<b>${total:,.2f}</b>", ParagraphStyle('TotVal', parent=style_right, fontSize=12, textColor=ACCENT))]
+        ["", Paragraph("Subtotal", style_td_right), Paragraph(f"${subtotal:,.2f}", style_td_right)],
+        ["", Paragraph(f"Tax ({tax_rate}%)", style_td_right), Paragraph(f"${tax_amount:,.2f}", style_td_right)],
+        [
+            "",
+            Paragraph("<b>Total Amount Due</b>", ParagraphStyle('TotLbl', parent=style_td_right, fontSize=9.5, textColor=HIGHLIGHT_TEXT)),
+            Paragraph(f"<b>${total:,.2f}</b>", ParagraphStyle('TotVal', parent=style_td_right, fontSize=10.5, textColor=HIGHLIGHT_TEXT))
+        ]
     ]
-    
-    totals_table = Table(totals_data, colWidths=[doc.width * 0.5, doc.width * 0.25, doc.width * 0.25])
+
+    totals_table = Table(totals_data, colWidths=[doc.width * 0.45, doc.width * 0.30, doc.width * 0.25])
     totals_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ('BACKGROUND', (1, 2), (2, 2), ACCENT_LIGHT),
-        ('BOX', (1, 2), (2, 2), 1, ACCENT),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('BACKGROUND', (1, 2), (2, 2), HIGHLIGHT_BG),
+        ('ROUNDEDCORNERS', [4, 4, 4, 4]),
     ]))
     elements.append(totals_table)
-    elements.append(Spacer(1, 6 * mm))
+    elements.append(Spacer(1, 8 * mm))
 
-    # --- 5. DIGITAL SIGNATURE & OFFICIAL APPROVAL STAMP (NEW) ---
-    left_stamp_cell = []
+    # --- 5. SEAL & SIGNATURE BLOCK ---
+    left_seal = []
     if stamp_path.exists():
         try:
-            stamp_img = Image(str(stamp_path), width=32 * mm, height=32 * mm)
-            stamp_img.hAlign = 'CENTER'
-            left_stamp_cell.append(stamp_img)
-            left_stamp_cell.append(Spacer(1, 1 * mm))
+            seal_img = Image(str(stamp_path), width=28 * mm, height=28 * mm)
+            seal_img.hAlign = 'CENTER'
+            left_seal.append(seal_img)
+            left_seal.append(Spacer(1, 1 * mm))
         except Exception:
             pass
-    left_stamp_cell.append(Paragraph("<b>OFFICIAL CORPORATE SEAL</b>", ParagraphStyle('SLabel', parent=style_small, alignment=TA_CENTER)))
-    left_stamp_cell.append(Paragraph("Digitally Verified & Approved", ParagraphStyle('SSub', parent=style_small, alignment=TA_CENTER, textColor=ACCENT)))
+    left_seal.append(Paragraph("<b>Seal</b>", ParagraphStyle('SealLbl', parent=style_td_center, fontSize=8)))
 
-    right_sig_cell = []
+    right_sig = []
     if sig_path.exists():
         try:
-            sig_img = Image(str(sig_path), width=45 * mm, height=18 * mm)
+            sig_img = Image(str(sig_path), width=40 * mm, height=14 * mm)
             sig_img.hAlign = 'CENTER'
-            right_sig_cell.append(sig_img)
-            right_sig_cell.append(Spacer(1, 1 * mm))
+            right_sig.append(sig_img)
+            right_sig.append(Spacer(1, 1 * mm))
         except Exception:
-            pass
-    
-    right_sig_cell.extend([
-        HRFlowable(width="80%", thickness=1, color=PRIMARY, spaceBefore=1*mm, spaceAfter=1*mm),
-        Paragraph("<b>Eleanor S. Montgomery</b>", ParagraphStyle('SigName', parent=style_body, alignment=TA_CENTER)),
-        Paragraph("Chief Financial Officer & Head of Billing", ParagraphStyle('SigTitle', parent=style_small, alignment=TA_CENTER)),
-        Paragraph("Cryptographic Signature Hash: <code>0x8f3c...e912</code>", ParagraphStyle('SigHash', parent=style_small, alignment=TA_CENTER, fontSize=7))
-    ])
+            right_sig.append(Paragraph("<i>Eleanor S. Montgomery</i>", ParagraphStyle('SigScript', fontName='Helvetica-Oblique', fontSize=14, alignment=TA_CENTER)))
+    else:
+        right_sig.append(Paragraph("<i>Eleanor S. Montgomery</i>", ParagraphStyle('SigScript', fontName='Helvetica-Oblique', fontSize=14, alignment=TA_CENTER)))
 
-    approval_table = Table([[left_stamp_cell, right_sig_cell]], colWidths=[doc.width * 0.45, doc.width * 0.55])
-    approval_table.setStyle(TableStyle([
+    right_sig.append(Paragraph("Eleanor S. Montgomery", ParagraphStyle('SigName', fontName='Helvetica-Bold', fontSize=8.5, alignment=TA_CENTER)))
+    right_sig.append(Paragraph("Signature", ParagraphStyle('SigLbl', parent=style_td_center, fontSize=8, textColor=TEXT_MUTED)))
+
+    seal_sig_table = Table([[left_seal, right_sig]], colWidths=[doc.width * 0.45, doc.width * 0.55])
+    seal_sig_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#fafafa")),
-        ('BOX', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
-        ('PADDING', (0, 0), (-1, -1), 8),
     ]))
-    elements.append(approval_table)
+    elements.append(seal_sig_table)
     elements.append(Spacer(1, 6 * mm))
 
-    # --- 6. NOTES & TERMS SECTION ---
-    if notes:
-        elements.append(Paragraph("<b>Payment Notes & Instructions:</b>", style_section_title))
-        escaped_notes = html.escape(notes).replace('\n', '<br/>')
-        elements.append(Paragraph(escaped_notes, style_body))
-        elements.append(Spacer(1, 4 * mm))
+    # --- 6. PAYMENT NOTES & INSTRUCTIONS ---
+    notes_text = notes or "This invoice is ceans comneted with te received and througns the ofmariroctor.\nPayment Notes & Instructions: Died the sead,"
+    elements.append(Paragraph("<b>Payment Notes & Instructions:</b>", style_notes_hdr))
+    escaped_notes = html.escape(notes_text).replace('\n', '<br/>')
+    elements.append(Paragraph(escaped_notes, style_notes_body))
+    elements.append(Spacer(1, 3 * mm))
 
-    elements.append(Paragraph("<b>Standard Terms:</b> Payment is due within 30 days of issuance. Late payments are subject to a 1.5% monthly service charge.", style_small))
-    elements.append(Spacer(1, 4 * mm))
+    elements.append(Paragraph("Standard terms are clearly set out. Slean roms is continued in instruction approaching payments tunaked suminating pay sunt the seconds.", style_notes_body))
+    elements.append(Spacer(1, 5 * mm))
 
-    # --- 7. FOOTER WATERMARK ---
-    elements.append(HRFlowable(width="100%", thickness=0.5, color=BORDER_COLOR, spaceBefore=2*mm, spaceAfter=2*mm))
-    elements.append(Paragraph(f"Generated by ForgeFlow Enterprise Billing System • Reference: {escaped_inv_num} • Page 1 of 1", ParagraphStyle('Footer', parent=style_small, alignment=TA_CENTER)))
+    # --- 7. FOOTER BAR ---
+    elements.append(HRFlowable(width="100%", thickness=0.5, color=BORDER_COLOR, spaceBefore=1*mm, spaceAfter=3*mm))
+    elements.append(Paragraph(f"Generated by ForgeFlow Enterprise Billing System • Reference: {escaped_inv_num} • Page 1 of 1", style_footer))
 
     doc.build(elements)
     pdf_bytes = buffer.getvalue()
