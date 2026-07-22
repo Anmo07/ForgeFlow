@@ -223,7 +223,27 @@ export default function InvoicesPage() {
       await loadInvoiceData();
 
       if (createdInvoice && createdInvoice.id) {
-        window.open(`/api/invoices/${createdInvoice.id}/pdf`, "_blank");
+        const pdfUrl = `/api/invoices/${createdInvoice.id}/pdf`;
+        try {
+          const res = await fetch(pdfUrl, {
+            headers: { "X-Organization-ID": String(currentOrg.id) },
+          });
+          if (res.ok) {
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = `${createdInvoice.invoice_number || `INV-${createdInvoice.id}`}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+          } else {
+            window.open(pdfUrl, "_blank");
+          }
+        } catch {
+          window.open(pdfUrl, "_blank");
+        }
       }
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to create invoice");
@@ -252,14 +272,27 @@ export default function InvoicesPage() {
     invoiceNumber: string,
   ) => {
     if (!currentOrg) return;
+    const pdfUrl = `/api/invoices/${invoiceId}/pdf`;
     try {
-      const pdfWindow = window.open(`/api/invoices/${invoiceId}/pdf`, "_blank");
-      if (!pdfWindow) {
-        window.location.href = `/api/invoices/${invoiceId}/pdf`;
+      const res = await fetch(pdfUrl, {
+        headers: { "X-Organization-ID": String(currentOrg.id) },
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = `${invoiceNumber || `INV-${invoiceId}`}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } else {
+        window.open(pdfUrl, "_blank");
       }
     } catch (err) {
-      console.error("PDF open failed", err);
-      alert("Could not open PDF invoice window.");
+      console.error("PDF download failed", err);
+      window.open(pdfUrl, "_blank");
     }
   };
 
