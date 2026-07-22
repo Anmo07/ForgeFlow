@@ -209,8 +209,7 @@ def run_local_stack(project_root: Path) -> str:
     # Start Next.js Frontend
     log_info("Starting Next.js Frontend server...")
     npm_cmd = shutil.which("npm") or "npm"
-    frontend_build = frontend_dir / ".next" / "BUILD_ID"
-    script_mode = "start" if frontend_build.exists() else "dev"
+    script_mode = "dev"
     log_info(f"Launching Next.js frontend using 'npm run {script_mode}'...")
     subprocess.Popen(
         [npm_cmd, "run", script_mode],

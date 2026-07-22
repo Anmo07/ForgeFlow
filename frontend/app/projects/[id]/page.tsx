@@ -19,6 +19,8 @@ import {
   X,
   User,
   Tag,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { cn } from "@/lib/utils";
@@ -81,7 +83,7 @@ export default function ProjectDetailPage() {
   const [taskDueDate, setTaskDueDate] = useState("");
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
-  const { data: project, isLoading: loading } = useQuery<Project | null>({
+  const { data: project, isLoading: loading, refetch: refetchProject } = useQuery<Project | null>({
     queryKey: ["projectDetail", id, currentOrg?.id],
     queryFn: async () => {
       if (!currentOrg || !id) return null;
@@ -138,6 +140,24 @@ export default function ProjectDetailPage() {
     },
     enabled: !!currentOrg?.id && !!id && hasMounted,
   });
+
+  const handleTryAgain = async () => {
+    try {
+      if (currentOrg?.id && id) {
+        await queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] });
+        await refetchProject();
+      }
+    } catch (e) {}
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
+
+  const handleRefreshPage = () => {
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
 
   const { data: fetchedMembers } = useQuery<Member[]>({
     queryKey: ["orgMembers", currentOrg?.id],
@@ -404,24 +424,46 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (errorMsg && !project) {
+  if (errorMsg || !project) {
     return (
-      <div className="space-y-4 py-10 max-w-md mx-auto text-center">
-        <AlertCircle className="size-12 text-rose-500 mx-auto" />
-        <h3 className="text-lg font-bold text-foreground">Project Not Found</h3>
-        <p className="text-sm text-muted-foreground">{errorMsg}</p>
-        <button
-          onClick={() => router.push("/projects")}
-          className="inline-flex items-center gap-2 text-sm text-amber-500 hover:underline font-semibold"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Projects
-        </button>
+      <div className="min-h-[400px] flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full p-8 border border-border bg-card/80 rounded-2xl shadow-xl backdrop-blur-xl space-y-4">
+          <div className="size-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mx-auto">
+            <AlertCircle className="size-7" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Project Workspace Error</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {errorMsg || "Unable to sync project details. Click below to recover your session or retry loading."}
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <button
+              onClick={handleTryAgain}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs rounded-xl shadow-lg transition-all cursor-pointer"
+            >
+              <RotateCcw className="size-4" />
+              <span>Try again</span>
+            </button>
+            <button
+              onClick={handleRefreshPage}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-border bg-muted/50 hover:bg-muted text-foreground font-semibold text-xs rounded-xl transition-all cursor-pointer"
+            >
+              <RefreshCw className="size-4" />
+              <span>Refresh Page</span>
+            </button>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => router.push("/projects")}
+              className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-amber-500 transition-colors"
+            >
+              <ArrowLeft className="size-3.5" />
+              Back to Projects List
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
-
-  if (!project) return null;
 
   const projectTasks = project.tasks || [];
   const todoTasks = projectTasks.filter((t) => t.status === "todo");
@@ -777,7 +819,7 @@ function TaskCard({
   const [isDragging, setIsDragging] = useState(false);
 
   const assigneeName = task.assigned_to
-    ? members.find((m) => m.user_id === task.assigned_to)?.user_name ||
+    ? (members || []).find((m) => m.user_id === task.assigned_to)?.user_name ||
       "Assigned"
     : null;
 
@@ -789,7 +831,7 @@ function TaskCard({
   };
 
   const priorityClass =
-    priorityStyles[task.priority as keyof typeof priorityStyles] ||
+    priorityStyles[(task.priority || "medium") as keyof typeof priorityStyles] ||
     "text-zinc-500 border-zinc-500/20";
 
   const handleDragStartLocal = (e: React.DragEvent) => {

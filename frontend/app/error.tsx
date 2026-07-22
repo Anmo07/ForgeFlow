@@ -38,12 +38,18 @@ export default function GlobalError({
       }
     } catch (e) {}
 
-    reset();
+    try {
+      reset();
+    } catch (e) {}
+
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
   };
 
   const handleRefresh = () => {
     if (typeof window !== "undefined") {
-      window.location.href = "/dashboard";
+      window.location.reload();
     }
   };
 
