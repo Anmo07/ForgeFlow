@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 interface APIKey {
   id: number;
   organization_id: number;
@@ -28,8 +30,7 @@ interface APIKey {
 
 export default function ApiKeysSettingsPage() {
   const { currentOrg } = useOrgStore();
-  const [keys, setKeys] = useState<APIKey[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const [keyName, setKeyName] = useState("");
   const [scopes, setScopes] = useState<string[]>(["project:view"]);
@@ -54,27 +55,20 @@ export default function ApiKeysSettingsPage() {
     "analytics:view",
   ];
 
-  const loadKeys = async () => {
-    if (!currentOrg) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/api-keys/organization/${currentOrg.id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setKeys(data);
-      }
-    } catch (err) {
-      console.error("Error loading keys:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: fetchedKeys, isLoading: loading } = useQuery<APIKey[]>({
+    queryKey: ["apiKeys", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      try {
+        const res = await fetch(`/api/api-keys/organization/${currentOrg.id}`);
+        if (res.ok) return res.json();
+      } catch (e) {}
+      return [];
+    },
+    enabled: !!currentOrg?.id,
+  });
 
-  useEffect(() => {
-    loadKeys();
-    window.addEventListener("orgChanged", loadKeys);
-    return () => window.removeEventListener("orgChanged", loadKeys);
-  }, [currentOrg]);
+  const keys = fetchedKeys || [];
 
   const handleCreateKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +93,10 @@ export default function ApiKeysSettingsPage() {
         setGeneratedKey(data.plain_key || data.token || data.key_prefix || "ff_live_key");
         setKeyName("");
 
-        loadKeys();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       } else {
         const data = await res.json();
         setErrorMsg(data.detail || "Failed to generate API Key");
@@ -120,8 +117,11 @@ export default function ApiKeysSettingsPage() {
       const res = await fetch(`/api/api-keys/${keyId}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        loadKeys();
+      if (res.ok && currentOrg) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       }
     } catch (err) {
       console.error("Error revoking key:", err);
@@ -141,10 +141,13 @@ export default function ApiKeysSettingsPage() {
       const res = await fetch(`/api/api-keys/${keyId}/rotate`, {
         method: "POST",
       });
-      if (res.ok) {
+      if (res.ok && currentOrg) {
         const data = await res.json();
         setGeneratedKey(data.plain_key);
-        loadKeys();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       }
     } catch (err) {
       console.error("Error rotating key:", err);

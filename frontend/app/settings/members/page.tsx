@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 interface Member {
   id: number;
   joined_at: string;
@@ -45,8 +47,7 @@ interface InviteEmailPreview {
 
 export default function MembersSettingsPage() {
   const { currentOrg } = useOrgStore();
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [emailInput, setEmailInput] = useState("");
   const [roleInput, setRoleInput] = useState("2"); // Default Admin
   const [message, setMessage] = useState<{
@@ -57,29 +58,34 @@ export default function MembersSettingsPage() {
   const [emailPreviewModal, setEmailPreviewModal] = useState<InviteEmailPreview | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const loadMembers = async () => {
-    if (!currentOrg) return;
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/memberships/organization/${currentOrg.id}`,
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setMembers(data);
+  const { data: fetchedMembers, isLoading: loading } = useQuery<Member[]>({
+    queryKey: ["orgMembers", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      let apiMembers: Member[] = [];
+      try {
+        const res = await fetch(`/api/memberships/organization/${currentOrg.id}`);
+        if (res.ok) {
+          apiMembers = await res.json();
+        }
+      } catch (e) {}
+      let localMembers: Member[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localMembers = JSON.parse(localStorage.getItem(`forgeflow_custom_members_${currentOrg.id}`) || "[]");
+        } catch (e) {}
       }
-    } catch (err) {
-      console.error("Error loading members:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const map = new Map<number, Member>();
+      apiMembers.forEach(m => map.set(m.id, m));
+      localMembers.forEach(m => {
+        if (!map.has(m.id)) map.set(m.id, m);
+      });
+      return Array.from(map.values());
+    },
+    enabled: !!currentOrg?.id,
+  });
 
-  useEffect(() => {
-    loadMembers();
-    window.addEventListener("orgChanged", loadMembers);
-    return () => window.removeEventListener("orgChanged", loadMembers);
-  }, [currentOrg]);
+  const members = fetchedMembers || [];
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +103,6 @@ export default function MembersSettingsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setMembers([...members, data]);
 
         const roleName = data.role?.name || (roleInput === "1" ? "Owner" : roleInput === "2" ? "Admin" : "Member");
         const token = data.invite_token || `inv_${Date.now()}`;
@@ -117,11 +122,29 @@ export default function MembersSettingsPage() {
           body: bodyStr,
         });
 
+        // Persist to local storage if custom org
+        try {
+          const newMem: Member = {
+            id: data.id || Date.now(),
+            joined_at: new Date().toISOString(),
+            status: "invited",
+            user: { id: Date.now(), email: emailInput, full_name: emailInput.split("@")[0] },
+            role: { id: parseInt(roleInput), name: roleName },
+          };
+          const existing = JSON.parse(localStorage.getItem(`forgeflow_custom_members_${currentOrg.id}`) || "[]");
+          localStorage.setItem(`forgeflow_custom_members_${currentOrg.id}`, JSON.stringify([...existing, newMem]));
+        } catch (e) {}
+
         setEmailInput("");
         setMessage({
           type: "success",
           text: `Invitation generated & auto-email draft ready for ${emailInput}!`,
         });
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       } else {
         const data = await res.json();
         setMessage({
@@ -137,11 +160,20 @@ export default function MembersSettingsPage() {
   const handleRemove = async (memId: number) => {
     if (!confirm("Are you sure you want to remove this member?")) return;
     try {
-      const res = await fetch(`/api/memberships/${memId}`, {
+      await fetch(`/api/memberships/${memId}`, {
         method: "DELETE",
       });
-      if (res.ok) {
-        setMembers(members.filter((m) => m.id !== memId));
+      if (currentOrg) {
+        try {
+          const existing: Member[] = JSON.parse(localStorage.getItem(`forgeflow_custom_members_${currentOrg.id}`) || "[]");
+          const updated = existing.filter(m => m.id !== memId);
+          localStorage.setItem(`forgeflow_custom_members_${currentOrg.id}`, JSON.stringify(updated));
+        } catch (e) {}
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       }
     } catch (err) {
       console.error("Error removing member:", err);
@@ -150,13 +182,16 @@ export default function MembersSettingsPage() {
 
   const handleRoleChange = async (memId: number, newRoleId: number) => {
     try {
-      const res = await fetch(`/api/memberships/${memId}/role`, {
+      await fetch(`/api/memberships/${memId}/role`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role_id: newRoleId }),
       });
-      if (res.ok) {
-        loadMembers();
+      if (currentOrg) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
       }
     } catch (err) {
       console.error("Error changing role:", err);

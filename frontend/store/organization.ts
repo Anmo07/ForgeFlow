@@ -23,7 +23,12 @@ export const useOrgStore = create<OrganizationState>()(
   persist(
     (set) => ({
       currentOrg: null,
-      setCurrentOrg: (org) => set({ currentOrg: org }),
+      setCurrentOrg: (org) => {
+        set({ currentOrg: org });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("orgChanged", { detail: org }));
+        }
+      },
     }),
     {
       name: 'forgeflow-organization',

@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 interface Project {
   id: number;
   organization_id: number;
@@ -36,8 +38,7 @@ interface Project {
 
 export default function ProjectsPage() {
   const { currentOrg } = useOrgStore();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [errorMsg, setErrorMsg] = useState("");
@@ -50,28 +51,31 @@ export default function ProjectsPage() {
   const [newProjectDueDate, setNewProjectDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchProjects = async () => {
-    if (!currentOrg) return;
-    setLoading(true);
-    setErrorMsg("");
-    try {
-      const data = await apiFetch<Project[]>("/api/projects", {
-        orgId: currentOrg.id,
+  const { data: fetchedProjects, isLoading: loading } = useQuery<Project[]>({
+    queryKey: ["projects", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      let apiProjects: Project[] = [];
+      try {
+        apiProjects = await apiFetch<Project[]>("/api/projects", { orgId: currentOrg.id }) || [];
+      } catch (e) {}
+      let localProjects: Project[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localProjects = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${currentOrg.id}`) || "[]");
+        } catch (e) {}
+      }
+      const map = new Map<number, Project>();
+      apiProjects.forEach(p => map.set(p.id, p));
+      localProjects.forEach(p => {
+        if (!map.has(p.id)) map.set(p.id, p);
       });
-      setProjects(data || []);
-    } catch (err: unknown) {
-      console.error("Error loading projects:", err);
-      setErrorMsg(err instanceof Error ? err.message : "Failed to load projects");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return Array.from(map.values());
+    },
+    enabled: !!currentOrg?.id,
+  });
 
-  useEffect(() => {
-    fetchProjects();
-    window.addEventListener("orgChanged", fetchProjects);
-    return () => window.removeEventListener("orgChanged", fetchProjects);
-  }, [currentOrg]);
+  const projects = fetchedProjects || [];
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,10 +97,10 @@ export default function ProjectsPage() {
         }),
       });
 
-      const createdProj = { id: Date.now(), name: newProjectName, description: newProjectDesc || null, status: newProjectStatus, priority: newProjectPriority, total_tasks: 0, tasks_completed: 0 };
+      const createdProj = { id: Date.now(), organization_id: activeOrgId, name: newProjectName, description: newProjectDesc || null, status: newProjectStatus, priority: newProjectPriority, due_date: newProjectDueDate || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), total_tasks: 0, tasks_completed: 0 };
       try {
-        const existing = JSON.parse(localStorage.getItem("forgeflow_custom_projects_1") || "[]");
-        localStorage.setItem("forgeflow_custom_projects_1", JSON.stringify([createdProj, ...existing]));
+        const existing = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${activeOrgId}`) || "[]");
+        localStorage.setItem(`forgeflow_custom_projects_${activeOrgId}`, JSON.stringify([createdProj, ...existing]));
       } catch (e) {}
 
       setIsModalOpen(false);
@@ -106,7 +110,10 @@ export default function ProjectsPage() {
       setNewProjectPriority("medium");
       setNewProjectDueDate("");
 
-      await fetchProjects();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["projects", activeOrgId] }),
+        queryClient.invalidateQueries({ queryKey: ["activityLogs", activeOrgId] }),
+      ]);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to create project");
     } finally {

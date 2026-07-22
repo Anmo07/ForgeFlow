@@ -24,7 +24,7 @@ export const queryClient = new QueryClient({
         return false;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-      staleTime: 30_000,          // 30s before background refetch
+      staleTime: 0,               // Instant stale marking for immediate cache invalidation
       gcTime: 5 * 60 * 1000,      // 5 min garbage collection
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,   // Auto-refetch when network comes back

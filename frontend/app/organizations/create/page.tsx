@@ -186,8 +186,12 @@ export default function CreateOrganizationPage() {
       localStorage.setItem(`forgeflow_custom_logs_${orgId}`, JSON.stringify(listLogs));
       localStorage.setItem(`forgeflow_custom_sessions_${orgId}`, JSON.stringify(listSessions));
 
-      // 7. Re-sync active tenant store
+      // 7. Re-sync active tenant store & invalidate organization queries
       setCurrentOrg(newOrg);
+      try {
+        const { queryClient } = await import("@/lib/query-client");
+        await queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      } catch (e) {}
 
       // Trigger redraw of header
       if (typeof window !== "undefined") {

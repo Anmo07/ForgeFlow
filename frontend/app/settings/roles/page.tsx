@@ -5,6 +5,8 @@ import { useOrgStore } from "@/store/organization";
 import { Shield, ShieldAlert, Plus, Check, Edit3, Trash2, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 interface Permission {
   id: number;
   name: string;
@@ -26,9 +28,7 @@ interface AffectedMember {
 
 export default function RolesSettingsPage() {
   const { currentOrg } = useOrgStore();
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // Form states
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -38,35 +38,45 @@ export default function RolesSettingsPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [affectedMembers, setAffectedMembers] = useState<AffectedMember[]>([]);
 
-  const loadData = async () => {
-    if (!currentOrg) return;
-    setLoading(true);
-    setErrorMsg("");
-    setAffectedMembers([]);
-    try {
-      const [rolesRes, permsRes] = await Promise.all([
-        fetch(`/api/roles/organization/${currentOrg.id}`),
-        fetch("/api/permissions/"),
-      ]);
-
-      if (rolesRes.ok && permsRes.ok) {
-        const rolesData = await rolesRes.json();
-        const permsData = await permsRes.json();
-        setRoles(rolesData);
-        setPermissions(permsData);
+  const { data: fetchedRoles, isLoading: loadingRoles } = useQuery<Role[]>({
+    queryKey: ["orgRoles", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      let apiRoles: Role[] = [];
+      try {
+        const res = await fetch(`/api/roles/organization/${currentOrg.id}`);
+        if (res.ok) apiRoles = await res.json();
+      } catch (e) {}
+      let localRoles: Role[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localRoles = JSON.parse(localStorage.getItem(`forgeflow_custom_roles_${currentOrg.id}`) || "[]");
+        } catch (e) {}
       }
-    } catch (err) {
-      console.error("Error loading roles/permissions data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const map = new Map<number, Role>();
+      apiRoles.forEach(r => map.set(r.id, r));
+      localRoles.forEach(r => {
+        if (!map.has(r.id)) map.set(r.id, r);
+      });
+      return Array.from(map.values());
+    },
+    enabled: !!currentOrg?.id,
+  });
 
-  useEffect(() => {
-    loadData();
-    window.addEventListener("orgChanged", loadData);
-    return () => window.removeEventListener("orgChanged", loadData);
-  }, [currentOrg]);
+  const { data: fetchedPerms, isLoading: loadingPerms } = useQuery<Permission[]>({
+    queryKey: ["permissions"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/permissions/");
+        if (res.ok) return res.json();
+      } catch (e) {}
+      return [];
+    },
+  });
+
+  const roles = fetchedRoles || [];
+  const permissions = fetchedPerms || [];
+  const loading = loadingRoles || loadingPerms;
 
   const handleTogglePerm = (permId: number) => {
     if (selectedPerms.includes(permId)) {
@@ -131,7 +141,10 @@ export default function RolesSettingsPage() {
       }
 
       if (res.ok) {
-        await loadData();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["orgRoles", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
         cancelEdit();
       } else {
         const data = await res.json();
@@ -157,7 +170,10 @@ export default function RolesSettingsPage() {
       });
 
       if (res.ok) {
-        await loadData();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["orgRoles", currentOrg.id] }),
+          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        ]);
         if (editingRole?.id === roleId) {
           cancelEdit();
         }

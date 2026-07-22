@@ -6,39 +6,49 @@ import { Building2, ChevronDown, Plus, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function OrgSwitcher() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { currentOrg, setCurrentOrg } = useOrgStore();
-  const [orgs, setOrgs] = useState<Organization[]>([]);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  const fetchOrgs = async () => {
-    try {
-      const data = await apiFetch<Organization[]>("/api/organizations/");
-      setOrgs(data);
-
-      // Enforce data isolation: currentOrg must belong to the active user's org list
-      const isValidOrg = data.some(o => o.id === currentOrg?.id);
-      if (data.length > 0 && (!currentOrg || !isValidOrg)) {
-        setCurrentOrg(data[0]);
-      } else if (data.length === 0) {
-        setCurrentOrg(null);
+  const { data: fetchedOrgs, isLoading: loading } = useQuery<Organization[]>({
+    queryKey: ["organizations"],
+    queryFn: async () => {
+      let remoteOrgs: Organization[] = [];
+      try {
+        remoteOrgs = await apiFetch<Organization[]>("/api/organizations/");
+      } catch (e) {
+        console.error("Error fetching organizations from API", e);
       }
-    } catch (error) {
-      console.error("Error fetching organizations:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      let localOrgs: Organization[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localOrgs = JSON.parse(localStorage.getItem("forgeflow_custom_organizations") || "[]");
+        } catch (e) {}
+      }
+      // Merge unique by id
+      const mergedMap = new Map<number, Organization>();
+      remoteOrgs.forEach(o => mergedMap.set(o.id, o));
+      localOrgs.forEach(o => {
+        if (!mergedMap.has(o.id)) mergedMap.set(o.id, o);
+      });
+      return Array.from(mergedMap.values());
+    },
+  });
+
+  const orgs = fetchedOrgs || [];
 
   useEffect(() => {
-    fetchOrgs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (orgs.length > 0) {
+      const isValidOrg = orgs.some(o => o.id === currentOrg?.id);
+      if (!currentOrg || !isValidOrg) {
+        setCurrentOrg(orgs[0]);
+      }
+    }
+  }, [orgs, currentOrg, setCurrentOrg]);
 
   const handleSelect = (org: Organization) => {
     // #region agent log

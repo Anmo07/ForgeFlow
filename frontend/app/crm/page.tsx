@@ -199,6 +199,7 @@ export default function CRMPage() {
         queryClient.invalidateQueries({ queryKey: ["crmDeals", currentOrg.id] }),
         queryClient.invalidateQueries({ queryKey: ["crmMetrics", currentOrg.id] }),
         queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
       ]);
     } catch (err: unknown) {
       console.error("Error invalidating CRM queries:", err);
@@ -307,6 +308,7 @@ export default function CRMPage() {
 
   const handleUpdateLeadStatus = async (leadId: number, nextStatus: string) => {
     if (!currentOrg) return;
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l)));
     try {
       await apiFetch(`/api/crm/leads/${leadId}`, {
         orgId: currentOrg.id,
@@ -317,11 +319,13 @@ export default function CRMPage() {
     } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to update lead status");
+      await loadCRMData();
     }
   };
 
   const handleUpdateDealStatus = async (dealId: number, nextStatus: string) => {
     if (!currentOrg) return;
+    setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, status: nextStatus } : d)));
     try {
       await apiFetch(`/api/crm/deals/${dealId}`, {
         orgId: currentOrg.id,
@@ -332,6 +336,7 @@ export default function CRMPage() {
     } catch (err: unknown) {
       console.error(err);
       setErrorMsg("Failed to update deal status");
+      await loadCRMData();
     }
   };
 

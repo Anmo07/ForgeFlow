@@ -22,6 +22,8 @@ import { apiFetch } from "@/lib/api";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { cn } from "@/lib/utils";
 
+import { useQuery } from "@tanstack/react-query";
+
 interface CRMMetrics {
   pipeline_value: number;
   deals_won_value: number;
@@ -106,75 +108,10 @@ export default function DashboardPage() {
   const { user, isAuthenticated } = useAuthStore();
 
   const [hasMounted, setHasMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [projectCount, setProjectCount] = useState(0);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
-  const [crmMetrics, setCrmMetrics] = useState<CRMMetrics>({
-    pipeline_value: 0,
-    deals_won_value: 0,
-    conversion_rate: 0,
-  });
-  const [invoiceMetrics, setInvoiceMetrics] = useState<InvoiceMetrics>({
-    total_billed: 0,
-    total_collected: 0,
-    total_outstanding: 0,
-    total_overdue: 0,
-  });
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
-
-  const loadDashboardData = async () => {
-    if (!currentOrg || !isAuthenticated) return;
-    setLoading(true);
-    try {
-      const [fetchedProjects, crm, invoices, logs] = await Promise.all([
-        apiFetch<Project[]>("/api/projects", { orgId: currentOrg.id }),
-        apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg.id }),
-        apiFetch<InvoiceMetrics>("/api/invoices/metrics", {
-          orgId: currentOrg.id,
-        }),
-        apiFetch<ActivityLog[]>("/api/activity-logs/", { orgId: currentOrg.id }),
-      ]);
-
-      setProjects(fetchedProjects || []);
-      setProjectCount(fetchedProjects ? fetchedProjects.length : 0);
-      setActivityLogs(logs || []);
-      setCrmMetrics(
-        crm || { pipeline_value: 0, deals_won_value: 0, conversion_rate: 0 },
-      );
-      setInvoiceMetrics(
-        invoices || {
-          total_billed: 0,
-          total_collected: 0,
-          total_outstanding: 0,
-          total_overdue: 0,
-        },
-      );
-    } catch (err) {
-      console.error("Error loading dashboard metrics:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (hasMounted && isAuthenticated) {
-      loadDashboardData();
-    }
-  }, [currentOrg, hasMounted, isAuthenticated]);
-
-  useEffect(() => {
-    const handleOrgChanged = () => {
-      if (hasMounted && isAuthenticated) {
-        loadDashboardData();
-      }
-    };
-    window.addEventListener("orgChanged", handleOrgChanged);
-    return () => window.removeEventListener("orgChanged", handleOrgChanged);
-  }, [hasMounted, isAuthenticated, currentOrg]);
 
   // Enforce auth check with automatic guest/trial initialization
   useEffect(() => {
@@ -196,6 +133,74 @@ export default function DashboardPage() {
       });
     }
   }, [hasMounted, isAuthenticated, currentOrg]);
+
+  const { data: fetchedProjects, isLoading: isLoadingProjects } = useQuery<Project[]>({
+    queryKey: ["projects", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      let apiProjects: Project[] = [];
+      try {
+        apiProjects = await apiFetch<Project[]>("/api/projects", { orgId: currentOrg.id }) || [];
+      } catch (e) {}
+      let localProjects: Project[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localProjects = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${currentOrg.id}`) || "[]");
+        } catch (e) {}
+      }
+      const map = new Map<number, Project>();
+      apiProjects.forEach(p => map.set(p.id, p));
+      localProjects.forEach(p => {
+        if (!map.has(p.id)) map.set(p.id, p);
+      });
+      return Array.from(map.values());
+    },
+    enabled: !!currentOrg?.id && hasMounted,
+  });
+
+  const { data: fetchedCrmMetrics, isLoading: isLoadingCrm } = useQuery<CRMMetrics>({
+    queryKey: ["crmMetrics", currentOrg?.id],
+    queryFn: () => apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id && hasMounted,
+  });
+
+  const { data: fetchedInvoiceMetrics, isLoading: isLoadingInvoices } = useQuery<InvoiceMetrics>({
+    queryKey: ["invoiceMetrics", currentOrg?.id],
+    queryFn: () => apiFetch<InvoiceMetrics>("/api/invoices/metrics", { orgId: currentOrg?.id }),
+    enabled: !!currentOrg?.id && hasMounted,
+  });
+
+  const { data: fetchedActivityLogs, isLoading: isLoadingLogs } = useQuery<ActivityLog[]>({
+    queryKey: ["activityLogs", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      let apiLogs: ActivityLog[] = [];
+      try {
+        apiLogs = await apiFetch<ActivityLog[]>("/api/activity-logs/", { orgId: currentOrg.id }) || [];
+      } catch (e) {}
+      let localLogs: ActivityLog[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localLogs = JSON.parse(localStorage.getItem(`forgeflow_custom_logs_${currentOrg.id}`) || "[]");
+        } catch (e) {}
+      }
+      const map = new Map<number, ActivityLog>();
+      apiLogs.forEach(l => map.set(l.id, l));
+      localLogs.forEach(l => {
+        if (!map.has(l.id)) map.set(l.id, l);
+      });
+      return Array.from(map.values()).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    },
+    enabled: !!currentOrg?.id && hasMounted,
+  });
+
+  const projects = fetchedProjects || [];
+  const projectCount = projects.length;
+  const crmMetrics = fetchedCrmMetrics || { pipeline_value: 0, deals_won_value: 0, conversion_rate: 0 };
+  const invoiceMetrics = fetchedInvoiceMetrics || { total_billed: 0, total_collected: 0, total_outstanding: 0, total_overdue: 0 };
+  const activityLogs = fetchedActivityLogs || [];
+
+  const loading = isLoadingProjects || isLoadingCrm || isLoadingInvoices || isLoadingLogs;
 
   if (!hasMounted) {
     return (

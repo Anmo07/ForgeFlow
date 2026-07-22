@@ -57,14 +57,48 @@ interface Member {
   user_email: string;
 }
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+interface Task {
+  id: number;
+  project_id: number;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  assigned_to: number | null;
+  due_date: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface Project {
+  id: number;
+  organization_id: number;
+  name: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+  tasks: Task[];
+  tasks_completed: number;
+  total_tasks: number;
+}
+
+interface Member {
+  user_id: number;
+  user_name: string;
+  user_email: string;
+}
+
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { currentOrg } = useOrgStore();
+  const queryClient = useQueryClient();
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -82,38 +116,25 @@ export default function ProjectDetailPage() {
   const [taskDueDate, setTaskDueDate] = useState("");
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
-  const fetchProjectDetails = async () => {
-    if (!currentOrg || !id) return;
-    setLoading(true);
-    setErrorMsg("");
-    try {
-      const data = await apiFetch<Project>(`/api/projects/${id}`, {
-        orgId: currentOrg.id,
-      });
-      setProject(data);
+  const { data: project, isLoading: loading } = useQuery<Project | null>({
+    queryKey: ["projectDetail", id, currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg || !id) return null;
+      return apiFetch<Project>(`/api/projects/${id}`, { orgId: currentOrg.id });
+    },
+    enabled: !!currentOrg?.id && !!id && hasMounted,
+  });
 
-      try {
-        const mems = await apiFetch<Member[]>(
-          `/api/memberships/organization/${currentOrg.id}`,
-          { orgId: currentOrg.id },
-        );
-        setMembers(mems || []);
-      } catch (e) {
-        console.error("Could not load organization members", e);
-      }
-    } catch (err: unknown) {
-      console.error("Error loading project details:", err);
-      setErrorMsg(
-        err instanceof Error ? err.message : "Failed to load project details",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: fetchedMembers } = useQuery<Member[]>({
+    queryKey: ["orgMembers", currentOrg?.id],
+    queryFn: async () => {
+      if (!currentOrg) return [];
+      return apiFetch<Member[]>(`/api/memberships/organization/${currentOrg.id}`, { orgId: currentOrg.id }).catch(() => []);
+    },
+    enabled: !!currentOrg?.id && hasMounted,
+  });
 
-  useEffect(() => {
-    fetchProjectDetails();
-  }, [currentOrg, id]);
+  const members = fetchedMembers || [];
 
   const handleOpenCreateTask = () => {
     setEditingTask(null);
@@ -168,7 +189,11 @@ export default function ProjectDetailPage() {
       }
 
       setIsTaskModalOpen(false);
-      await fetchProjectDetails();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+      ]);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to save task");
     } finally {
@@ -188,7 +213,11 @@ export default function ProjectDetailPage() {
         orgId: currentOrg.id,
         method: "DELETE",
       });
-      await fetchProjectDetails();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+      ]);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : "Failed to delete task");
     }
@@ -211,30 +240,38 @@ export default function ProjectDetailPage() {
     const existingTask = project.tasks.find((t) => t.id === taskId);
     if (!existingTask || existingTask.status === targetStatus) return;
 
+    // Optimistically update query data
+    queryClient.setQueryData<Project | null>(
+      ["projectDetail", id, currentOrg.id],
+      (prev) => {
+        if (!prev) return null;
+        const updatedTasks = prev.tasks.map((t) =>
+          t.id === taskId ? { ...t, status: targetStatus } : t
+        );
+        const completed = updatedTasks.filter((t) => t.status === "done").length;
+        return {
+          ...prev,
+          tasks: updatedTasks,
+          tasks_completed: completed,
+        };
+      }
+    );
+
     try {
       await apiFetch(`/api/projects/${project.id}/tasks/${taskId}`, {
         orgId: currentOrg.id,
         method: "PUT",
         body: JSON.stringify({ status: targetStatus }),
       });
-
-      setProject((prev) => {
-        if (!prev) return null;
-        const updatedTasks = prev.tasks.map((t) =>
-          t.id === taskId ? { ...t, status: targetStatus } : t,
-        );
-        const completed = updatedTasks.filter(
-          (t) => t.status === "done",
-        ).length;
-        return {
-          ...prev,
-          tasks: updatedTasks,
-          tasks_completed: completed,
-        };
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+      ]);
     } catch (err: unknown) {
       console.error("Failed to move task", err);
       setErrorMsg("Failed to update task status");
+      await queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] });
     }
   };
 
