@@ -47,7 +47,6 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
       }),
-      skipHydration: true,
     }
   )
 );

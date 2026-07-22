@@ -7,11 +7,11 @@ import { useThemeStore } from "@/store/theme";
 
 export function StoreHydration() {
   useEffect(() => {
-    useAuthStore.persist.rehydrate();
-    useOrgStore.persist.rehydrate();
-    useThemeStore.persist.rehydrate();
+    const init = async () => {
+      await useAuthStore.persist.rehydrate();
+      await useOrgStore.persist.rehydrate();
+      await useThemeStore.persist.rehydrate();
 
-    const checkAndFetchOrg = async () => {
       const auth = useAuthStore.getState();
       const org = useOrgStore.getState();
       if (auth.isAuthenticated && !org.currentOrg) {
@@ -27,7 +27,7 @@ export function StoreHydration() {
       }
     };
 
-    checkAndFetchOrg();
+    init();
   }, []);
 
   return null;

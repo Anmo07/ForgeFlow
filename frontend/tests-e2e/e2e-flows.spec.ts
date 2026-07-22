@@ -96,6 +96,8 @@ async function submitLoginForm(page: any, email: string, pass: string) {
             }
           } catch (e) {}
 
+          console.log("SUBMIT_LOGIN_ORG:", JSON.stringify(org));
+
           const authState = {
             state: {
               user: data.user,
@@ -113,6 +115,15 @@ async function submitLoginForm(page: any, email: string, pass: string) {
             };
             localStorage.setItem("forgeflow-organization", JSON.stringify(orgState));
           }
+
+          try {
+            const authMod = require("@/store/auth");
+            authMod.useAuthStore.getState().setAuth(data.user, data.access_token);
+            if (org) {
+              const orgMod = require("@/store/organization");
+              orgMod.useOrgStore.getState().setCurrentOrg(org);
+            }
+          } catch (e) {}
 
           window.location.href = "/dashboard";
           return { success: true };

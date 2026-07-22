@@ -18,6 +18,17 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const hasToken =
+    typeof window !== "undefined" &&
+    (!!localStorage.getItem("access_token") || document.cookie.includes("access_token="));
+
+  const isAuthed = isAuthenticated || hasToken;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
@@ -28,7 +39,7 @@ export default function LayoutWrapper({
     pathname === "/privacy";
 
   const showAppLayout =
-    isAuthenticated && !isAuthPage && !isPublicPage && pathname !== "/_not-found";
+    isAuthed && !isAuthPage && !isPublicPage && pathname !== "/_not-found";
 
   const sidebarItems = [
     { href: "/dashboard", label: "Dashboard" },

@@ -77,7 +77,21 @@ interface Member {
 }
 
 export default function CRMPage() {
-  const { currentOrg } = useOrgStore();
+  const { currentOrg: storeOrg } = useOrgStore();
+
+  const currentOrg = React.useMemo(() => {
+    if (storeOrg) return storeOrg;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("forgeflow-organization");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.state?.currentOrg) return parsed.state.currentOrg;
+        }
+      } catch (e) {}
+    }
+    return null;
+  }, [storeOrg]);
 
   const [activeTab, setActiveTab] = useState<"clients" | "leads" | "deals">(
     "leads",

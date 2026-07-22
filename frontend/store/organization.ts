@@ -27,7 +27,6 @@ export const useOrgStore = create<OrganizationState>()(
     }),
     {
       name: 'forgeflow-organization',
-      skipHydration: true,
     }
   )
 );
