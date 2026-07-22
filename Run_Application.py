@@ -182,10 +182,25 @@ def check_local_postgres() -> bool:
     except Exception:
         return False
 
+def free_port(port: int):
+    try:
+        if sys.platform == "darwin" or sys.platform.startswith("linux"):
+            res = subprocess.run(["lsof", "-t", f"-i:{port}"], capture_output=True, text=True)
+            pids = res.stdout.strip().split()
+            for pid in pids:
+                if pid:
+                    subprocess.run(["kill", "-9", pid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
 def run_local_stack(project_root: Path) -> str:
-    log_warn("Docker daemon unavailable. Starting local development servers...")
+    log_warn("Docker daemon unavailable or ports busy. Starting local development servers...")
     backend_dir = project_root / "backend"
     frontend_dir = project_root / "frontend"
+
+    # Clean up stale processes on ports 8000 and 3000
+    free_port(8000)
+    free_port(3000)
 
     # Configure DB URL fallback for local dev if Postgres is not listening
     if not check_local_postgres():
@@ -237,7 +252,11 @@ def main():
     load_env_file(project_root)
 
     if is_docker_available():
-        target_url = run_docker_stack(project_root)
+        try:
+            target_url = run_docker_stack(project_root)
+        except Exception as e:
+            log_warn(f"Docker Compose stack launch failed ({e}). Falling back to local stack...")
+            target_url = run_local_stack(project_root)
     else:
         target_url = run_local_stack(project_root)
 
