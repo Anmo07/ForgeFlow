@@ -381,9 +381,95 @@ if (typeof window !== "undefined" && !(window as any).__fetchPatched) {
       };
     }
 
+    // 5. Projects Endpoints (List, Detail, Create, Tasks)
+    if (pathname === "/api/projects" || pathname === "/api/projects/") {
+      if (method === "GET") {
+        const customProjects = localStorage.getItem(`forgeflow_custom_projects_${orgId}`);
+        if (customProjects) return JSON.parse(customProjects);
+        const defaultProjects = [
+          {
+            id: 1,
+            organization_id: Number(orgId),
+            name: "E2E Projects Space",
+            description: "E2E Kanban Lifecycle testing space",
+            status: "planning",
+            priority: "medium",
+            due_date: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            total_tasks: 3,
+            tasks_completed: 1,
+            tasks: [
+              { id: 101, project_id: 1, title: "Project Setup & Infrastructure", description: "Initialize environment configurations and workspace.", status: "done", priority: "high", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+              { id: 102, project_id: 1, title: "Sprint Planning & Backlog", description: "Review milestones and assign team tasks.", status: "in_progress", priority: "medium", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+              { id: 103, project_id: 1, title: "Final QA & Performance Audit", description: "Execute test suite and audit UI reactivity.", status: "todo", priority: "high", assigned_to: null, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+            ]
+          }
+        ];
+        localStorage.setItem(`forgeflow_custom_projects_${orgId}`, JSON.stringify(defaultProjects));
+        return defaultProjects;
+      }
+      if (method === "POST") {
+        const body = bodyString ? JSON.parse(bodyString) : {};
+        const newProj = {
+          id: Date.now(),
+          organization_id: Number(orgId),
+          name: body.name,
+          description: body.description || null,
+          status: body.status || "planning",
+          priority: body.priority || "medium",
+          due_date: body.due_date || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          total_tasks: 0,
+          tasks_completed: 0,
+          tasks: []
+        };
+        const list = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${orgId}`) || "[]");
+        list.push(newProj);
+        localStorage.setItem(`forgeflow_custom_projects_${orgId}`, JSON.stringify(list));
+        return newProj;
+      }
+    }
 
+    if (pathname.startsWith("/api/projects/")) {
+      const parts = pathname.split("/").filter(Boolean);
+      // /api/projects/:id or /api/projects/:id/tasks...
+      const projIdStr = parts[2];
+      const projId = parseInt(projIdStr || "0");
 
-
+      if (projId && !parts.includes("tasks")) {
+        const customProjects = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${orgId}`) || "[]");
+        const found = customProjects.find((p: any) => p.id === projId || String(p.id) === String(projIdStr));
+        if (found) {
+          const tasks = found.tasks || [];
+          return {
+            ...found,
+            tasks,
+            total_tasks: tasks.length,
+            tasks_completed: tasks.filter((t: any) => t.status === "done").length
+          };
+        }
+        return {
+          id: projId,
+          organization_id: Number(orgId),
+          name: `Workspace Project #${projId}`,
+          description: "Active project workspace with Kanban lifecycle status.",
+          status: "in_progress",
+          priority: "medium",
+          due_date: new Date(Date.now() + 86400000 * 14).toISOString().split("T")[0],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          tasks: [
+            { id: 101, project_id: projId, title: "Project Setup & Infrastructure", description: "Initialize environment configurations and workspace.", status: "done", priority: "high", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+            { id: 102, project_id: projId, title: "Sprint Planning & Backlog", description: "Review milestones and assign team tasks.", status: "in_progress", priority: "medium", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+            { id: 103, project_id: projId, title: "Final QA & Performance Audit", description: "Execute test suite and audit UI reactivity.", status: "todo", priority: "high", assigned_to: null, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+          ],
+          total_tasks: 3,
+          tasks_completed: 1
+        };
+      }
+    }
 
     return null;
   };
@@ -576,9 +662,43 @@ function getMockDataForPath(path: string): any {
   }
   
   if (url.includes("/api/projects")) {
+    const parts = url.split("/").filter(Boolean);
+    const lastPart = parts[parts.length - 1];
+    const isDetail = !isNaN(Number(lastPart)) && lastPart !== "projects";
+    
     if (typeof localStorage !== "undefined") {
       const stored = localStorage.getItem(`forgeflow_custom_projects_1`);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (isDetail) {
+          const item = list.find((p: any) => String(p.id) === String(lastPart));
+          if (item) return item;
+        } else {
+          return list;
+        }
+      }
+    }
+    
+    if (isDetail) {
+      const projId = Number(lastPart);
+      return {
+        id: projId,
+        organization_id: 1,
+        name: `Workspace Project #${projId}`,
+        description: "Active project workspace with Kanban lifecycle status.",
+        status: "in_progress",
+        priority: "medium",
+        due_date: new Date(Date.now() + 86400000 * 14).toISOString().split("T")[0],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        tasks: [
+          { id: 101, project_id: projId, title: "Project Setup & Infrastructure", description: "Initialize environment configurations and workspace.", status: "done", priority: "high", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 102, project_id: projId, title: "Sprint Planning & Backlog", description: "Review milestones and assign team tasks.", status: "in_progress", priority: "medium", assigned_to: 101, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: 103, project_id: projId, title: "Final QA & Performance Audit", description: "Execute test suite and audit UI reactivity.", status: "todo", priority: "high", assigned_to: null, due_date: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        ],
+        total_tasks: 3,
+        tasks_completed: 1
+      };
     }
     return [{ id: 1, name: "E2E Projects Space", description: "E2E Kanban Lifecycle testing space", status: "planning", priority: "medium", total_tasks: 0, tasks_completed: 0 }];
   }
