@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useOrgStore } from "@/store/organization";
 import { apiFetch } from "@/lib/api";
 import {
@@ -60,7 +60,7 @@ interface Member {
   user_email: string;
 }
 
-export default function ProjectDetailPage() {
+function ProjectDetailPageContent() {
   const { id } = useParams();
   const router = useRouter();
   const { currentOrg } = useOrgStore();
@@ -141,21 +141,25 @@ export default function ProjectDetailPage() {
     enabled: !!currentOrg?.id && !!id && hasMounted,
   });
 
+  const searchParams = useSearchParams();
+  const isErrorQuery = searchParams?.get("error") === "true";
+
   const handleTryAgain = async () => {
+    setErrorMsg("");
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
     try {
       if (currentOrg?.id && id) {
         await queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] });
         await refetchProject();
       }
     } catch (e) {}
-    if (typeof window !== "undefined") {
-      window.location.reload();
-    }
   };
 
   const handleRefreshPage = () => {
     if (typeof window !== "undefined") {
-      window.location.reload();
+      window.location.href = window.location.pathname;
     }
   };
 
@@ -424,7 +428,7 @@ export default function ProjectDetailPage() {
     );
   }
 
-  if (errorMsg || !project) {
+  if (isErrorQuery || errorMsg || !project) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md w-full p-8 border border-border bg-card/80 rounded-2xl shadow-xl backdrop-blur-xl space-y-4">
@@ -798,6 +802,21 @@ export default function ProjectDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ProjectDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-40">
+          <Loader2 className="size-10 text-amber-500 animate-spin" />
+          <span className="text-sm text-muted-foreground mt-2">Loading workspace...</span>
+        </div>
+      }
+    >
+      <ProjectDetailPageContent />
+    </Suspense>
   );
 }
 
