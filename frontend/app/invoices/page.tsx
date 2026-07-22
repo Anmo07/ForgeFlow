@@ -224,25 +224,9 @@ export default function InvoicesPage() {
 
       if (createdInvoice && createdInvoice.id) {
         const pdfUrl = `/api/invoices/${createdInvoice.id}/pdf`;
-        try {
-          const res = await fetch(pdfUrl, {
-            headers: { "X-Organization-ID": String(currentOrg.id) },
-          });
-          if (res.ok) {
-            const blob = await res.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = `${createdInvoice.invoice_number || `INV-${createdInvoice.id}`}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(blobUrl);
-          } else {
-            window.open(pdfUrl, "_blank");
-          }
-        } catch {
-          window.open(pdfUrl, "_blank");
+        const pdfWindow = window.open(pdfUrl, "_blank");
+        if (!pdfWindow) {
+          window.location.href = pdfUrl;
         }
       }
     } catch (err: unknown) {
@@ -273,26 +257,9 @@ export default function InvoicesPage() {
   ) => {
     if (!currentOrg) return;
     const pdfUrl = `/api/invoices/${invoiceId}/pdf`;
-    try {
-      const res = await fetch(pdfUrl, {
-        headers: { "X-Organization-ID": String(currentOrg.id) },
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = blobUrl;
-        link.download = `${invoiceNumber || `INV-${invoiceId}`}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(blobUrl);
-      } else {
-        window.open(pdfUrl, "_blank");
-      }
-    } catch (err) {
-      console.error("PDF download failed", err);
-      window.open(pdfUrl, "_blank");
+    const pdfWindow = window.open(pdfUrl, "_blank");
+    if (!pdfWindow) {
+      window.location.href = pdfUrl;
     }
   };
 
