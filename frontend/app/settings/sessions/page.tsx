@@ -27,10 +27,13 @@ interface UserSession {
   is_current: boolean;
 }
 
+import { useOrg } from "@/hooks/use-org";
+import { isApiError } from "@/lib/errors";
+
 export default function SessionsSettingsPage() {
-  const { currentOrg } = useOrgStore();
+  const { orgId, isOrgLoaded } = useOrg();
   const queryClient = useQueryClient();
-  const activeOrgId = currentOrg?.id || 1;
+  const activeOrgId = orgId;
 
   const { data: fetchedSessions, isLoading: loading } = useQuery<UserSession[]>({
     queryKey: queryKeys.orgSessions(activeOrgId),

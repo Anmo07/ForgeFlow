@@ -1,16 +1,8 @@
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
+import { ApiError } from "@/lib/errors";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
-    this.name = "ApiError";
-  }
-}
 
 if (typeof window !== "undefined") {
   if (process.env.NEXT_PUBLIC_MOCK_MODE === "true" && process.env.NODE_ENV !== "development") {
@@ -597,27 +589,43 @@ export async function apiFetch<T = unknown>(
   }
 
   if (!response.ok) {
-    let errorMessage = response.statusText || 'Unsuccessful response';
-    try {
-      const errorJson = await response.clone().json();
-      if (errorJson && typeof errorJson === "object") {
-        errorMessage = errorJson.detail || errorJson.message || errorMessage;
-      }
-    } catch (e) {}
-
     if (response.status === 401) {
       if (typeof window !== "undefined" && !path.includes("/api/auth/login")) {
         useAuthStore.getState().clearAuth();
       }
-      throw new ApiError(response.status, errorMessage || "Session expired. Redirecting to login...");
+      throw new ApiError(
+        'Session expired. Please log in again.',
+        401,
+        'SESSION_EXPIRED',
+        response.headers.get('X-Request-ID') ?? undefined,
+      );
     }
 
-    if (path.includes("/api/auth/") || response.status === 429 || response.status === 403) {
-      throw new ApiError(response.status, errorMessage);
+    let errorData: {
+      error_code?: string;
+      message?: string;
+      detail?: string;
+      request_id?: string;
+      timestamp?: string;
+    } = {};
+
+    try {
+      errorData = await response.clone().json();
+    } catch {
+      // Response body wasn't JSON
     }
 
-    console.warn(`API responded with ${response.status} for ${path}, falling back to local mock data.`);
-    return getMockDataForPath(path) as T;
+    const message = errorData.message || errorData.detail || response.statusText || 'An unexpected error occurred';
+    const errorCode = errorData.error_code || 'UNKNOWN_ERROR';
+    const requestId = errorData.request_id || response.headers.get('X-Request-ID') || undefined;
+
+    throw new ApiError(
+      message,
+      response.status,
+      errorCode,
+      requestId,
+      errorData.timestamp,
+    );
   }
 
   if (response.status === 204) {

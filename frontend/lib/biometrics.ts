@@ -65,27 +65,44 @@ export async function decryptText(cipherText: string): Promise<string> {
 // --- Remember Me Email Auto-Fill Cookie Management ---
 const REMEMBER_EMAIL_COOKIE = "forgeflow_remember_email";
 
-export async function saveRememberedCredentials(email: string) {
+export function saveRememberedCredentials(email: string): void {
   if (typeof window === "undefined") return;
-  const expires = new Date(Date.now() + 30 * 86400 * 1000).toUTCString();
-  document.cookie = `${REMEMBER_EMAIL_COOKIE}=${encodeURIComponent(email)}; expires=${expires}; path=/; SameSite=Strict;`;
+  const maxAgeSeconds = 30 * 24 * 60 * 60; // 30 days
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secureFlag = isProduction ? '; Secure' : '';
+
+  document.cookie = [
+    `${REMEMBER_EMAIL_COOKIE}=${encodeURIComponent(email)}`,
+    `Max-Age=${maxAgeSeconds}`,
+    'Path=/',
+    'SameSite=Strict',
+    secureFlag,
+  ]
+    .filter(Boolean)
+    .join('; ');
+}
+
+export function getRememberedEmail(): string | null {
+  if (typeof window === "undefined") return null;
+  const match = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${REMEMBER_EMAIL_COOKIE}=`));
+  if (!match) return null;
+  return decodeURIComponent(match.split('=')[1]);
 }
 
 export async function getRememberedCredentials(): Promise<{ email: string } | null> {
-  if (typeof window === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + REMEMBER_EMAIL_COOKIE + "=([^;]*)"));
-  if (!match || !match[2]) {
-    // Clear legacy cookie if present
-    document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    return null;
-  }
-  return { email: decodeURIComponent(match[2]) };
+  const email = getRememberedEmail();
+  if (!email) return null;
+  return { email };
 }
 
-export function clearRememberedCredentials() {
+export function clearRememberedCredentials(): void {
   if (typeof window === "undefined") return;
-  document.cookie = `${REMEMBER_EMAIL_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secureFlag = isProduction ? '; Secure' : '';
+  document.cookie = `${REMEMBER_EMAIL_COOKIE}=; Max-Age=0; Path=/; SameSite=Strict${secureFlag}`;
+  document.cookie = `${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Strict${secureFlag}`;
   localStorage.removeItem("forgeflow_biometric_enabled");
 }
 

@@ -55,7 +55,27 @@ logger = logging.getLogger("forgeflow.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from .common.config import is_testing as _check_is_testing
+    import os
+    from .common.config import is_testing as _check_is_testing, ENVIRONMENT
+    # ── CRITICAL SAFETY GUARD ──────────────────────────────────
+    # Refuse to start if TESTING mode is active in production.
+    # TESTING=True bypasses CSRF and Redis permission caching.
+    raw_testing = os.getenv('TESTING', '').lower() in ('true', '1', 'yes')
+    if raw_testing and ENVIRONMENT in ('production', 'prod'):
+        raise RuntimeError(
+            "\n\n"
+            "╔══════════════════════════════════════════════════════╗\n"
+            "║  CRITICAL MISCONFIGURATION — SHUTTING DOWN           ║\n"
+            "║                                                      ║\n"
+            "║  TESTING=True is active in a production environment. ║\n"
+            "║  This disables CSRF protection and permission cache. ║\n"
+            "║                                                      ║\n"
+            "║  Set TESTING=false in your production .env file      ║\n"
+            "║  and restart the application.                        ║\n"
+            "╚══════════════════════════════════════════════════════╝\n"
+        )
+    # ── END SAFETY GUARD ───────────────────────────────────────
+
     is_testing = _check_is_testing()
     if is_testing:
         logger.info("Running in testing environment: skipping fail-fast dependency validation.")

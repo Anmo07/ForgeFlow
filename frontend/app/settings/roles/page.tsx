@@ -27,11 +27,14 @@ interface AffectedMember {
   full_name: string | null;
 }
 
+import { useOrg } from "@/hooks/use-org";
+import { isApiError } from "@/lib/errors";
+
 export default function RolesSettingsPage() {
-  const { currentOrg } = useOrgStore();
+  const { orgId, orgName, isOrgLoaded } = useOrg();
   const queryClient = useQueryClient();
 
-  const activeOrgId = currentOrg?.id || 1;
+  const activeOrgId = orgId;
 
   // Form states
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -218,10 +221,11 @@ export default function RolesSettingsPage() {
       );
       return { previous };
     },
-    onError: (err: any) => {
-      setErrorMsg(err.message || "Network error occurred on delete.");
-      if (err.affected_members) {
-        setAffectedMembers(err.affected_members);
+    onError: (err: unknown) => {
+      const message = isApiError(err) ? err.displayMessage : (err instanceof Error ? err.message : "Network error occurred on delete.");
+      setErrorMsg(message);
+      if (err && typeof err === "object" && "affected_members" in err) {
+        setAffectedMembers((err as { affected_members: AffectedMember[] }).affected_members);
       }
     },
     onSuccess: (_, roleId) => {

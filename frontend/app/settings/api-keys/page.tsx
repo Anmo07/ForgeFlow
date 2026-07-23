@@ -29,10 +29,13 @@ interface APIKey {
   revoked: boolean;
 }
 
+import { useOrg } from "@/hooks/use-org";
+import { isApiError } from "@/lib/errors";
+
 export default function ApiKeysSettingsPage() {
-  const { currentOrg } = useOrgStore();
+  const { orgId, orgName, isOrgLoaded } = useOrg();
   const queryClient = useQueryClient();
-  const activeOrgId = currentOrg?.id || 1;
+  const activeOrgId = orgId;
 
   const [keyName, setKeyName] = useState("");
   const [scopes, setScopes] = useState<string[]>(["project:view"]);
