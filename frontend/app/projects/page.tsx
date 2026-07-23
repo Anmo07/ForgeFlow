@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Project {
   id: number;
@@ -49,10 +50,9 @@ export default function ProjectsPage() {
   const [newProjectStatus, setNewProjectStatus] = useState("planning");
   const [newProjectPriority, setNewProjectPriority] = useState("medium");
   const [newProjectDueDate, setNewProjectDueDate] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: fetchedProjects, isLoading: loading } = useQuery<Project[]>({
-    queryKey: ["projects", currentOrg?.id],
+    queryKey: queryKeys.projects(currentOrg?.id || 1),
     queryFn: async () => {
       if (!currentOrg) return [];
       let apiProjects: Project[] = [];
@@ -77,48 +77,100 @@ export default function ProjectsPage() {
 
   const projects = fetchedProjects || [];
 
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const activeOrgId = currentOrg?.id || 1;
-    if (!newProjectName) return;
-    setIsSubmitting(true);
-    setErrorMsg("");
-
-    try {
+  const createProjectMutation = useMutation({
+    mutationFn: async (payload: {
+      name: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      due_date: string | null;
+    }) => {
+      const activeOrgId = currentOrg?.id || 1;
       await apiFetch("/api/projects", {
         orgId: activeOrgId,
         method: "POST",
-        body: JSON.stringify({
-          name: newProjectName,
-          description: newProjectDesc || null,
-          status: newProjectStatus,
-          priority: newProjectPriority,
-          due_date: newProjectDueDate || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const createdProj = { id: Date.now(), organization_id: activeOrgId, name: newProjectName, description: newProjectDesc || null, status: newProjectStatus, priority: newProjectPriority, due_date: newProjectDueDate || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), total_tasks: 0, tasks_completed: 0 };
-      try {
-        const existing = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${activeOrgId}`) || "[]");
-        localStorage.setItem(`forgeflow_custom_projects_${activeOrgId}`, JSON.stringify([createdProj, ...existing]));
-      } catch (e) {}
+      const createdProj = {
+        id: Date.now(),
+        organization_id: Number(activeOrgId),
+        name: payload.name,
+        description: payload.description,
+        status: payload.status,
+        priority: payload.priority,
+        due_date: payload.due_date,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        total_tasks: 0,
+        tasks_completed: 0,
+      };
 
+      if (typeof window !== "undefined") {
+        try {
+          const existing = JSON.parse(localStorage.getItem(`forgeflow_custom_projects_${activeOrgId}`) || "[]");
+          localStorage.setItem(`forgeflow_custom_projects_${activeOrgId}`, JSON.stringify([createdProj, ...existing]));
+        } catch (e) {}
+      }
+      return createdProj;
+    },
+    onMutate: async (newProj) => {
+      const activeOrgId = currentOrg?.id || 1;
+      await queryClient.cancelQueries({ queryKey: queryKeys.projects(activeOrgId) });
+      const previous = queryClient.getQueryData(queryKeys.projects(activeOrgId));
+      const createdTempProj: Project = {
+        id: Date.now(),
+        organization_id: Number(activeOrgId),
+        name: newProj.name,
+        description: newProj.description,
+        status: newProj.status,
+        priority: newProj.priority,
+        due_date: newProj.due_date,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        total_tasks: 0,
+        tasks_completed: 0,
+      };
+      queryClient.setQueryData<Project[]>(queryKeys.projects(activeOrgId), (old) => [
+        createdTempProj,
+        ...(old ?? []),
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      const activeOrgId = currentOrg?.id || 1;
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.projects(activeOrgId), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to create project");
+    },
+    onSuccess: () => {
       setIsModalOpen(false);
       setNewProjectName("");
       setNewProjectDesc("");
       setNewProjectStatus("planning");
       setNewProjectPriority("medium");
       setNewProjectDueDate("");
+    },
+    onSettled: () => {
+      const activeOrgId = currentOrg?.id || 1;
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["projects", activeOrgId] }),
-        queryClient.invalidateQueries({ queryKey: ["activityLogs", activeOrgId] }),
-      ]);
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to create project");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleCreateProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProjectName) return;
+    setErrorMsg("");
+    createProjectMutation.mutate({
+      name: newProjectName,
+      description: newProjectDesc || null,
+      status: newProjectStatus,
+      priority: newProjectPriority,
+      due_date: newProjectDueDate || null,
+    });
   };
 
   const filteredProjects = projects.filter((project) => {
@@ -498,10 +550,10 @@ export default function ProjectsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-[var(--radius-glass-md)] transition-colors flex items-center gap-2 disabled:opacity-50 shadow-[0_2px_8px_rgba(59,130,246,0.25)]"
+                  disabled={createProjectMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-[var(--radius-glass-md)] transition-colors flex items-center gap-2 disabled:opacity-50 shadow-[0_2px_8px_rgba(59,130,246,0.25)] font-sans text-sm"
                 >
-                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+                  {createProjectMutation.isPending && <Loader2 className="size-4 animate-spin" />}
                   Create Project
                 </button>
               </div>

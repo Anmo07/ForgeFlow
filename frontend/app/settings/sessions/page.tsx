@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+
 interface UserSession {
   id: number;
   device_name: string;
@@ -26,59 +29,83 @@ interface UserSession {
 
 export default function SessionsSettingsPage() {
   const { currentOrg } = useOrgStore();
-  const [sessions, setSessions] = useState<UserSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const activeOrgId = currentOrg?.id || 1;
 
-  const loadSessions = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/sessions/");
-      if (res.ok) {
-        const data = await res.json();
-        setSessions(data);
+  const { data: fetchedSessions, isLoading: loading } = useQuery<UserSession[]>({
+    queryKey: queryKeys.orgSessions(activeOrgId),
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/sessions/");
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.error("Error loading sessions:", err);
       }
-    } catch (err) {
-      console.error("Error loading sessions:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return [];
+    },
+  });
 
-  useEffect(() => {
-    loadSessions();
-  }, []);
+  const sessions = fetchedSessions || [];
 
-  const handleRevoke = async (sessionId: number) => {
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (sessionId: number) => {
+      await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
+    },
+    onMutate: async (sessionId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgSessions(activeOrgId) });
+      const previous = queryClient.getQueryData<UserSession[]>(queryKeys.orgSessions(activeOrgId));
+      queryClient.setQueryData<UserSession[]>(queryKeys.orgSessions(activeOrgId), (old) =>
+        old?.filter((s) => s.id !== sessionId) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.orgSessions(activeOrgId), context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgSessions(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRevoke = (sessionId: number) => {
     if (!confirm("Are you sure you want to terminate this session?")) return;
-    try {
-      const res = await fetch(`/api/sessions/${sessionId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setSessions(sessions.filter((s) => s.id !== sessionId));
-      }
-    } catch (err) {
-      console.error("Error revoking session:", err);
-    }
+    revokeSessionMutation.mutate(sessionId);
   };
 
-  const handleRevokeAll = async () => {
+  const revokeAllSessionsMutation = useMutation({
+    mutationFn: async () => {
+      await fetch("/api/sessions/", { method: "DELETE" });
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgSessions(activeOrgId) });
+      const previous = queryClient.getQueryData<UserSession[]>(queryKeys.orgSessions(activeOrgId));
+      queryClient.setQueryData<UserSession[]>(queryKeys.orgSessions(activeOrgId), (old) =>
+        old?.filter((s) => s.is_current) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.orgSessions(activeOrgId), context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgSessions(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRevokeAll = () => {
     if (
       !confirm(
         "Are you sure you want to terminate ALL active sessions? This will log you out of other devices.",
       )
     )
       return;
-    try {
-      const res = await fetch("/api/sessions/", {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        loadSessions();
-      }
-    } catch (err) {
-      console.error("Error revoking all sessions:", err);
-    }
+    revokeAllSessionsMutation.mutate();
   };
 
   const getDeviceIcon = (deviceName: string) => {

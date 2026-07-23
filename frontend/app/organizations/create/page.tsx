@@ -188,10 +188,8 @@ export default function CreateOrganizationPage() {
 
       // 7. Re-sync active tenant store & invalidate organization queries
       setCurrentOrg(newOrg);
-      try {
-        const { queryClient } = await import("@/lib/query-client");
-        await queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      } catch (e) {}
+        const { queryKeys } = await import("@/lib/query-keys");
+        await queryClient.invalidateQueries({ queryKey: queryKeys.organizations() });
 
       // Trigger redraw of header
       if (typeof window !== "undefined") {

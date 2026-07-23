@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { useOrgStore } from "@/store/organization";
 import { apiFetch } from "@/lib/api";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +94,8 @@ export default function CRMPage() {
     return null;
   }, [storeOrg]);
 
+  const activeOrgId = currentOrg?.id || 1;
+
   const [activeTab, setActiveTab] = useState<"clients" | "leads" | "deals">(
     "leads",
   );
@@ -100,31 +103,31 @@ export default function CRMPage() {
   const queryClient = useQueryClient();
 
   const { data: qClients, isFetching: isFetchingClients, isLoading: isLoadingClients } = useQuery<Client[]>({
-    queryKey: ["crmClients", currentOrg?.id],
+    queryKey: queryKeys.crmClients(activeOrgId),
     queryFn: () => apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qLeads, isFetching: isFetchingLeads, isLoading: isLoadingLeads } = useQuery<Lead[]>({
-    queryKey: ["crmLeads", currentOrg?.id],
+    queryKey: queryKeys.crmLeads(activeOrgId),
     queryFn: () => apiFetch<Lead[]>("/api/crm/leads", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qDeals, isFetching: isFetchingDeals, isLoading: isLoadingDeals } = useQuery<Deal[]>({
-    queryKey: ["crmDeals", currentOrg?.id],
+    queryKey: queryKeys.crmDeals(activeOrgId),
     queryFn: () => apiFetch<Deal[]>("/api/crm/deals", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qMetrics, isFetching: isFetchingMetrics, isLoading: isLoadingMetrics } = useQuery<CRMMetrics>({
-    queryKey: ["crmMetrics", currentOrg?.id],
+    queryKey: queryKeys.crmPipelineSummary(activeOrgId),
     queryFn: () => apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qMembers, isFetching: isFetchingMembers, isLoading: isLoadingMembers } = useQuery<Member[]>({
-    queryKey: ["orgMembers", currentOrg?.id],
+    queryKey: queryKeys.orgMembers(activeOrgId),
     queryFn: () => apiFetch<Member[]>(`/api/memberships/organization/${currentOrg?.id}`, { orgId: currentOrg?.id }).catch(() => []),
     enabled: !!currentOrg?.id,
   });
@@ -170,7 +173,6 @@ export default function CRMPage() {
   const [activeModal, setActiveModal] = useState<
     "client" | "lead" | "deal" | null
   >(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
@@ -194,12 +196,13 @@ export default function CRMPage() {
     setErrorMsg("");
     try {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["crmClients", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["crmLeads", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["crmDeals", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["crmMetrics", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.crmClients(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.crmLeads(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.crmDeals(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) }),
       ]);
     } catch (err: unknown) {
       console.error("Error invalidating CRM queries:", err);
@@ -215,129 +218,254 @@ export default function CRMPage() {
     return () => window.removeEventListener("orgChanged", loadCRMData);
   }, [currentOrg]);
 
-  const handleCreateClient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !clientName) return;
-    setIsSubmitting(true);
-    setErrorMsg("");
-    try {
-      await apiFetch("/api/crm/clients", {
-        orgId: currentOrg.id,
+  // Client Mutations
+  const createClientMutation = useMutation({
+    mutationFn: (payload: { name: string; email: string | null; phone: string | null; company: string | null }) =>
+      apiFetch("/api/crm/clients", {
+        orgId: currentOrg?.id,
         method: "POST",
-        body: JSON.stringify({
-          name: clientName,
-          email: clientEmail || null,
-          phone: clientPhone || null,
-          company: clientCompany || null,
-        }),
-      });
+        body: JSON.stringify(payload),
+      }),
+    onMutate: async (newClient) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.crmClients(activeOrgId) });
+      const previous = queryClient.getQueryData<Client[]>(queryKeys.crmClients(activeOrgId));
+      const tempItem: Client = {
+        id: Date.now(),
+        organization_id: Number(activeOrgId),
+        name: newClient.name,
+        email: newClient.email,
+        phone: newClient.phone,
+        company: newClient.company,
+        created_at: new Date().toISOString(),
+      };
+      queryClient.setQueryData<Client[]>(queryKeys.crmClients(activeOrgId), (old) => [
+        ...(old ?? []),
+        tempItem,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.crmClients(activeOrgId), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to create client");
+    },
+    onSuccess: () => {
       setActiveModal(null);
       setClientName("");
       setClientEmail("");
       setClientPhone("");
       setClientCompany("");
-      await loadCRMData();
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to create client");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmClients(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleCreateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !clientName) return;
+    setErrorMsg("");
+    createClientMutation.mutate({
+      name: clientName,
+      email: clientEmail || null,
+      phone: clientPhone || null,
+      company: clientCompany || null,
+    });
   };
 
-  const handleCreateLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !leadClientId) return;
-    setIsSubmitting(true);
-    setErrorMsg("");
-    try {
-      await apiFetch("/api/crm/leads", {
-        orgId: currentOrg.id,
+  // Lead Mutations
+  const createLeadMutation = useMutation({
+    mutationFn: (payload: { client_id: number; status: string; value: number; source: string | null; assigned_to: number | null }) =>
+      apiFetch("/api/crm/leads", {
+        orgId: currentOrg?.id,
         method: "POST",
-        body: JSON.stringify({
-          client_id: Number(leadClientId),
-          status: leadStatus,
-          value: leadValue ? Number(leadValue) : 0,
-          source: leadSource || null,
-          assigned_to: leadAssignee ? Number(leadAssignee) : null,
-        }),
-      });
+        body: JSON.stringify(payload),
+      }),
+    onMutate: async (newLead) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.crmLeads(activeOrgId) });
+      const previous = queryClient.getQueryData<Lead[]>(queryKeys.crmLeads(activeOrgId));
+      const tempLead: Lead = {
+        id: Date.now(),
+        organization_id: Number(activeOrgId),
+        client_id: newLead.client_id,
+        status: newLead.status,
+        value: newLead.value,
+        source: newLead.source,
+        assigned_to: newLead.assigned_to,
+        created_at: new Date().toISOString(),
+      };
+      queryClient.setQueryData<Lead[]>(queryKeys.crmLeads(activeOrgId), (old) => [
+        ...(old ?? []),
+        tempLead,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.crmLeads(activeOrgId), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to create lead");
+    },
+    onSuccess: () => {
       setActiveModal(null);
       setLeadClientId("");
       setLeadStatus("new");
       setLeadValue("");
       setLeadSource("website");
       setLeadAssignee("");
-      await loadCRMData();
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to create lead");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmLeads(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleCreateLead = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !leadClientId) return;
+    setErrorMsg("");
+    createLeadMutation.mutate({
+      client_id: Number(leadClientId),
+      status: leadStatus,
+      value: leadValue ? Number(leadValue) : 0,
+      source: leadSource || null,
+      assigned_to: leadAssignee ? Number(leadAssignee) : null,
+    });
   };
 
-  const handleCreateDeal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !dealLeadId) return;
-    setIsSubmitting(true);
-    setErrorMsg("");
-    try {
-      await apiFetch("/api/crm/deals", {
-        orgId: currentOrg.id,
+  const updateLeadStatusMutation = useMutation({
+    mutationFn: ({ leadId, nextStatus }: { leadId: number; nextStatus: string }) =>
+      apiFetch(`/api/crm/leads/${leadId}`, {
+        orgId: currentOrg?.id,
+        method: "PUT",
+        body: JSON.stringify({ status: nextStatus }),
+      }),
+    onMutate: async ({ leadId, nextStatus }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.crmLeads(activeOrgId) });
+      const previous = queryClient.getQueryData<Lead[]>(queryKeys.crmLeads(activeOrgId));
+      queryClient.setQueryData<Lead[]>(queryKeys.crmLeads(activeOrgId), (old) =>
+        old?.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.crmLeads(activeOrgId), context.previous);
+      }
+      setErrorMsg("Failed to update lead status");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmLeads(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+    },
+  });
+
+  const handleUpdateLeadStatus = (leadId: number, nextStatus: string) => {
+    if (!currentOrg) return;
+    updateLeadStatusMutation.mutate({ leadId, nextStatus });
+  };
+
+  // Deal Mutations
+  const createDealMutation = useMutation({
+    mutationFn: (payload: { lead_id: number; name: string | null; value: number; status: string; assigned_to: number | null }) =>
+      apiFetch("/api/crm/deals", {
+        orgId: currentOrg?.id,
         method: "POST",
-        body: JSON.stringify({
-          lead_id: Number(dealLeadId),
-          name: dealName || null,
-          value: dealValueVal ? Number(dealValueVal) : 0,
-          status: dealStatus,
-          assigned_to: dealAssignee ? Number(dealAssignee) : null,
-        }),
-      });
+        body: JSON.stringify(payload),
+      }),
+    onMutate: async (newDeal) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.crmDeals(activeOrgId) });
+      const previous = queryClient.getQueryData<Deal[]>(queryKeys.crmDeals(activeOrgId));
+      const tempDeal: Deal = {
+        id: Date.now(),
+        organization_id: Number(activeOrgId),
+        lead_id: newDeal.lead_id,
+        name: newDeal.name,
+        value: newDeal.value,
+        status: newDeal.status,
+        assigned_to: newDeal.assigned_to,
+        closed_at: null,
+        created_at: new Date().toISOString(),
+      };
+      queryClient.setQueryData<Deal[]>(queryKeys.crmDeals(activeOrgId), (old) => [
+        ...(old ?? []),
+        tempDeal,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.crmDeals(activeOrgId), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to create deal");
+    },
+    onSuccess: () => {
       setActiveModal(null);
       setDealLeadId("");
       setDealName("");
       setDealValueVal("");
       setDealStatus("discovery");
       setDealAssignee("");
-      await loadCRMData();
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to create deal");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmDeals(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleCreateDeal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !dealLeadId) return;
+    setErrorMsg("");
+    createDealMutation.mutate({
+      lead_id: Number(dealLeadId),
+      name: dealName || null,
+      value: dealValueVal ? Number(dealValueVal) : 0,
+      status: dealStatus,
+      assigned_to: dealAssignee ? Number(dealAssignee) : null,
+    });
   };
 
-  const handleUpdateLeadStatus = async (leadId: number, nextStatus: string) => {
-    if (!currentOrg) return;
-    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, status: nextStatus } : l)));
-    try {
-      await apiFetch(`/api/crm/leads/${leadId}`, {
-        orgId: currentOrg.id,
+  const updateDealStatusMutation = useMutation({
+    mutationFn: ({ dealId, nextStatus }: { dealId: number; nextStatus: string }) =>
+      apiFetch(`/api/crm/deals/${dealId}`, {
+        orgId: currentOrg?.id,
         method: "PUT",
         body: JSON.stringify({ status: nextStatus }),
-      });
-      await loadCRMData();
-    } catch (err: unknown) {
-      console.error(err);
-      setErrorMsg("Failed to update lead status");
-      await loadCRMData();
-    }
-  };
-
-  const handleUpdateDealStatus = async (dealId: number, nextStatus: string) => {
-    if (!currentOrg) return;
-    setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, status: nextStatus } : d)));
-    try {
-      await apiFetch(`/api/crm/deals/${dealId}`, {
-        orgId: currentOrg.id,
-        method: "PUT",
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      await loadCRMData();
-    } catch (err: unknown) {
-      console.error(err);
+      }),
+    onMutate: async ({ dealId, nextStatus }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.crmDeals(activeOrgId) });
+      const previous = queryClient.getQueryData<Deal[]>(queryKeys.crmDeals(activeOrgId));
+      queryClient.setQueryData<Deal[]>(queryKeys.crmDeals(activeOrgId), (old) =>
+        old?.map((d) => (d.id === dealId ? { ...d, status: nextStatus } : d)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.crmDeals(activeOrgId), context.previous);
+      }
       setErrorMsg("Failed to update deal status");
-      await loadCRMData();
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmDeals(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crmPipelineSummary(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+    },
+  });
+
+  const handleUpdateDealStatus = (dealId: number, nextStatus: string) => {
+    if (!currentOrg) return;
+    updateDealStatusMutation.mutate({ dealId, nextStatus });
   };
 
   const handleDealDragStart = (e: React.DragEvent, dealId: number) => {
@@ -348,12 +476,12 @@ export default function CRMPage() {
     e.preventDefault();
   };
 
-  const handleDealDrop = async (e: React.DragEvent, targetStatus: string) => {
+  const handleDealDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
     const dealIdStr = e.dataTransfer.getData("text/plain");
     if (!dealIdStr) return;
     const dealId = Number(dealIdStr);
-    await handleUpdateDealStatus(dealId, targetStatus);
+    handleUpdateDealStatus(dealId, targetStatus);
   };
 
   const filteredClients = clients.filter(
@@ -921,10 +1049,10 @@ export default function CRMPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createClientMutation.isPending}
                   className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
-                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
+                  {createClientMutation.isPending && <Loader2 className="size-4 animate-spin" />}{" "}
                   Add Client
                 </button>
               </div>
@@ -1042,10 +1170,10 @@ export default function CRMPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createLeadMutation.isPending}
                   className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
-                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
+                  {createLeadMutation.isPending && <Loader2 className="size-4 animate-spin" />}{" "}
                   Add Lead
                 </button>
               </div>
@@ -1140,10 +1268,10 @@ export default function CRMPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createDealMutation.isPending}
                   className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
-                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
+                  {createDealMutation.isPending && <Loader2 className="size-4 animate-spin" />}{" "}
                   Convert & Launch
                 </button>
               </div>

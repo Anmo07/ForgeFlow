@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Member {
   id: number;
@@ -58,8 +59,10 @@ export default function MembersSettingsPage() {
   const [emailPreviewModal, setEmailPreviewModal] = useState<InviteEmailPreview | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const activeOrgId = currentOrg?.id || 1;
+
   const { data: fetchedMembers, isLoading: loading } = useQuery<Member[]>({
-    queryKey: ["orgMembers", currentOrg?.id],
+    queryKey: queryKeys.orgMembers(activeOrgId),
     queryFn: async () => {
       if (!currentOrg) return [];
       let apiMembers: Member[] = [];
@@ -87,115 +90,145 @@ export default function MembersSettingsPage() {
 
   const members = fetchedMembers || [];
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !emailInput) return;
-    setMessage(null);
-    try {
+  const inviteMemberMutation = useMutation({
+    mutationFn: async (payload: { email: string; roleId: number }) => {
       const res = await fetch("/api/memberships/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: emailInput,
-          organization_id: currentOrg.id,
-          role_id: parseInt(roleInput),
+          email: payload.email,
+          organization_id: currentOrg?.id || 1,
+          role_id: payload.roleId,
         }),
       });
-      if (res.ok) {
+      if (!res.ok) {
         const data = await res.json();
+        throw new Error(data.detail || "Failed to send invitation");
+      }
+      return res.json();
+    },
+    onSuccess: (data, variables) => {
+      const roleName = data.role?.name || (variables.roleId === 1 ? "Owner" : variables.roleId === 2 ? "Admin" : "Member");
+      const token = data.invite_token || `inv_${Date.now()}`;
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
+      const link = `${baseUrl}/accept-invite?token=${token}&email=${encodeURIComponent(variables.email)}&role=${encodeURIComponent(roleName)}&role_id=${variables.roleId}&org=${encodeURIComponent(currentOrg?.name || "Org")}&org_id=${currentOrg?.id || 1}`;
 
-        const roleName = data.role?.name || (roleInput === "1" ? "Owner" : roleInput === "2" ? "Admin" : "Member");
-        const token = data.invite_token || `inv_${Date.now()}`;
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3001";
-        const link = `${baseUrl}/accept-invite?token=${token}&email=${encodeURIComponent(emailInput)}&role=${encodeURIComponent(roleName)}&role_id=${roleInput}&org=${encodeURIComponent(currentOrg.name)}&org_id=${currentOrg.id}`;
+      const subjectStr = `Invitation to join ${currentOrg?.name} on ForgeFlow as ${roleName}`;
+      const bodyStr = `Hello ${variables.email.split("@")[0]},\n\nYou have been invited to join ${currentOrg?.name} on ForgeFlow with the role of "${roleName}".\n\nTo accept this invitation and review your assigned permissions, click the link below:\n${link}\n\nWelcome aboard!\nThe ${currentOrg?.name} Team`;
 
-        const subjectStr = `Invitation to join ${currentOrg.name} on ForgeFlow as ${roleName}`;
-        const bodyStr = `Hello ${emailInput.split("@")[0]},\n\nYou have been invited to join ${currentOrg.name} on ForgeFlow with the role of "${roleName}".\n\nTo accept this invitation and review your assigned permissions, click the link below:\n${link}\n\nWelcome aboard!\nThe ${currentOrg.name} Team`;
+      setEmailPreviewModal({
+        email: variables.email,
+        roleName,
+        roleId: variables.roleId,
+        inviteToken: token,
+        inviteLink: link,
+        subject: subjectStr,
+        body: bodyStr,
+      });
 
-        setEmailPreviewModal({
-          email: emailInput,
-          roleName,
-          roleId: parseInt(roleInput),
-          inviteToken: token,
-          inviteLink: link,
-          subject: subjectStr,
-          body: bodyStr,
-        });
-
-        // Persist to local storage if custom org
+      if (currentOrg && typeof window !== "undefined") {
         try {
           const newMem: Member = {
             id: data.id || Date.now(),
             joined_at: new Date().toISOString(),
             status: "invited",
-            user: { id: Date.now(), email: emailInput, full_name: emailInput.split("@")[0] },
-            role: { id: parseInt(roleInput), name: roleName },
+            user: { id: Date.now(), email: variables.email, full_name: variables.email.split("@")[0] },
+            role: { id: variables.roleId, name: roleName },
           };
           const existing = JSON.parse(localStorage.getItem(`forgeflow_custom_members_${currentOrg.id}`) || "[]");
           localStorage.setItem(`forgeflow_custom_members_${currentOrg.id}`, JSON.stringify([...existing, newMem]));
         } catch (e) {}
-
-        setEmailInput("");
-        setMessage({
-          type: "success",
-          text: `Invitation generated & auto-email draft ready for ${emailInput}!`,
-        });
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
-      } else {
-        const data = await res.json();
-        setMessage({
-          type: "error",
-          text: data.detail || "Failed to send invitation",
-        });
       }
-    } catch (err) {
-      setMessage({ type: "error", text: "Network error occurred." });
-    }
+
+      setEmailInput("");
+      setMessage({
+        type: "success",
+        text: `Invitation generated & auto-email draft ready for ${variables.email}!`,
+      });
+    },
+    onError: (err: Error) => {
+      setMessage({ type: "error", text: err.message || "Network error occurred." });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !emailInput) return;
+    setMessage(null);
+    inviteMemberMutation.mutate({ email: emailInput, roleId: parseInt(roleInput) });
   };
 
-  const handleRemove = async (memId: number) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
-    try {
-      await fetch(`/api/memberships/${memId}`, {
-        method: "DELETE",
-      });
-      if (currentOrg) {
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memId: number) => {
+      await fetch(`/api/memberships/${memId}`, { method: "DELETE" });
+      if (currentOrg && typeof window !== "undefined") {
         try {
           const existing: Member[] = JSON.parse(localStorage.getItem(`forgeflow_custom_members_${currentOrg.id}`) || "[]");
           const updated = existing.filter(m => m.id !== memId);
           localStorage.setItem(`forgeflow_custom_members_${currentOrg.id}`, JSON.stringify(updated));
         } catch (e) {}
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
       }
-    } catch (err) {
-      console.error("Error removing member:", err);
-    }
+    },
+    onMutate: async (memId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      const previous = queryClient.getQueryData<Member[]>(queryKeys.orgMembers(activeOrgId));
+      queryClient.setQueryData<Member[]>(queryKeys.orgMembers(activeOrgId), (old) =>
+        old?.filter((m) => m.id !== memId) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.orgMembers(activeOrgId), context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRemove = (memId: number) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    removeMemberMutation.mutate(memId);
   };
 
-  const handleRoleChange = async (memId: number, newRoleId: number) => {
-    try {
+  const changeRoleMutation = useMutation({
+    mutationFn: async ({ memId, newRoleId }: { memId: number; newRoleId: number }) => {
       await fetch(`/api/memberships/${memId}/role`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role_id: newRoleId }),
       });
-      if (currentOrg) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["orgMembers", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
+    },
+    onMutate: async ({ memId, newRoleId }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      const previous = queryClient.getQueryData<Member[]>(queryKeys.orgMembers(activeOrgId));
+      queryClient.setQueryData<Member[]>(queryKeys.orgMembers(activeOrgId), (old) =>
+        old?.map((m) => (m.id === memId ? { ...m, role: { ...m.role, id: newRoleId } } : m)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.orgMembers(activeOrgId), context.previous);
       }
-    } catch (err) {
-      console.error("Error changing role:", err);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRoleChange = (memId: number, newRoleId: number) => {
+    changeRoleMutation.mutate({ memId, newRoleId });
   };
 
   const copyToClipboard = (text: string) => {

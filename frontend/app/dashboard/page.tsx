@@ -23,6 +23,7 @@ import { GlassPanel } from "@/components/glass/GlassPanel";
 import { cn } from "@/lib/utils";
 
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface CRMMetrics {
   pipeline_value: number;
@@ -135,7 +136,7 @@ export default function DashboardPage() {
   }, [hasMounted, isAuthenticated, currentOrg]);
 
   const { data: fetchedProjects, isLoading: isLoadingProjects } = useQuery<Project[]>({
-    queryKey: ["projects", currentOrg?.id],
+    queryKey: queryKeys.projects(currentOrg?.id || 1),
     queryFn: async () => {
       if (!currentOrg) return [];
       let apiProjects: Project[] = [];
@@ -156,22 +157,31 @@ export default function DashboardPage() {
       return Array.from(map.values());
     },
     enabled: !!currentOrg?.id && hasMounted,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const { data: fetchedCrmMetrics, isLoading: isLoadingCrm } = useQuery<CRMMetrics>({
-    queryKey: ["crmMetrics", currentOrg?.id],
+    queryKey: queryKeys.crmPipelineSummary(currentOrg?.id || 1),
     queryFn: () => apiFetch<CRMMetrics>("/api/crm/metrics", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id && hasMounted,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const { data: fetchedInvoiceMetrics, isLoading: isLoadingInvoices } = useQuery<InvoiceMetrics>({
-    queryKey: ["invoiceMetrics", currentOrg?.id],
+    queryKey: queryKeys.invoiceMetrics(currentOrg?.id || 1),
     queryFn: () => apiFetch<InvoiceMetrics>("/api/invoices/metrics", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id && hasMounted,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
 
   const { data: fetchedActivityLogs, isLoading: isLoadingLogs } = useQuery<ActivityLog[]>({
-    queryKey: ["activityLogs", currentOrg?.id],
+    queryKey: queryKeys.dashboardActivity(currentOrg?.id || 1),
     queryFn: async () => {
       if (!currentOrg) return [];
       let apiLogs: ActivityLog[] = [];
@@ -192,6 +202,9 @@ export default function DashboardPage() {
       return Array.from(map.values()).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     },
     enabled: !!currentOrg?.id && hasMounted,
+    staleTime: 15_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
   });
 
   const projects = fetchedProjects || [];

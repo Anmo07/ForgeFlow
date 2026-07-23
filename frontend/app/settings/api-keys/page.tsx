@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface APIKey {
   id: number;
@@ -31,6 +32,7 @@ interface APIKey {
 export default function ApiKeysSettingsPage() {
   const { currentOrg } = useOrgStore();
   const queryClient = useQueryClient();
+  const activeOrgId = currentOrg?.id || 1;
 
   const [keyName, setKeyName] = useState("");
   const [scopes, setScopes] = useState<string[]>(["project:view"]);
@@ -56,7 +58,7 @@ export default function ApiKeysSettingsPage() {
   ];
 
   const { data: fetchedKeys, isLoading: loading } = useQuery<APIKey[]>({
-    queryKey: ["apiKeys", currentOrg?.id],
+    queryKey: queryKeys.orgApiKeys(activeOrgId),
     queryFn: async () => {
       if (!currentOrg) return [];
       try {
@@ -70,88 +72,100 @@ export default function ApiKeysSettingsPage() {
 
   const keys = fetchedKeys || [];
 
-  const handleCreateKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !keyName) return;
-    setErrorMsg("");
-    setGeneratedKey(null);
-
-    try {
+  const createKeyMutation = useMutation({
+    mutationFn: async (payload: { name: string; permissions: string[] }) => {
       const res = await fetch("/api/api-keys/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: keyName,
-          organization_id: currentOrg.id,
-          permissions: scopes,
+          name: payload.name,
+          organization_id: currentOrg?.id || 1,
+          permissions: payload.permissions,
           mode: "live",
         }),
       });
-
-      if (res.ok) {
+      if (!res.ok) {
         const data = await res.json();
-        setGeneratedKey(data.plain_key || data.token || data.key_prefix || "ff_live_key");
-        setKeyName("");
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
-      } else {
-        const data = await res.json();
-        setErrorMsg(data.detail || "Failed to generate API Key");
+        throw new Error(data.detail || "Failed to generate API Key");
       }
-    } catch (err) {
-      setErrorMsg("Network error occurred.");
-    }
-  };
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setGeneratedKey(data.plain_key || data.token || data.key_prefix || "ff_live_key");
+      setKeyName("");
+    },
+    onError: (err: Error) => {
+      setErrorMsg(err.message || "Network error occurred.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgApiKeys(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
 
-  const handleRevoke = async (keyId: number) => {
-    if (
-      !confirm(
-        "Are you sure you want to revoke this API key? This cannot be undone.",
-      )
-    )
-      return;
-    try {
-      const res = await fetch(`/api/api-keys/${keyId}`, {
-        method: "DELETE",
-      });
-      if (res.ok && currentOrg) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
-      }
-    } catch (err) {
-      console.error("Error revoking key:", err);
-    }
-  };
-
-  const handleRotate = async (keyId: number) => {
-    if (
-      !confirm(
-        "Are you sure you want to rotate this key? Any systems using the old key will stop working immediately.",
-      )
-    )
-      return;
+  const handleCreateKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !keyName) return;
     setErrorMsg("");
     setGeneratedKey(null);
-    try {
-      const res = await fetch(`/api/api-keys/${keyId}/rotate`, {
-        method: "POST",
-      });
-      if (res.ok && currentOrg) {
-        const data = await res.json();
-        setGeneratedKey(data.plain_key);
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["apiKeys", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
+    createKeyMutation.mutate({ name: keyName, permissions: scopes });
+  };
+
+  const revokeKeyMutation = useMutation({
+    mutationFn: async (keyId: number) => {
+      const res = await fetch(`/api/api-keys/${keyId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to revoke API key");
+    },
+    onMutate: async (keyId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgApiKeys(activeOrgId) });
+      const previous = queryClient.getQueryData<APIKey[]>(queryKeys.orgApiKeys(activeOrgId));
+      queryClient.setQueryData<APIKey[]>(queryKeys.orgApiKeys(activeOrgId), (old) =>
+        old?.map((k) => (k.id === keyId ? { ...k, revoked: true } : k)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.orgApiKeys(activeOrgId), context.previous);
       }
-    } catch (err) {
-      console.error("Error rotating key:", err);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgApiKeys(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRevoke = (keyId: number) => {
+    if (!confirm("Are you sure you want to revoke this API key? This cannot be undone.")) return;
+    revokeKeyMutation.mutate(keyId);
+  };
+
+  const rotateKeyMutation = useMutation({
+    mutationFn: async (keyId: number) => {
+      const res = await fetch(`/api/api-keys/${keyId}/rotate`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to rotate key");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setGeneratedKey(data.plain_key || data.token || data.key_prefix);
+    },
+    onError: (err: Error) => {
+      setErrorMsg(err.message || "Error rotating key");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgApiKeys(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleRotate = (keyId: number) => {
+    if (!confirm("Are you sure you want to rotate this key? Any systems using the old key will stop working immediately.")) return;
+    setErrorMsg("");
+    setGeneratedKey(null);
+    rotateKeyMutation.mutate(keyId);
   };
 
   const handleCopy = () => {

@@ -5,7 +5,8 @@ import { useOrgStore } from "@/store/organization";
 import { Shield, ShieldAlert, Plus, Check, Edit3, Trash2, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Permission {
   id: number;
@@ -30,6 +31,8 @@ export default function RolesSettingsPage() {
   const { currentOrg } = useOrgStore();
   const queryClient = useQueryClient();
 
+  const activeOrgId = currentOrg?.id || 1;
+
   // Form states
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [roleName, setRoleName] = useState("");
@@ -39,7 +42,7 @@ export default function RolesSettingsPage() {
   const [affectedMembers, setAffectedMembers] = useState<AffectedMember[]>([]);
 
   const { data: fetchedRoles, isLoading: loadingRoles } = useQuery<Role[]>({
-    queryKey: ["orgRoles", currentOrg?.id],
+    queryKey: queryKeys.orgRoles(activeOrgId),
     queryFn: async () => {
       if (!currentOrg) return [];
       let apiRoles: Role[] = [];
@@ -64,7 +67,7 @@ export default function RolesSettingsPage() {
   });
 
   const { data: fetchedPerms, isLoading: loadingPerms } = useQuery<Permission[]>({
-    queryKey: ["permissions"],
+    queryKey: queryKeys.orgPermissions(),
     queryFn: async () => {
       try {
         const res = await fetch("/api/permissions/");
@@ -104,22 +107,11 @@ export default function RolesSettingsPage() {
     setAffectedMembers([]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !roleName) return;
-    setErrorMsg("");
-    setAffectedMembers([]);
-
-    const payload = {
-      name: roleName,
-      description: roleDesc,
-      permission_ids: selectedPerms,
-    };
-
-    try {
-      let res;
+  const submitRoleMutation = useMutation({
+    mutationFn: async (payload: { name: string; description: string; permission_ids: number[] }) => {
+      if (!currentOrg) throw new Error("No organization selected");
+      let res: Response;
       if (editingRole) {
-        // Update Role
         res = await fetch(`/api/organizations/${currentOrg.id}/roles/${editingRole.id}`, {
           method: "PUT",
           headers: { 
@@ -129,7 +121,6 @@ export default function RolesSettingsPage() {
           body: JSON.stringify(payload),
         });
       } else {
-        // Create Role
         res = await fetch(`/api/organizations/${currentOrg.id}/roles`, {
           method: "POST",
           headers: { 
@@ -139,55 +130,119 @@ export default function RolesSettingsPage() {
           body: JSON.stringify(payload),
         });
       }
-
-      if (res.ok) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["orgRoles", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
-        cancelEdit();
-      } else {
+      if (!res.ok) {
         const data = await res.json();
-        setErrorMsg(data.detail || "Failed to process role");
+        throw new Error(data.detail || "Failed to process role");
       }
-    } catch (err) {
-      setErrorMsg("Network error occurred.");
-    }
-  };
+      return res.json();
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgRoles(activeOrgId) });
+      const previous = queryClient.getQueryData<Role[]>(queryKeys.orgRoles(activeOrgId));
+      if (previous) {
+        const mappedPerms = payload.permission_ids.map((id) => {
+          const found = permissions.find((p) => p.id === id);
+          return found || { id, name: `scope.${id}`, description: `Assigned scope #${id}` };
+        });
 
-  const handleDelete = async (roleId: number) => {
-    if (!currentOrg) return;
-    if (!window.confirm("Are you sure you want to delete this custom role?")) return;
+        let updatedRoles = [...previous];
+        if (editingRole) {
+          updatedRoles = updatedRoles.map((r) =>
+            r.id === editingRole.id
+              ? { ...r, name: payload.name, description: payload.description, permissions: mappedPerms }
+              : r
+          );
+        } else {
+          updatedRoles.push({
+            id: Date.now(),
+            name: payload.name,
+            description: payload.description,
+            is_system: false,
+            permissions: mappedPerms,
+          });
+        }
+        queryClient.setQueryData<Role[]>(queryKeys.orgRoles(activeOrgId), updatedRoles);
+      }
+      return { previous };
+    },
+    onError: (err: Error) => {
+      setErrorMsg(err.message || "Network error occurred.");
+    },
+    onSuccess: () => {
+      cancelEdit();
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgRoles(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !roleName) return;
     setErrorMsg("");
     setAffectedMembers([]);
+    submitRoleMutation.mutate({
+      name: roleName,
+      description: roleDesc,
+      permission_ids: selectedPerms,
+    });
+  };
 
-    try {
+  const deleteRoleMutation = useMutation({
+    mutationFn: async (roleId: number) => {
+      if (!currentOrg) return;
       const res = await fetch(`/api/organizations/${currentOrg.id}/roles/${roleId}`, {
         method: "DELETE",
         headers: {
           "X-Organization-ID": String(currentOrg.id)
         }
       });
-
-      if (res.ok) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["orgRoles", currentOrg.id] }),
-          queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-        ]);
-        if (editingRole?.id === roleId) {
-          cancelEdit();
+      if (!res.ok) {
+        const data = await res.json();
+        if (res.status === 409) {
+          const err = new Error(data.detail?.message || "Cannot delete role. It is assigned to active members.");
+          (err as any).affected_members = data.detail?.affected_members || [];
+          throw err;
         }
-      } else if (res.status === 409) {
-        const data = await res.json();
-        setErrorMsg(data.detail?.message || "Cannot delete role. It is assigned to active members.");
-        setAffectedMembers(data.detail?.affected_members || []);
-      } else {
-        const data = await res.json();
-        setErrorMsg(data.detail || "Failed to delete role.");
+        throw new Error(data.detail || "Failed to delete role.");
       }
-    } catch (err) {
-      setErrorMsg("Network error occurred on delete.");
-    }
+    },
+    onMutate: async (roleId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.orgRoles(activeOrgId) });
+      const previous = queryClient.getQueryData<Role[]>(queryKeys.orgRoles(activeOrgId));
+      queryClient.setQueryData<Role[]>(queryKeys.orgRoles(activeOrgId), (old) =>
+        old?.filter((r) => r.id !== roleId) ?? []
+      );
+      return { previous };
+    },
+    onError: (err: any) => {
+      setErrorMsg(err.message || "Network error occurred on delete.");
+      if (err.affected_members) {
+        setAffectedMembers(err.affected_members);
+      }
+    },
+    onSuccess: (_, roleId) => {
+      if (editingRole?.id === roleId) {
+        cancelEdit();
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgRoles(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgMembers(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orgAuditLogs(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleDelete = (roleId: number) => {
+    if (!currentOrg) return;
+    if (!window.confirm("Are you sure you want to delete this custom role?")) return;
+    setErrorMsg("");
+    setAffectedMembers([]);
+    deleteRoleMutation.mutate(roleId);
   };
 
   if (!currentOrg) {

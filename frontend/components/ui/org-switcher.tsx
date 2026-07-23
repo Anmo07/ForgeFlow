@@ -8,6 +8,8 @@ import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { queryKeys } from "@/lib/query-keys";
+
 export default function OrgSwitcher() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -15,7 +17,7 @@ export default function OrgSwitcher() {
   const [open, setOpen] = useState(false);
 
   const { data: fetchedOrgs, isLoading: loading } = useQuery<Organization[]>({
-    queryKey: ["organizations"],
+    queryKey: queryKeys.organizations(),
     queryFn: async () => {
       let remoteOrgs: Organization[] = [];
       try {

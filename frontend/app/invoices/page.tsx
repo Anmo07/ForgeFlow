@@ -22,9 +22,10 @@ import {
 import { useOrgStore } from "@/store/organization";
 import { useAuthStore } from "@/store/auth";
 import { apiFetch } from "@/lib/api";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { InvoiceDocument } from "@/components/invoice/InvoiceDocument";
+import { queryKeys } from "@/lib/query-keys";
 
 interface LineItem {
   description: string;
@@ -78,20 +79,22 @@ export default function InvoicesPage() {
 
   const queryClient = useQueryClient();
 
+  const activeOrgId = currentOrg?.id || 1;
+
   const { data: qInvoices, isFetching: isFetchingInvoices, isLoading: isLoadingInvoices } = useQuery<Invoice[]>({
-    queryKey: ["invoices", currentOrg?.id],
+    queryKey: queryKeys.invoices(activeOrgId),
     queryFn: () => apiFetch<Invoice[]>("/api/invoices", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qMetrics, isFetching: isFetchingMetrics, isLoading: isLoadingMetrics } = useQuery<InvoiceMetrics>({
-    queryKey: ["invoiceMetrics", currentOrg?.id],
+    queryKey: queryKeys.invoiceMetrics(activeOrgId),
     queryFn: () => apiFetch<InvoiceMetrics>("/api/invoices/metrics", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
 
   const { data: qClients, isFetching: isFetchingClients, isLoading: isLoadingClients } = useQuery<Client[]>({
-    queryKey: ["crmClients", currentOrg?.id],
+    queryKey: queryKeys.crmClients(activeOrgId),
     queryFn: () => apiFetch<Client[]>("/api/crm/clients", { orgId: currentOrg?.id }),
     enabled: !!currentOrg?.id,
   });
@@ -133,7 +136,6 @@ export default function InvoicesPage() {
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { description: "", quantity: 1, unit_price: 0 },
   ]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
@@ -142,9 +144,11 @@ export default function InvoicesPage() {
     setErrorMsg("");
     try {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["invoices", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["invoiceMetrics", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["crmClients", currentOrg.id] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.invoices(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.invoiceMetrics(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.crmClients(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) }),
       ]);
     } catch (err: unknown) {
       console.error("Error invalidating queries:", err);
@@ -186,7 +190,49 @@ export default function InvoicesPage() {
     setLineItems(updated);
   };
 
-  const handleCreateInvoice = async (e: React.FormEvent) => {
+  const createInvoiceMutation = useMutation({
+    mutationFn: (payload: {
+      client_id: number | null;
+      issue_date: string;
+      due_date: string;
+      tax_rate: number;
+      notes: string | null;
+      line_items: LineItem[];
+    }) =>
+      apiFetch<any>("/api/invoices", {
+        orgId: currentOrg?.id,
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    onError: (err: Error) => {
+      setErrorMsg(err.message || "Failed to create invoice");
+    },
+    onSuccess: (createdInvoice) => {
+      setIsModalOpen(false);
+      setNewClientId("");
+      setNewIssueDate("");
+      setNewDueDate("");
+      setNewTaxRate("0");
+      setNewNotes("");
+      setLineItems([{ description: "", quantity: 1, unit_price: 0 }]);
+
+      if (createdInvoice && createdInvoice.id) {
+        const pdfUrl = `/api/invoices/${createdInvoice.id}/pdf`;
+        const pdfWindow = window.open(pdfUrl, "_blank");
+        if (!pdfWindow) {
+          window.location.href = pdfUrl;
+        }
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceMetrics(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentOrg || !newIssueDate || !newDueDate) return;
 
@@ -198,60 +244,49 @@ export default function InvoicesPage() {
       return;
     }
 
-    setIsSubmitting(true);
     setErrorMsg("");
-
-    try {
-      const createdInvoice = await apiFetch<any>("/api/invoices", {
-        orgId: currentOrg.id,
-        method: "POST",
-        body: JSON.stringify({
-          client_id: newClientId ? Number(newClientId) : null,
-          issue_date: newIssueDate,
-          due_date: newDueDate,
-          tax_rate: Number(newTaxRate),
-          notes: newNotes || null,
-          line_items: lineItems,
-        }),
-      });
-
-      setIsModalOpen(false);
-      setNewClientId("");
-      setNewIssueDate("");
-      setNewDueDate("");
-      setNewTaxRate("0");
-      setNewNotes("");
-      setLineItems([{ description: "", quantity: 1, unit_price: 0 }]);
-
-      await loadInvoiceData();
-
-      if (createdInvoice && createdInvoice.id) {
-        const pdfUrl = `/api/invoices/${createdInvoice.id}/pdf`;
-        const pdfWindow = window.open(pdfUrl, "_blank");
-        if (!pdfWindow) {
-          window.location.href = pdfUrl;
-        }
-      }
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to create invoice");
-    } finally {
-      setIsSubmitting(false);
-    }
+    createInvoiceMutation.mutate({
+      client_id: newClientId ? Number(newClientId) : null,
+      issue_date: newIssueDate,
+      due_date: newDueDate,
+      tax_rate: Number(newTaxRate),
+      notes: newNotes || null,
+      line_items: lineItems,
+    });
   };
 
-  const handleUpdateStatus = async (invoiceId: number, nextStatus: string) => {
-    if (!currentOrg) return;
-    try {
-      await apiFetch(`/api/invoices/${invoiceId}/status`, {
-        orgId: currentOrg.id,
+  const updateInvoiceStatusMutation = useMutation({
+    mutationFn: ({ invoiceId, nextStatus }: { invoiceId: number; nextStatus: string }) =>
+      apiFetch(`/api/invoices/${invoiceId}/status`, {
+        orgId: currentOrg?.id,
         method: "PUT",
         body: JSON.stringify({ status: nextStatus }),
-      });
-      await loadInvoiceData();
-    } catch (err: unknown) {
-      console.error(err);
+      }),
+    onMutate: async ({ invoiceId, nextStatus }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.invoices(activeOrgId) });
+      const previous = queryClient.getQueryData<Invoice[]>(queryKeys.invoices(activeOrgId));
+      queryClient.setQueryData<Invoice[]>(queryKeys.invoices(activeOrgId), (old) =>
+        old?.map((inv) => (inv.id === invoiceId ? { ...inv, status: nextStatus } : inv)) ?? []
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.invoices(activeOrgId), context.previous);
+      }
       setErrorMsg("Failed to update invoice status");
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoices(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceMetrics(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleUpdateStatus = (invoiceId: number, nextStatus: string) => {
+    if (!currentOrg) return;
+    updateInvoiceStatusMutation.mutate({ invoiceId, nextStatus });
   };
 
   const handleDownloadPdf = async (
@@ -815,10 +850,10 @@ export default function InvoicesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createInvoiceMutation.isPending}
                   className="px-4 py-2 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-lg flex items-center gap-2"
                 >
-                  {isSubmitting && <Loader2 className="size-4 animate-spin" />}{" "}
+                  {createInvoiceMutation.isPending && <Loader2 className="size-4 animate-spin" />}{" "}
                   Create & Render
                 </button>
               </div>

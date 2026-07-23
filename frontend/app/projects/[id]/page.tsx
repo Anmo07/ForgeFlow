@@ -24,7 +24,8 @@ import {
 } from "lucide-react";
 import { GlassPanel } from "@/components/glass/GlassPanel";
 import { cn } from "@/lib/utils";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Task {
   id: number;
@@ -81,10 +82,12 @@ function ProjectDetailPageContent() {
   const [taskPriority, setTaskPriority] = useState("medium");
   const [taskAssignee, setTaskAssignee] = useState<string>("");
   const [taskDueDate, setTaskDueDate] = useState("");
-  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+
+  const activeOrgId = currentOrg?.id || 1;
+  const projectIdStr = String(id || "");
 
   const { data: project, isLoading: loading, refetch: refetchProject } = useQuery<Project | null>({
-    queryKey: ["projectDetail", id, currentOrg?.id],
+    queryKey: queryKeys.project(activeOrgId, projectIdStr),
     queryFn: async () => {
       if (!currentOrg || !id) return null;
       let raw: any = null;
@@ -151,7 +154,7 @@ function ProjectDetailPageContent() {
     }
     try {
       if (currentOrg?.id && id) {
-        await queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
         await refetchProject();
       }
     } catch (e) {}
@@ -164,7 +167,7 @@ function ProjectDetailPageContent() {
   };
 
   const { data: fetchedMembers } = useQuery<Member[]>({
-    queryKey: ["orgMembers", currentOrg?.id],
+    queryKey: queryKeys.orgMembers(activeOrgId),
     queryFn: async () => {
       if (!currentOrg) return [];
       return apiFetch<Member[]>(`/api/memberships/organization/${currentOrg.id}`, { orgId: currentOrg.id }).catch(() => []);
@@ -196,41 +199,30 @@ function ProjectDetailPageContent() {
     setIsTaskModalOpen(true);
   };
 
-  const handleSaveTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg || !project || !taskTitle) return;
-    setIsSubmittingTask(true);
-    setErrorMsg("");
-
-    const payload = {
-      title: taskTitle,
-      description: taskDesc || null,
-      status: taskStatus,
-      priority: taskPriority,
-      assigned_to: taskAssignee ? Number(taskAssignee) : null,
-      due_date: taskDueDate || null,
-    };
-
-    try {
+  const saveTaskMutation = useMutation({
+    mutationFn: async (payload: {
+      title: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      assigned_to: number | null;
+      due_date: string | null;
+    }) => {
+      if (!currentOrg || !project) throw new Error("No active project");
       if (editingTask) {
-        try {
-          await apiFetch(`/api/projects/${project.id}/tasks/${editingTask.id}`, {
-            orgId: currentOrg.id,
-            method: "PUT",
-            body: JSON.stringify(payload),
-          });
-        } catch (e) {}
+        await apiFetch(`/api/projects/${project.id}/tasks/${editingTask.id}`, {
+          orgId: currentOrg.id,
+          method: "PUT",
+          body: JSON.stringify(payload),
+        }).catch(() => {});
       } else {
-        try {
-          await apiFetch(`/api/projects/${project.id}/tasks`, {
-            orgId: currentOrg.id,
-            method: "POST",
-            body: JSON.stringify(payload),
-          });
-        } catch (e) {}
+        await apiFetch(`/api/projects/${project.id}/tasks`, {
+          orgId: currentOrg.id,
+          method: "POST",
+          body: JSON.stringify(payload),
+        }).catch(() => {});
       }
 
-      // Sync local storage custom project tasks if present
       if (typeof window !== "undefined") {
         try {
           const key = `forgeflow_custom_projects_${currentOrg.id}`;
@@ -263,34 +255,76 @@ function ProjectDetailPageContent() {
           }
         } catch (e) {}
       }
-
+      return payload;
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      const previous = queryClient.getQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr));
+      if (previous) {
+        let newTasks = [...(previous.tasks || [])];
+        if (editingTask) {
+          newTasks = newTasks.map((t) => (t.id === editingTask.id ? { ...t, ...payload } : t));
+        } else {
+          newTasks.push({
+            id: Date.now(),
+            project_id: previous.id,
+            title: payload.title,
+            description: payload.description,
+            status: payload.status,
+            priority: payload.priority,
+            assigned_to: payload.assigned_to,
+            due_date: payload.due_date,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+        queryClient.setQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr), {
+          ...previous,
+          tasks: newTasks,
+          total_tasks: newTasks.length,
+          tasks_completed: newTasks.filter((t) => t.status === "done").length,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.project(activeOrgId, projectIdStr), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to save task");
+    },
+    onSuccess: () => {
       setIsTaskModalOpen(false);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-      ]);
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to save task");
-    } finally {
-      setIsSubmittingTask(false);
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleSaveTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentOrg || !project || !taskTitle) return;
+    setErrorMsg("");
+    saveTaskMutation.mutate({
+      title: taskTitle,
+      description: taskDesc || null,
+      status: taskStatus,
+      priority: taskPriority,
+      assigned_to: taskAssignee ? Number(taskAssignee) : null,
+      due_date: taskDueDate || null,
+    });
   };
 
-  const handleDeleteTask = async (taskId: number) => {
-    if (
-      !currentOrg ||
-      !project ||
-      !confirm("Are you sure you want to delete this task?")
-    )
-      return;
-    try {
-      try {
-        await apiFetch(`/api/projects/${project.id}/tasks/${taskId}`, {
-          orgId: currentOrg.id,
-          method: "DELETE",
-        });
-      } catch (e) {}
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      if (!currentOrg || !project) return;
+      await apiFetch(`/api/projects/${project.id}/tasks/${taskId}`, {
+        orgId: currentOrg.id,
+        method: "DELETE",
+      }).catch(() => {});
 
       if (typeof window !== "undefined") {
         try {
@@ -307,15 +341,38 @@ function ProjectDetailPageContent() {
           }
         } catch (e) {}
       }
+    },
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      const previous = queryClient.getQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr));
+      if (previous) {
+        const newTasks = (previous.tasks || []).filter((t) => t.id !== taskId);
+        queryClient.setQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr), {
+          ...previous,
+          tasks: newTasks,
+          total_tasks: newTasks.length,
+          tasks_completed: newTasks.filter((t) => t.status === "done").length,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.project(activeOrgId, projectIdStr), context.previous);
+      }
+      setErrorMsg(_err instanceof Error ? _err.message : "Failed to delete task");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-      ]);
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Failed to delete task");
-    }
+  const handleDeleteTask = (taskId: number) => {
+    if (!currentOrg || !project || !confirm("Are you sure you want to delete this task?")) return;
+    deleteTaskMutation.mutate(taskId);
   };
 
   const handleDragStart = (e: React.DragEvent, taskId: number) => {
@@ -326,42 +383,14 @@ function ProjectDetailPageContent() {
     e.preventDefault();
   };
 
-  const handleDrop = async (e: React.DragEvent, targetStatus: string) => {
-    e.preventDefault();
-    const taskIdStr = e.dataTransfer.getData("text/plain");
-    if (!taskIdStr || !project || !currentOrg) return;
-
-    const taskId = Number(taskIdStr);
-    const projectTasks = project.tasks || [];
-    const existingTask = projectTasks.find((t) => t.id === taskId);
-    if (!existingTask || existingTask.status === targetStatus) return;
-
-    // Optimistically update query data
-    queryClient.setQueryData<Project | null>(
-      ["projectDetail", id, currentOrg.id],
-      (prev) => {
-        if (!prev) return null;
-        const tasks = prev.tasks || [];
-        const updatedTasks = tasks.map((t) =>
-          t.id === taskId ? { ...t, status: targetStatus } : t
-        );
-        const completed = updatedTasks.filter((t) => t.status === "done").length;
-        return {
-          ...prev,
-          tasks: updatedTasks,
-          tasks_completed: completed,
-        };
-      }
-    );
-
-    try {
-      try {
-        await apiFetch(`/api/projects/${project.id}/tasks/${taskId}`, {
-          orgId: currentOrg.id,
-          method: "PUT",
-          body: JSON.stringify({ status: targetStatus }),
-        });
-      } catch (e) {}
+  const dropTaskMutation = useMutation({
+    mutationFn: async ({ taskId, targetStatus }: { taskId: number; targetStatus: string }) => {
+      if (!currentOrg || !project) return;
+      await apiFetch(`/api/projects/${project.id}/tasks/${taskId}`, {
+        orgId: currentOrg.id,
+        method: "PUT",
+        body: JSON.stringify({ status: targetStatus }),
+      }).catch(() => {});
 
       if (typeof window !== "undefined") {
         try {
@@ -378,17 +407,48 @@ function ProjectDetailPageContent() {
           }
         } catch (e) {}
       }
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["projects", currentOrg.id] }),
-        queryClient.invalidateQueries({ queryKey: ["activityLogs", currentOrg.id] }),
-      ]);
-    } catch (err: unknown) {
-      console.error("Failed to move task", err);
+    },
+    onMutate: async ({ taskId, targetStatus }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      const previous = queryClient.getQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr));
+      if (previous) {
+        const updatedTasks = (previous.tasks || []).map((t) =>
+          t.id === taskId ? { ...t, status: targetStatus } : t
+        );
+        const completed = updatedTasks.filter((t) => t.status === "done").length;
+        queryClient.setQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr), {
+          ...previous,
+          tasks: updatedTasks,
+          tasks_completed: completed,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.project(activeOrgId, projectIdStr), context.previous);
+      }
       setErrorMsg("Failed to update task status");
-      await queryClient.invalidateQueries({ queryKey: ["projectDetail", id, currentOrg.id] });
-    }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.project(activeOrgId, projectIdStr) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(activeOrgId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivity(activeOrgId) });
+    },
+  });
+
+  const handleDrop = (e: React.DragEvent, targetStatus: string) => {
+    e.preventDefault();
+    const taskIdStr = e.dataTransfer.getData("text/plain");
+    if (!taskIdStr || !project || !currentOrg) return;
+
+    const taskId = Number(taskIdStr);
+    const projectTasks = project.tasks || [];
+    const existingTask = projectTasks.find((t) => t.id === taskId);
+    if (!existingTask || existingTask.status === targetStatus) return;
+
+    dropTaskMutation.mutate({ taskId, targetStatus });
   };
 
   if (!hasMounted) {
@@ -788,10 +848,10 @@ function ProjectDetailPageContent() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmittingTask}
+                  disabled={saveTaskMutation.isPending}
                   className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                  {isSubmittingTask && (
+                  {saveTaskMutation.isPending && (
                     <Loader2 className="size-4 animate-spin" />
                   )}
                   {editingTask ? "Save Changes" : "Create Task"}
