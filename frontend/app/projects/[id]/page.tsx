@@ -38,6 +38,7 @@ interface Task {
   due_date: string | null;
   created_at: string | null;
   updated_at: string | null;
+  version?: number;
 }
 
 interface Project {
@@ -413,7 +414,7 @@ function ProjectDetailPageContent() {
       const previous = queryClient.getQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr));
       if (previous) {
         const updatedTasks = (previous.tasks || []).map((t) =>
-          t.id === taskId ? { ...t, status: targetStatus } : t
+          t.id === taskId ? { ...t, status: targetStatus, version: t.version } : t
         );
         const completed = updatedTasks.filter((t) => t.status === "done").length;
         queryClient.setQueryData<Project | null>(queryKeys.project(activeOrgId, projectIdStr), {
