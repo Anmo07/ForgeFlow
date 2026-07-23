@@ -181,11 +181,17 @@ export default function RegisterPage() {
         <div className="rounded-2xl p-8 card-glow border border-border/40 bg-white/40 dark:bg-white/[0.02] backdrop-blur-sm shadow-xl">
           {/* Logo Branding */}
           <div className="flex flex-col items-center mb-8">
-            <Link href="/" className="mb-4 inline-block">
-              <span className="text-3xl font-extrabold tracking-tight">
-                <span className="gradient-text">Forge</span>
-                <span className="text-foreground">Flow</span>
-              </span>
+            <Link href="/" className="mb-4 inline-block hover:opacity-90 transition-opacity">
+              <img
+                src="/logo-transparent.png"
+                alt="ForgeFlow Logo"
+                className="h-10 w-auto block dark:hidden object-contain mx-auto"
+              />
+              <img
+                src="/logo-white.png"
+                alt="ForgeFlow Logo"
+                className="h-10 w-auto hidden dark:block object-contain mx-auto"
+              />
             </Link>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">

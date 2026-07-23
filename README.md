@@ -1,4 +1,4 @@
-# <p align="center"><img src="https://raw.githubusercontent.com/Anmo07/ForgeFlow/main/frontend/public/logo.png" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=128&auto=format&fit=crop&q=80';this.style.borderRadius='12px'" width="80" height="80" alt="ForgeFlow Logo" /><br>⚙️ ForgeFlow</p>
+# <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-white.png"><source media="(prefers-color-scheme: light)" srcset=".github/assets/logo-transparent.png"><img src=".github/assets/logo-transparent.png" width="380" alt="ForgeFlow Logo" /></picture></p>
 
 <p align="center">
   <strong>The Unified Command Center & Billing Automation Engine for Modern MSPs</strong>

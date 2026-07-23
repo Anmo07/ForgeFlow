@@ -138,9 +138,18 @@ function SidebarContent({
         <Link
           href="/dashboard"
           onClick={onItemClick}
-          className="text-lg font-bold tracking-tight text-[var(--color-glass-text-primary)] dark:text-[var(--color-glass-dark-text-primary)] hover:text-blue-500 transition-colors"
+          className="flex items-center gap-2 hover:opacity-85 transition-opacity"
         >
-          ForgeFlow
+          <img
+            src="/logo-transparent.png"
+            alt="ForgeFlow Logo"
+            className="h-7 w-auto block dark:hidden object-contain"
+          />
+          <img
+            src="/logo-white.png"
+            alt="ForgeFlow Logo"
+            className="h-7 w-auto hidden dark:block object-contain"
+          />
         </Link>
         <OrgSwitcher />
       </div>

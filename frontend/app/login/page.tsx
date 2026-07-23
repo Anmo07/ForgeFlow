@@ -202,11 +202,12 @@ export default function LoginPage() {
         <div className="rounded-2xl p-8 border border-slate-800 bg-slate-900/80 backdrop-blur-xl shadow-2xl">
           {/* Logo Branding */}
           <div className="flex flex-col items-center mb-6">
-            <Link href="/" className="mb-4 inline-block">
-              <span className="text-3xl font-extrabold tracking-tight">
-                <span className="text-blue-500">Forge</span>
-                <span className="text-white">Flow</span>
-              </span>
+            <Link href="/" className="mb-4 inline-block hover:opacity-90 transition-opacity">
+              <img
+                src="/logo-white.png"
+                alt="ForgeFlow Logo"
+                className="h-10 w-auto object-contain mx-auto"
+              />
             </Link>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">

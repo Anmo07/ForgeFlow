@@ -53,12 +53,18 @@ const Header = () => {
             <div className="w-60 max-w-full px-4 xl:mr-12">
               <Link
                 href="/"
-                className="header-logo block w-full py-2"
+                className="header-logo flex items-center py-2 group"
               >
-                <span className="text-2xl font-extrabold tracking-tight">
-                  <span className="gradient-text">Forge</span>
-                  <span className="text-foreground">Flow</span>
-                </span>
+                <img
+                  src="/logo-transparent.png"
+                  alt="ForgeFlow Logo"
+                  className="h-8 md:h-9 w-auto block dark:hidden object-contain"
+                />
+                <img
+                  src="/logo-white.png"
+                  alt="ForgeFlow Logo"
+                  className="h-8 md:h-9 w-auto hidden dark:block object-contain"
+                />
               </Link>
             </div>
             <div className="flex w-full items-center justify-between px-4">

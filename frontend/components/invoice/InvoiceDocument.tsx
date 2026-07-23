@@ -58,13 +58,12 @@ export function InvoiceDocument({
       <div className="flex flex-col md:flex-row justify-between items-start border-b border-gray-200 pb-6 gap-6">
         {/* Left: Brand logo & Org Details */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="size-9 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md">
-              F
-            </div>
-            <span className="text-2xl font-black tracking-tight text-indigo-950 font-sans">
-              FORGEFLOW
-            </span>
+          <div className="flex items-center gap-2.5 mb-3">
+            <img
+              src="/logo-transparent.png"
+              alt="ForgeFlow Logo"
+              className="h-9 w-auto object-contain"
+            />
           </div>
           <p className="font-bold text-sm text-slate-900">{orgName}</p>
           <p className="text-xs text-slate-600 font-medium">ForgeFlow.com</p>

@@ -12,11 +12,17 @@ const Footer = () => {
           <div className="-mx-4 flex flex-wrap">
             <div className="w-full px-4 md:w-1/2 lg:w-4/12 xl:w-5/12">
               <div className="mb-12 max-w-[360px] lg:mb-16">
-                <Link href="/" className="mb-8 inline-block">
-                  <span className="text-2xl font-extrabold tracking-tight">
-                    <span className="gradient-text">Forge</span>
-                    <span className="text-foreground">Flow</span>
-                  </span>
+                <Link href="/" className="mb-6 inline-block">
+                  <img
+                    src="/logo-transparent.png"
+                    alt="ForgeFlow Logo"
+                    className="h-9 w-auto block dark:hidden object-contain"
+                  />
+                  <img
+                    src="/logo-white.png"
+                    alt="ForgeFlow Logo"
+                    className="h-9 w-auto hidden dark:block object-contain"
+                  />
                 </Link>
                 <p className="mb-9 text-base leading-relaxed text-muted-foreground">
                   The unified command center and billing automation engine for
