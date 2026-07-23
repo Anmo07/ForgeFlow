@@ -23,6 +23,61 @@ No more context-switching between bloated PSAs, disconnected CRM spreadsheets, a
 
 ---
 
+## 🚀 Quick Start Guide (Run on Any Machine)
+
+ForgeFlow is built for instant turnkey deployment on any fresh machine or server.
+
+### Option A: Docker Deployment (Recommended)
+
+Run the full containerized production stack (Nginx, Next.js, FastAPI, Celery, PostgreSQL, Redis, MinIO) with a single command:
+
+```bash
+git clone https://github.com/Anmo07/ForgeFlow.git
+cd ForgeFlow
+./run_docker.sh
+```
+
+Or using standard `docker compose`:
+
+```bash
+cp .env.example .env
+docker compose -f infra/docker-compose.yml up --build -d
+```
+
+### Option B: Local Direct Setup (Auto-Bootstrapping)
+
+If Docker is not available, launch directly with Python & Node.js. The launcher script will automatically create the virtual environment, install dependencies, initialize database schemas, and launch the dev servers:
+
+```bash
+git clone https://github.com/Anmo07/ForgeFlow.git
+cd ForgeFlow
+python3 Run_Application.py
+```
+
+*or via shell script:*
+
+```bash
+./run_application.sh
+```
+
+---
+
+## 🌐 Active System Endpoints
+
+Once running, the application services are mapped to the following local URLs:
+
+| Service | Access URL | Description |
+|---|---|---|
+| **Web Application Gateway** | [http://localhost](http://localhost) | Nginx reverse proxy & frontend entry point |
+| **Frontend Direct Access** | [http://localhost:3000](http://localhost:3000) | Next.js 15 App Router web client |
+| **FastAPI Backend API** | [http://localhost:8000](http://localhost:8000) | REST API backend service |
+| **Swagger API Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI documentation |
+| **MinIO Object Console** | [http://localhost:9001](http://localhost:9001) | S3 PDF storage manager (`minioadmin` / `minioadmin`) |
+| **Mailpit Web UI** | [http://localhost:8025](http://localhost:8025) | Mock email server UI |
+| **Prometheus Metrics** | [http://localhost:9090](http://localhost:9090) | System performance & telemetry metrics |
+
+---
+
 ## ✨ Key Enterprise Capabilities
 
 ### 🛡️ Hardened Multi-Tenancy & Row-Level Security (RLS)
@@ -32,96 +87,52 @@ No more context-switching between bloated PSAs, disconnected CRM spreadsheets, a
 
 ### 🔒 Defense-in-Depth Security Controls
 * **Modern Cryptography & Auth:** Argon2id password hashing via `argon2-cffi`, PyJWT authentication (`HS256`), secure HttpOnly SameSite session cookies, and encrypted MFA/TOTP setup with single-use backup codes.
+* **Production Safety Guards:** Critical lifespan guard preventing application startup if `TESTING=True` is detected in production environments.
+* **Content Security Policy:** Strict Nginx CSP header supporting Tailwind v4, Framer Motion, inline SVG glass filters, WebSockets, and Cloudflare Turnstile.
 * **API Rate Limiting & Account Lockout:** Redis-backed SlowAPI rate limiting decorated on critical auth endpoints, with exponential login lockout backoff delay.
 * **Double-Submit CSRF & CORS Allowlist:** Enforced CSRF double-submit validation (`fastapi-csrf-protect`) on mutating HTTP verbs and strict origin CORS policy (`CORS_ALLOWED_ORIGINS`).
-* **Bot Verification & Cloudflare Turnstile:** Turnstile bot protection on register/login flows with environment-safe test mode guards (`is_testing`).
 
 ### 💼 Automated MSP Billing Engine & Idempotency
 * **Invoice Idempotency & Caching:** Redis-backed request idempotency (`Idempotency-Key` header) preventing duplicate billing transactions under concurrency.
 * **PDF Billing Exporter & MinIO Presigned Storage:** Server-side PDF document compiler generating production-grade invoices stored in MinIO S3 object storage with presigned streaming downloads (`pdf_object_key`).
 * **Dynamic Retainers & Seat Licensing:** Automated monthly retainers and seat count pricing directly connected to billing exports.
 
-### 🔄 Concurrency Control & High Availability
+### 🔄 Concurrency Control & Architecture
 * **Version-Based Optimistic Locking:** Version tracking on tasks and deals preventing concurrent overwrite conflicts (`version` checking & auto-increment).
-* **Persona Switcher & Gatekeeping:** Build-time gated profile impersonation dropdown (`NEXT_PUBLIC_ENABLE_PERSONA_SWITCHER`) and isolated mock mode flag (`NEXT_PUBLIC_MOCK_MODE`).
-* **Centralized Environment Testing Guards:** Unified `is_testing` runtime helper protecting production builds from mock pollution.
+* **Shared Custom Query Hooks:** React Query encapsulation hooks (`useProjects`, `useCRMClients`, `useCRMLeads`, `useCRMDeals`, `useInvoices`, `useOrgMembers`, `useOrgRoles`) with standardized `queryKeys` registry and typed `ApiError` handling.
+* **Decomposed UI Component Tree:** Thin orchestrator page components (<150 lines) with isolated UI subcomponents.
 
 ---
 
 ## 🏗️ Repository Architecture
 
-ForgeFlow is organized as a lightweight, clean monorepo:
+ForgeFlow is organized as a clean, lightweight monorepo:
 
 ```text
-├── frontend/          # Next.js 15 App Router, Tailwind CSS v4, Zustand, Recharts, Playwright E2E
-├── backend/           # FastAPI (Python 3.12), SQLAlchemy 2.0 (Sync/RLS), Celery, Alembic, PyJWT
-├── infra/             # Docker Compose stack, Nginx reverse proxy, Prometheus, Loki/Promtail
-└── scripts/           # Seeding utilities, k6 load testing suite (k6_load_test.js), test tools
+├── frontend/          # Next.js 15 App Router, Tailwind CSS v4, Zustand, TanStack Query, Recharts
+├── backend/           # FastAPI (Python 3.12), SQLAlchemy 2.0, Celery, Alembic, PyJWT, Argon2
+├── infra/             # Docker Compose stack, Nginx reverse proxy, Prometheus, Mailpit, MinIO
+└── scripts/           # Database seeding utilities, k6 load testing suite (k6_load_test.js)
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🧪 Testing & Verification
 
-### 🐳 Running with Docker Compose (Recommended)
-
-Boot up the entire stack locally (database, queues, object storage, monitoring, backend, and frontend) with a single command:
-
+### Backend Unit & Integration Tests
 ```bash
-docker compose -f infra/docker-compose.yml up --build
-```
-
-#### Services Spawned:
-* 🔑 **Nginx Reverse Proxy:** [http://localhost](http://localhost)
-* 💻 **Next.js Frontend:** [http://localhost](http://localhost)
-* ⚡ **FastAPI Backend:** [http://localhost/api](http://localhost/api) (OpenAPI docs at `/docs`)
-* 🗄️ **MinIO Console:** [http://localhost:9001](http://localhost:9001)
-* 📊 **Prometheus Metrics:** [http://localhost:9090](http://localhost:9090) (Nginx proxy restricted to `172.0.0.0/8`, `127.0.0.1`)
-
----
-
-### 🛠️ Local Development Setup
-
-#### 1. Backend API (FastAPI)
-```bash
-# Navigate to backend
 cd backend
-
-# Initialize & activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install requirements
-pip install -r requirements.txt
-
-# Start the dev server
-./run_backend.sh
+python3 -m pytest
 ```
 
-#### 2. Frontend Client (Next.js)
+### Bundle Size Analysis
 ```bash
-# Navigate to frontend
 cd frontend
-
-# Install packages
-npm install --legacy-peer-deps
-
-# Spin up Dev Server
-npm run dev
+npm run analyze
 ```
 
 ---
 
-## 🧪 Testing & Performance Suite
+## 📜 License & Compliance
 
-### Backend Integration & Unit Tests
-```bash
-PYTHONPATH=backend .venv/bin/pytest backend
-```
-Includes regression checks for PostgreSQL Row-Level Security, Celery task runners, invite flows, Turnstile token bypass in test mode, and cryptographic JWT/CSRF handlers.
-
-### k6 Load Testing Benchmark
-```bash
-k6 run --env BASE_URL=http://localhost:8000 scripts/k6_load_test.js
-```
-Runs performance benchmarks verifying read/write P95/P99 latency SLAs and throughput under multi-stage concurrency ramp-up.
+Designed for enterprise IT Operations, Managed Service Providers (MSPs), and SaaS platforms. Built with security, data isolation, and reliability at its core.
