@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
 const nextConfig: NextConfig = {
+  output: "standalone",
   productionBrowserSourceMaps: true,
   outputFileTracingRoot: path.join(__dirname),
   eslint: {
@@ -22,4 +28,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
