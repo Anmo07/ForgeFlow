@@ -1,4 +1,4 @@
-# Environments
+# Environments & Secrets
 .env
 .venv
 venv/
@@ -8,14 +8,25 @@ ENV/
 *.db
 *.sqlite3
 
-# OS Files
-.DS_Store
+# Runtime Storage & Generated Artifacts
+*.pdf
+*.rdb
+dump.rdb
 
-# IDEs
+# Frontend Build & Dependencies
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# OS & IDE Files
+.DS_Store
+*.DS_Store
 .idea/
 .cursor/
+.vscode/
 
-# Python
+# Python Build & Test Caches
 __pycache__/
 *.py[cod]
 .pytest_cache/

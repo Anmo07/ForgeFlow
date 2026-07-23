@@ -198,6 +198,25 @@ def run_local_stack(project_root: Path) -> str:
     backend_dir = project_root / "backend"
     frontend_dir = project_root / "frontend"
 
+    # Auto-bootstrap Python virtual environment if missing
+    venv_dir = backend_dir / ".venv"
+    venv_py = venv_dir / "bin" / "python"
+    if not venv_dir.exists():
+        log_info("Creating Python virtual environment in backend/.venv...")
+        subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
+        pip_bin = venv_dir / "bin" / "pip"
+        req_file = backend_dir / "requirements.txt"
+        if req_file.exists():
+            log_info("Installing backend dependencies from requirements.txt...")
+            subprocess.run([str(pip_bin), "install", "-r", str(req_file)], check=True)
+
+    # Auto-bootstrap Node modules if missing
+    node_modules_dir = frontend_dir / "node_modules"
+    if not node_modules_dir.exists():
+        log_info("Installing frontend dependencies using npm install...")
+        npm_bin = shutil.which("npm") or "npm"
+        subprocess.run([npm_bin, "install", "--legacy-peer-deps"], cwd=str(frontend_dir), check=True)
+
     # Clean up stale processes on ports 8000 and 3000
     free_port(8000)
     free_port(3000)

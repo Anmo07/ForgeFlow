@@ -13,6 +13,14 @@ echo -e "${BLUE}=== Starting ForgeFlow Docker Orchestration ===${NC}"
 # Ensure we are in the project root directory
 cd "$(dirname "$0")"
 
+# Check for .env file
+if [ ! -f .env ]; then
+    if [ -f .env.example ]; then
+        echo -e "${YELLOW}Creating .env from .env.example...${NC}"
+        cp .env.example .env
+    fi
+fi
+
 # 1. Build and bring up core databases (postgres, redis, minio)
 echo -e "${YELLOW}1. Starting databases (Postgres, Redis, MinIO)...${NC}"
 docker compose --env-file .env -f infra/docker-compose.yml up -d postgres redis minio
